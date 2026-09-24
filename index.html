@@ -197,6 +197,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .zh{font-family:var(--serif);font-weight:600;font-size:16px;margin-top:6px;letter-spacing:.05em}
 .zh .en{display:block;font-family:var(--display);font-style:italic;font-weight:600;font-size:17px;color:var(--gold);letter-spacing:.02em}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
+/* 同階層的一組動作（一起彈／分解）：同尺寸、同樣式 */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.duo button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:108px;padding:9px 18px;border-radius:var(--r-pill);
+  border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:color-mix(in srgb,var(--gold) 12%,transparent);
+  color:var(--ink);font-weight:700;font-size:15px;letter-spacing:.04em;white-space:nowrap;transition:background .15s}
+.duo button:hover{background:color-mix(in srgb,var(--gold) 22%,transparent)}
+.duo button:active{background:color-mix(in srgb,var(--gold) 30%,transparent)}
+.duo .ic{width:1em;text-align:center;color:var(--gold);font-size:14px}
 .tones{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0}
 .tones .eq{color:var(--muted)}
 .optnote{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-left:6px}
@@ -342,7 +350,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
       <div class="stage">
         <div class="chord-head">
           <div><div class="sym" id="cSym"></div><div class="zh" id="cZh"></div></div>
-          <div class="actions"><button class="play" id="cPlay">▶ 一起彈</button><button class="ghost" id="cArp">♪ 分解</button></div>
+          <div class="actions duo"><button id="cPlay"><span class="ic">▶︎</span>一起彈</button><button id="cArp"><span class="ic">♪︎</span>分解</button></div>
         </div>
         <div class="tones"><div class="formula" id="cFormula"></div><span class="eq">＝</span><div class="formula" id="cNotes"></div><span class="optnote" id="optNote" hidden><i></i>外框＝實際彈奏時常省略的音</span></div>
         <div class="guitar-tools" id="gTools" hidden>
