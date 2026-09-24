@@ -334,6 +334,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:480px){ .tab .full{display:none} .tab .short{display:inline} }
 
 /* ---------- 安裝提示 ---------- */
+.foot{display:flex;justify-content:center;padding:4px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+.foot .ghost{font-size:13.5px;color:var(--muted)}
 .install{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,calc(100% + 40px));transition:transform .3s ease;
   z-index:30;width:min(440px,calc(100vw - 32px));display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;
   background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 12px 36px rgba(0,0,0,.45)}
@@ -458,6 +460,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     </div>
   </section>
 </main>
+<footer class="foot"><button class="ghost" id="installLink" hidden>📲 安裝到主畫面</button></footer>
 
 <div class="backdrop" id="backdrop" hidden></div>
 <aside class="sheet" id="sheet" aria-label="折返跑設定" aria-hidden="true">
@@ -1205,24 +1208,26 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 (()=>{
   const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
   if(standalone) return;
-  const KEY='installDismissed', WAIT=14*864e5;   // 按 ✕ 之後兩週內不再出現
-  try{ if(Date.now()-(+localStorage.getItem(KEY)||0)<WAIT) return; }catch(e){}
-  const box=$('#install'), btn=$('#installBtn');
+  const KEY='installDismissed', WAIT=14*864e5;   // 按 ✕ 之後兩週內不會自動跳出；頁尾的「安裝到主畫面」隨時可以叫回來
+  let dismissed=false; try{ dismissed=Date.now()-(+localStorage.getItem(KEY)||0)<WAIT; }catch(e){}
+  const box=$('#install'), btn=$('#installBtn'), link=$('#installLink');
+  const autoShow=()=>{ if(!dismissed) setTimeout(show,3000); };
   const show=()=>{ box.hidden=false; requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add('show'))); };
   const hide=()=>{ box.classList.remove('show'); setTimeout(()=>box.hidden=true,300); };
-  $('#installX').onclick=()=>{ hide(); try{ localStorage.setItem(KEY,Date.now()); }catch(e){} };
+  $('#installX').onclick=()=>{ hide(); dismissed=true; try{ localStorage.setItem(KEY,Date.now()); }catch(e){} };
+  link.onclick=show;
   let deferred=null;
   window.addEventListener('beforeinstallprompt',e=>{
-    e.preventDefault(); deferred=e; btn.hidden=false; setTimeout(show,3000);
+    e.preventDefault(); deferred=e; btn.hidden=false; link.hidden=false; autoShow();
   });
   btn.onclick=async()=>{ if(!deferred) return; hide(); deferred.prompt(); await deferred.userChoice.catch(()=>{}); deferred=null; };
-  window.addEventListener('appinstalled',hide);
+  window.addEventListener('appinstalled',()=>{ hide(); link.hidden=true; });
   // iPhone／iPad：沒有安裝 API，只能教。App 內建瀏覽器（LINE、FB、IG）無法加入主畫面，改提示用 Safari 開。
   const inApp=/Line\/|FBAN|FBAV|Instagram/i.test(navigator.userAgent);
   if(IOS){
     const shareIco='<svg class="share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
     $('#installHow').innerHTML=inApp?'請先用 Safari 開啟這個網頁，再加入主畫面。':`點瀏覽器的分享${shareIco}，再選「加入主畫面」。`;
-    setTimeout(show,3000);
+    link.hidden=false; autoShow();
   }
 })();
 })();
