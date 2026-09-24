@@ -986,8 +986,64 @@ function closeSheet(){ $('#sheet').classList.remove('open'); $('#backdrop').hidd
 $('#openSheet').onclick=openSheet; $('#closeSheet').onclick=closeSheet; $('#backdrop').onclick=closeSheet;
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
 
+/* ---- URL hash：設定寫進網址，重新整理後保留 ---- */
+const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th'};
+function hashStr(){
+  const s={tab:$('.tab.active').dataset.tab,mode:S.mode,key:S.key,bpm:S.bpm,metro:+S.metro,loop:+S.loop,sus:S.sus,mute:S.muteMode,
+    mset:[...S.muteSet].sort((a,b)=>a-b).join(','),mshow:+S.muteShow,sub:C.sub,inst:C.inst,lab:C.lab,root:C.root,cat:C.cat,type:C.type,
+    v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(',')};
+  const p=new URLSearchParams();
+  for(const k in s) if(String(s[k])!==String(HDEF[k])) p.set(k,s[k]);   // 只寫跟預設不同的
+  return p.toString();
+}
+function saveHash(){
+  const h=hashStr();
+  if(h!==location.hash.slice(1)) history.replaceState(null,'',location.pathname+location.search+(h?'#'+h:''));
+}
+function loadHash(){
+  const p=new URLSearchParams(location.hash.slice(1));
+  const get=(k,ok)=>{ const v=p.get(k); return v!==null&&ok(v)?v:String(HDEF[k]); };
+  const oneOf=a=>v=>a.includes(v), bit=oneOf(['0','1']), segOn=(sel,v)=>$$(sel+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  // 音階
+  S.mode=get('mode',oneOf(['major','minor']));
+  S.key=get('key',oneOf(keyList()));
+  S.bpm=Math.max(40,Math.min(240,+get('bpm',v=>/^\d+$/.test(v))));
+  S.metro=get('metro',bit)==='1'; S.loop=get('loop',bit)==='1'; S.muteShow=get('mshow',bit)==='1';
+  S.sus=get('sus',oneOf(['short','mid','long']));
+  S.muteMode=get('mute',oneOf(['off','pick','random']));
+  S.muteSet=new Set(get('mset',v=>/^([0-6](,[0-6])*)?$/.test(v)).split(',').filter(Boolean).map(Number));
+  segOn('#modeSeg',S.mode); setBpm(S.bpm); segOn('#susSeg',S.sus); segOn('#muteSeg',S.muteMode);
+  $('#metro').checked=S.metro; $('#loop').checked=S.loop; $('#muteShow').checked=S.muteShow;
+  $('#mutePick').hidden=S.muteMode!=='pick'; $('#muteRand').hidden=S.muteMode!=='random'; $('#muteShowWrap').hidden=S.muteMode==='off';
+  // 和弦
+  C.sub=get('sub',oneOf(['learn','game'])); C.inst=get('inst',oneOf(['piano','guitar'])); C.lab=get('lab',oneOf(['int','name']));
+  C.root=get('root',oneOf(ROOTS));
+  C.cat=get('cat',oneOf(CATS.map(c=>c[0])));
+  const t=get('type',v=>!!TYPE[v]);
+  if(!p.has('cat')) C.cat=TYPE[t].cat;
+  C.type=TYPE[t].cat===C.cat?t:TYPES.find(x=>x.cat===C.cat).id;
+  C.vIdx=+get('v',v=>/^\d+$/.test(v)); C.showAll=get('all',bit)==='1';
+  segOn('#subSeg',C.sub); segOn('#instSeg',C.inst); segOn('#labSeg',C.lab);
+  $('#learn').hidden=C.sub!=='learn'; $('#game').hidden=C.sub!=='game'; $('#showAll').checked=C.showAll;
+  // 小遊戲
+  const gm=get('gmode',oneOf(['identify','ear','build']));
+  if(gm!==G.mode){ G.mode=gm; G.q=null; G.answered=false; $('#gOptions').innerHTML=''; $('#gFeedback').innerHTML=''; $('#gPrompt').textContent='選好範圍後按「開始」'; }
+  segOn('#gModeSeg',G.mode);
+  G.cats=new Set(get('gcats',v=>/^[\w,]*$/.test(v)).split(',').filter(c=>CATS.some(x=>x[0]===c)));
+  // 分頁
+  const tab=get('tab',oneOf(['scale','chord']));
+  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+  $('#tab-scale').hidden=tab!=='scale'; $('#tab-chord').hidden=tab!=='chord'; $('#chordCtl').hidden=tab!=='chord';
+}
+['click','change','input'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveHash,0)));
+window.addEventListener('hashchange',()=>{   // 手動改網址或貼上別人的連結
+  if(location.hash.slice(1)===hashStr()) return;
+  loadHash(); sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); renderGameInst(); setBtns(); saveHash();
+});
+
 /* init */
-sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns();
+loadHash();
+sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns(); saveHash();
 requestAnimationFrame(frame);
 })();
 
