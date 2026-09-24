@@ -49,7 +49,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+body{margin:0;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1;min-height:100vh;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
   background:radial-gradient(ellipse 75% 60% at 50% -8%,var(--spot),transparent 70%),linear-gradient(180deg,var(--bg),var(--bg2));background-attachment:fixed}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--gold);outline-offset:2px}
@@ -197,6 +197,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .tones{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0}
 .tones .eq{color:var(--muted)}
+.optnote{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-left:6px}
+.optnote i{width:18px;height:14px;border-radius:5px;box-shadow:inset 0 0 0 2px var(--muted)}
 .formula{display:flex;flex-wrap:wrap;gap:4px}
 .tone{font-family:var(--display);font-weight:700;padding:1px 10px;border-radius:8px;color:#fff;background:var(--c);font-size:18px;line-height:1.4}
 .tone.opt{background:transparent;color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
@@ -340,7 +342,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div><div class="sym" id="cSym"></div><div class="zh" id="cZh"></div></div>
           <div class="actions"><button class="play" id="cPlay">▶ 一起彈</button><button class="ghost" id="cArp">♪ 分解</button></div>
         </div>
-        <div class="tones"><div class="formula" id="cFormula"></div><span class="eq">＝</span><div class="formula" id="cNotes"></div></div>
+        <div class="tones"><div class="formula" id="cFormula"></div><span class="eq">＝</span><div class="formula" id="cNotes"></div><span class="optnote" id="optNote" hidden><i></i>外框＝實際彈奏時常省略的音</span></div>
         <div class="guitar-tools" id="gTools" hidden>
           <button class="mini" id="vPrev" aria-label="上一個指法">◀</button><span class="vinfo" id="vInfo"></span><button class="mini" id="vNext" aria-label="下一個指法">▶</button>
           <label class="chk"><input type="checkbox" id="showAll"> 顯示指板上所有和弦音</label>
@@ -859,6 +861,7 @@ function renderLearn(){
   let st=''; type.tones.forEach((t,i)=>{ if(i) st+=`<span class="g">—${GAP[t.s-type.tones[i-1].s]||''}→</span>`; st+=`<span class="t">${t.lbl}</span>`; });
   st+=`<br><span class="g" style="margin:0">半音數：${type.tones.map(t=>t.s).join(' · ')}</span>`;
   $('#cStack').innerHTML=st;
+  $('#optNote').hidden=!type.tones.some(t=>t.opt);
   const vs=genVoicings(parseNote(root).pc,type), v=curVoicing();
   $('#gTools').hidden=C.inst!=='guitar';
   $('#vInfo').textContent=v?`指法 ${C.vIdx+1}/${vs.length}：${frText(v)}`:'找不到合適指法';
