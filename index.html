@@ -139,6 +139,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .chip{font-family:var(--display);font-weight:700;font-size:17px;padding:1px 9px;border-radius:var(--r-sm);background:var(--soft);color:var(--muted);border:1px solid transparent}
 .chip.done{color:var(--ink)}
 .chip.cur{background:var(--glow);color:#1a1300;box-shadow:0 0 14px color-mix(in srgb,var(--glow) 55%,transparent)}
+.chip.rest{font-family:var(--serif);font-size:14px;border:1px dashed var(--line)}
+.chip.rest.cur{border-color:transparent}
 .chip.mute{background:transparent;border:2px dashed var(--glow);color:var(--ink)}
 .progress{height:3px;background:var(--soft);border-radius:var(--r-pill);margin:12px 0 0;overflow:hidden}
 .progress div{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--glow));transition:width .12s linear}
@@ -564,10 +566,12 @@ function buildSeq(notes){
   for(let k=0;k<8;k++){
     const path=[]; for(let i=0;i<=k;i++)path.push(i); for(let i=k-1;i>=0;i--)path.push(i);
     path.forEach((d,j)=>seq.push({...notes[d],phase:'up',round:k+1,path,pos:j}));
+    seq.push({rest:true,phase:'up',round:k+1,path,pos:path.length});   // 每輪最後休止一拍
   }
   for(let k=0;k<8;k++){
     const path=[]; for(let i=7;i>=7-k;i--)path.push(i); for(let i=8-k;i<=7;i++)path.push(i);
     path.forEach((d,j)=>seq.push({...notes[d],phase:'down',round:k+1,path,pos:j}));
+    seq.push({rest:true,phase:'down',round:k+1,path,pos:path.length});
   }
   return seq;
 }
@@ -611,17 +615,17 @@ function sReset(){
 }
 function sShow(idx,muted){
   const it=S.seq[idx], hide=muted&&!S.muteShow;
-  scalePiano.setLit(hide?[]:[{midi:it.midi,color:'var(--glow)',label:pretty(it.name),hollow:muted}]);
-  $('#nowNote').textContent=hide?'？':pretty(it.full);
-  $('#nowNote').classList.toggle('muted',!!muted);
-  $('#nowSolfa').textContent=muted?(hide?'靜音 — 請唱出來':it.solfa+'（靜音）'):it.solfa;
+  scalePiano.setLit(hide||it.rest?[]:[{midi:it.midi,color:'var(--glow)',label:pretty(it.name),hollow:muted}]);
+  $('#nowNote').textContent=it.rest?'休':hide?'？':pretty(it.full);
+  $('#nowNote').classList.toggle('muted',!!muted||!!it.rest);
+  $('#nowSolfa').textContent=it.rest?'休止一拍':muted?(hide?'靜音 — 請唱出來':it.solfa+'（靜音）'):it.solfa;
   const first=S.notes[it.path[0]], top=S.notes[it.path[Math.floor(it.path.length/2)]];
   $('#nowPhase').textContent=`${it.phase==='up'?'上行折返':'下行折返'}　第 ${it.round} / 8 輪（${pretty(first.full)} → ${pretty(top.full)} → ${pretty(first.full)}）`;
   $('#progBar').style.width=((idx+1)/S.seq.length*100)+'%';
   const k=it.phase+it.round;
   if(k!==S.lastKey){
     S.lastKey=k;
-    $('#pathChips').innerHTML=it.path.map((d,j)=>`<span class="chip" data-j="${j}">${pretty(S.notes[d].name)}</span>`).join('');
+    $('#pathChips').innerHTML=it.path.map((d,j)=>`<span class="chip" data-j="${j}">${pretty(S.notes[d].name)}</span>`).join('')+`<span class="chip rest" data-j="${it.path.length}">休</span>`;
   }
   $$('#pathChips .chip').forEach(c=>{const j=+c.dataset.j; c.classList.toggle('cur',j===it.pos&&!muted); c.classList.toggle('mute',j===it.pos&&!!muted); c.classList.toggle('done',j<it.pos);});
   $$('#scaleRow .deg').forEach(d=>{ const on=+d.dataset.i===it.i&&!hide; d.classList.toggle('cur',on); d.classList.toggle('mute',on&&!!muted); });
@@ -631,9 +635,9 @@ function sTick(){
   while(S.nextTime<ctx.currentTime+0.15){
     if(S.next>=S.seq.length){ if(S.loop){S.next=0;} else break; }
     const it=S.seq[S.next];
-    const muted=S.muteMode==='pick'?S.muteSet.has(it.i%7):S.muteMode==='random'?(S.dice!==null&&it.i%7===S.dice):false;
+    const muted=it.rest?false:S.muteMode==='pick'?S.muteSet.has(it.i%7):S.muteMode==='random'?(S.dice!==null&&it.i%7===S.dice):false;
     const dur=S.sus==='short'?spb*0.95:S.sus==='mid'?Math.max(1.4,spb*2):3.5;
-    if(!muted) pianoNote(it.midi,S.nextTime,dur,0.65);
+    if(!muted&&!it.rest) pianoNote(it.midi,S.nextTime,dur,0.65);
     if(S.metro) click(S.nextTime,S.beat%4===0);
     S.q.push({t:S.nextTime,idx:S.next,end:S.nextTime+spb,muted});
     S.next++; S.beat++; S.nextTime+=spb;
