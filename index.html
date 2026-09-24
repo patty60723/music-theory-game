@@ -433,7 +433,26 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(M
 
 /* ================= AUDIO ================= */
 let ctx=null, master=null;
+// iPhone 靜音鍵：Web Audio 預設跟著靜音鍵走。改成「播放」類別（像音樂 App）就不受影響。
+// iOS 17+ 用 audioSession API；舊版用一段循環播放的無聲 <audio> 把音訊類別切過去。
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let silentEl=null, unmuted=false;
+function iosUnmute(){
+  if(unmuted) return; unmuted=true;
+  if(navigator.audioSession){ try{ navigator.audioSession.type='playback'; }catch(e){} return; }
+  if(!IOS) return;
+  if(!silentEl){
+    silentEl=document.createElement('audio');
+    silentEl.src='data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+    silentEl.loop=true; silentEl.setAttribute('playsinline',''); silentEl.setAttribute('x-webkit-airplay','deny');
+  }
+  silentEl.play().catch(()=>{ unmuted=false; });
+}
+document.addEventListener('visibilitychange',()=>{   // 切到背景就停掉，避免鎖定畫面出現播放控制
+  if(document.hidden&&silentEl){ silentEl.pause(); unmuted=false; }
+});
 function ac(){
+  iosUnmute();
   if(!ctx){
     const AC=window.AudioContext||window.webkitAudioContext; ctx=new AC();
     master=ctx.createGain(); master.gain.value=0.9;
