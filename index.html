@@ -572,18 +572,25 @@ function pianoNote(midi,t,dur,vel){
   [[1,1],[2,.4],[3,.2],[4,.1]].forEach(([h,a])=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f*h; const g=ctx.createGain(); g.gain.value=a; o.connect(g); g.connect(out); o.start(t); o.stop(t+dur+0.5); });
 }
 
+// 溫和版：柔化激發＋撥弦位置梳狀濾波＋分數延遲校音＋琴身共鳴＋柔和起音
 const ksCache=new Map();
 function ksBuf(midi){
   if(ksCache.has(midi)) return ksCache.get(midi);
-  const sr=ctx.sampleRate, f=mtof(midi), N=Math.max(2,Math.round(sr/f)), len=Math.floor(sr*3);
-  const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0), ring=new Float32Array(N);
-  let prev=0; for(let i=0;i<N;i++){prev=prev*0.45+(Math.random()*2-1)*0.55; ring[i]=prev;}
-  const damp=0.996+Math.min(0.0035,(midi-40)*0.00007);
-  let idx=0, peak=0;
+  const sr=ctx.sampleRate, f=mtof(midi), len=Math.floor(sr*3.2);
+  const L=sr/f-0.5, N=Math.max(2,Math.floor(L)), frac=L-N, C=(1-frac)/(1+frac);   // 全通濾波補小數點延遲，高音不走音
+  const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0), ring=new Float32Array(N), exc=new Float32Array(N);
+  let a=0,b=0; for(let i=0;i<N;i++){ a=a*0.72+(Math.random()*2-1)*0.28; b=b*0.72+a*0.28; exc[i]=b; }   // 兩次平滑：手指撥弦比較圓
+  const P=Math.max(1,Math.round(N*0.2)); let mean=0;
+  for(let i=0;i<N;i++){ ring[i]=exc[i]-0.9*exc[(i+P)%N]; mean+=ring[i]; }   // 撥在琴橋和琴頸之間：去掉刺耳的泛音
+  mean/=N; for(let i=0;i<N;i++) ring[i]-=mean;
+  const damp=0.9975+Math.min(0.0015,(midi-40)*0.00004);
+  let idx=0, x1=0, ax=0, ay=0, peak=0;
   for(let i=0;i<len;i++){
-    const nx=idx+1===N?0:idx+1, v=ring[idx]; d[i]=v;
-    ring[idx]=damp*0.5*(v+ring[nx]); idx=nx;
-    const a=Math.abs(v); if(a>peak) peak=a;
+    const v=ring[idx]; d[i]=v;
+    const lp=damp*0.5*(v+x1); x1=v;
+    const ap=C*lp+ax-C*ay; ax=lp; ay=ap;
+    ring[idx]=ap; idx=idx+1===N?0:idx+1;
+    const m=Math.abs(v); if(m>peak) peak=m;
   }
   const norm=0.9/(peak||1); for(let i=0;i<len;i++) d[i]*=norm;
   ksCache.set(midi,buf); return buf;
@@ -591,11 +598,15 @@ function ksBuf(midi){
 function guitarNote(midi,t,vel){
   ac(); t=Math.max(t||0,ctx.currentTime);
   const src=ctx.createBufferSource(); src.buffer=ksBuf(midi);
-  const g=ctx.createGain(); const v=(vel==null?0.6:vel)*0.34;
-  g.gain.setValueAtTime(v,t); g.gain.setTargetAtTime(0,t+2.2,0.3);
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4200;
-  src.connect(lp); lp.connect(g); g.connect(master); src.start(t); src.stop(t+3);
+  const g=ctx.createGain(); const v=(vel==null?0.6:vel)*0.42;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.006);   // 起音稍微柔一點，不會「啪」一聲
+  g.gain.setTargetAtTime(0,t+2.4,0.35);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2600; lp.Q.value=0.5;
+  const body=ctx.createBiquadFilter(); body.type='peaking'; body.frequency.value=110; body.Q.value=1.2; body.gain.value=4;   // 琴身共鳴
+  const air=ctx.createBiquadFilter(); air.type='highshelf'; air.frequency.value=3200; air.gain.value=-6;
+  src.connect(body); body.connect(lp); lp.connect(air); air.connect(g); g.connect(master); src.start(t); src.stop(t+3.2);
 }
+
 function click(t,accent){
   const o=ctx.createOscillator(), g=ctx.createGain();
   o.type='square'; o.frequency.value=accent?1760:1100;
