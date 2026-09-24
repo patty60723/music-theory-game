@@ -824,9 +824,11 @@ function renderGuitar(host,{dots=[],marks=[],onCell}){
 /* ---- chord → instrument drawing ---- */
 function chordMidisPiano(root,type){ const rp=parseNote(root).pc; return type.tones.map(t=>48+rp+t.s); }
 function toneMap(root,type){ const rp=parseNote(root).pc; return new Map(type.tones.map(t=>[(rp+t.s)%12,t])); }
-function drawChord(host,{root,type,voicing,reveal=true,showAll=false,onPiano,onCell}){
+// 鋼琴只畫到用得到的範圍：從 C3 往上，蓋住這些類別裡最高的音（任何根音）後停在下一個 C
+function chordHi(cats){ const top=Math.max(...TYPES.filter(t=>cats.includes(t.cat)).flatMap(t=>t.tones.map(x=>x.s))); return 48+Math.ceil((11+top)/12)*12; }
+function drawChord(host,{root,type,voicing,reveal=true,showAll=false,onPiano,onCell,hi=chordHi([type.cat])}){
   if(C.inst==='piano'){
-    const p=makePiano(host,48,84,onPiano||(m=>pianoNote(m,0,2.5,0.6)),24);
+    const p=makePiano(host,48,hi,onPiano||(m=>pianoNote(m,0,2.5,0.6)),22);
     const rp=parseNote(root).pc;
     p.setLit(type.tones.map(t=>({midi:48+rp+t.s,color:reveal?degColor(t.d):'var(--accent)',label:reveal?labelFor(root,t):''})));
   }else{
@@ -925,7 +927,7 @@ function renderGameInst(){
   if(G.mode==='ear'&&!G.answered){ host.innerHTML='<div class="listen">🎧 只用耳朵聽，答完才會看到答案</div>'; return; }
   if(G.mode==='build'&&!G.answered){
     if(C.inst==='piano'){
-      const p=makePiano(host,48,84,m=>{ pianoNote(m,0,2.2,0.6); G.userMidis.has(m)?G.userMidis.delete(m):G.userMidis.add(m); renderGameInst(); },24);
+      const p=makePiano(host,48,chordHi([...G.cats,q.type.cat]),m=>{ pianoNote(m,0,2.2,0.6); G.userMidis.has(m)?G.userMidis.delete(m):G.userMidis.add(m); renderGameInst(); },22);
       p.setLit([...G.userMidis].map(m=>({midi:m,color:'var(--accent)',label:midiName(m).replace(/-?\d+$/,'')})));
     }else{
       const dots=[]; G.userFrets.forEach((f,s)=>{ if(f>=0) dots.push({s,f,color:'var(--accent)',label:PC_NAMES[(TUNING[s]+f)%12]}); });
@@ -933,7 +935,7 @@ function renderGameInst(){
     }
     return;
   }
-  drawChord(host,{root:q.root,type:q.type,voicing:q.voicing,reveal:G.answered});
+  drawChord(host,{root:q.root,type:q.type,voicing:q.voicing,reveal:G.answered,hi:chordHi([...G.cats,q.type.cat])});
 }
 function explain(q){
   return `<span class="fx">${symOf(q.root,q.type)}（${q.type.zh}，${q.type.en}）＝ ${q.type.tones.map(t=>`${t.opt?'(':''}${t.lbl}${t.opt?')':''}`).join(' ')} ＝ ${q.type.tones.map(t=>toneName(q.root,t)).join(' ')}</span>`;
