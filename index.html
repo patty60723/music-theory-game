@@ -138,6 +138,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tempo{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
 .tempo .bpm{display:flex;flex-direction:column;align-items:center;line-height:1;min-width:44px}
 .tempo .bpm b{font-family:var(--display);font-size:22px;font-weight:700}
+.tap{color:var(--ink);font-size:14px;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .08s}
+#tapLbl{display:inline-block;min-width:4.6em;text-align:center}
+.tap.hit{background:color-mix(in srgb,var(--gold) 30%,transparent)}
 .tempo .bpm small{font-size:10px;color:var(--muted);letter-spacing:.1em}
 .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;cursor:pointer;font-size:14px;background:var(--soft)}
 .pill input{accent-color:var(--gold);margin:0;width:16px;height:16px}
@@ -350,6 +353,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <button class="mini" id="stopBtn" aria-label="停止">■</button>
           <button class="keychip" id="openSheet"><span id="keyLabel">C 大調</span><small>調性與設定</small></button>
           <div class="tempo"><button class="mini" id="bpmDown" aria-label="減速">−</button><div class="bpm"><b id="bpmVal">120</b><small>BPM</small></div><button class="mini" id="bpmUp" aria-label="加速">+</button></div>
+          <button class="pill tap" id="tapBtn" title="跟著音樂敲幾下，自動算出速度（鍵盤 T 鍵也可以）">👆 <span id="tapLbl">敲拍子</span></button>
           <label class="pill"><input type="checkbox" id="metro"><span>節拍器</span></label>
           <span class="badge" id="muteBadge" hidden></span>
         </div>
@@ -731,6 +735,25 @@ const setBpm=v=>{S.bpm=Math.max(40,Math.min(240,v)); $('#bpm').value=S.bpm; $('#
 $('#bpm').oninput=e=>setBpm(+e.target.value);
 $('#bpmDown').onclick=()=>setBpm(S.bpm-5);
 $('#bpmUp').onclick=()=>setBpm(S.bpm+5);
+/* Tap tempo：量最近幾下的間隔取平均，BPM＝60 秒 ÷ 平均間隔；停 2 秒沒敲就重新算 */
+const taps=[]; let tapReset=null;
+function tap(){
+  const now=performance.now();
+  if(taps.length&&now-taps[taps.length-1]>2000) taps.length=0;
+  taps.push(now); if(taps.length>6) taps.shift();
+  ac(); click(ctx.currentTime,taps.length===1);
+  const b=$('#tapBtn'); b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),90);
+  if(taps.length>=2){
+    const avg=(taps[taps.length-1]-taps[0])/(taps.length-1);
+    setBpm(Math.round(60000/avg));
+    $('#tapLbl').textContent=`敲了 ${taps.length} 下`;
+  }else $('#tapLbl').textContent='再敲…';
+  clearTimeout(tapReset); tapReset=setTimeout(()=>{ taps.length=0; $('#tapLbl').textContent='敲拍子'; },2000);
+}
+$('#tapBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); tap(); });   // 用按下的瞬間計時，比 click 準
+document.addEventListener('keydown',e=>{
+  if((e.key==='t'||e.key==='T')&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)&&!$('#tab-scale').hidden){ tap(); saveHash(); }
+});
 $('#metro').onchange=e=>S.metro=e.target.checked;
 $('#loop').onchange=e=>S.loop=e.target.checked;
 $('#restBeat').onchange=e=>{ S.rest=e.target.checked; sStop(); S.seq=buildSeq(S.notes); };
