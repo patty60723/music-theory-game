@@ -260,7 +260,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   body{font-size:14px}
   .bar{padding-top:4px;padding-bottom:5px;gap:10px}
   .brand .name{font-size:16px}
-  .brand .mark{width:24px;height:24px;font-size:13px}
+  .brand .mark{width:28px;height:28px}
   .tab{font-size:14.5px;padding:4px 8px}
   .bar .seg button{padding:3px 10px;font-size:13px}
   .app{padding-top:8px;padding-bottom:12px}
@@ -295,8 +295,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   .split>.panel{position:static;max-height:none}
   .options{grid-template-columns:1fr 1fr}
   .now-note{font-size:60px}
-  .brand .name{display:none}
+  /* 手機直向：標題拆兩行，塞在圖示和分頁之間 */
+  .brand{gap:8px}
+  .brand .name{display:flex;flex-direction:column;line-height:1.15;letter-spacing:.06em}
+  .brand .name span:first-child{font-size:15px}
+  .brand .name span:last-child{font-size:11.5px;font-weight:600;color:var(--gold-hi);letter-spacing:.14em}
+  .tab{padding:6px 8px;font-size:15px;letter-spacing:.02em}
 }
+@media (max-width:400px){ .bar-ctl{gap:6px} .bar-ctl .seg button{padding:5px 8px} }
 @media (orientation:portrait) and (max-width:600px){
   .rotate-hint{display:block;text-align:center;font-size:12.5px;color:var(--gold);border:1px dashed var(--line);border-radius:var(--r-pill);padding:4px 10px;margin-bottom:10px}
 }
@@ -316,7 +322,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 </head>
 <body>
 <header class="bar">
-  <div class="brand"><img class="mark" src="icons/icon.svg" alt=""><span class="name">好玩就好 樂理好想吐</span></div>
+  <div class="brand"><img class="mark" src="icons/icon.svg" alt=""><span class="name"><span>好玩就好</span> <span>樂理好想吐</span></span></div>
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="scale" role="tab">音階折返跑</button>
     <button class="tab" data-tab="chord" role="tab">和弦練功房</button>

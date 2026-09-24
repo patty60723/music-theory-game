@@ -1,5 +1,5 @@
 // 離線快取。改了網站內容要讓大家更新時，把 VERSION 加一。
-const VERSION = 'v5';
+const VERSION = 'v6';
 const APP = 'app-' + VERSION;
 const FONTS = 'fonts';
 const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
@@ -24,7 +24,7 @@ self.addEventListener('fetch', e => {
   // 頁面：先上網拿最新版，離線時用快取
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })   // 跳過瀏覽器的 HTTP 快取，確保拿到剛推上去的版本
         .then(res => { const copy = res.clone(); caches.open(APP).then(c => c.put('index.html', copy)); return res; })
         .catch(() => caches.match('index.html'))
     );
