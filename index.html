@@ -138,9 +138,6 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tempo{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
 .tempo .bpm{display:flex;flex-direction:column;align-items:center;line-height:1;min-width:44px}
 .tempo .bpm b{font-family:var(--display);font-size:22px;font-weight:700}
-.tap{color:var(--ink);font-size:14px;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .08s}
-#tapLbl{display:inline-block;min-width:4.6em;text-align:center}
-.tap.hit{background:color-mix(in srgb,var(--gold) 30%,transparent)}
 .tempo .bpm small{font-size:10px;color:var(--muted);letter-spacing:.1em}
 .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;cursor:pointer;font-size:14px;background:var(--soft)}
 .pill input{accent-color:var(--gold);margin:0;width:16px;height:16px}
@@ -256,6 +253,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .listen{display:flex;align-items:center;justify-content:center;height:var(--piano-h);border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted);font-family:var(--serif);font-size:20px;background:var(--panel)}
 
 .rotate-hint{display:none}
+.rotate-hint[hidden]{display:none!important}
 
 /* ---------- 手機橫放（主要情境） ---------- */
 @media (orientation:landscape) and (max-height:520px){
@@ -309,6 +307,32 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (orientation:portrait) and (max-width:600px){
   .rotate-hint{display:block;text-align:center;font-size:12.5px;color:var(--gold);border:1px dashed var(--line);border-radius:var(--r-pill);padding:4px 10px;margin-bottom:10px}
 }
+/* ---------- 節拍器 ---------- */
+.tab .short{display:none}
+.metro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+.m-main{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px}
+.m-bpm{display:flex;flex-direction:column;align-items:center;line-height:1}
+.m-bpm b{font-family:var(--display);font-size:96px;font-weight:700}
+.m-bpm small{font-size:12px;letter-spacing:.2em;color:var(--muted);margin-top:2px}
+.m-term{font-family:var(--display);font-style:italic;font-size:20px;color:var(--gold);margin-top:8px}
+.m-dots{display:flex;align-items:center;gap:12px;min-height:22px}
+.m-dots i{width:14px;height:14px;border-radius:50%;background:var(--soft);border:1px solid var(--line)}
+.m-dots i.acc{width:20px;height:20px}
+.m-dots i.on{background:var(--glow);border-color:transparent;box-shadow:0 0 12px var(--glow)}
+.m-slider{display:flex;align-items:center;gap:10px;width:100%;max-width:380px}
+.m-slider input{flex:1;accent-color:var(--gold)}
+.m-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tappad{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:300px;padding:20px;
+  border:2px dashed var(--line);border-radius:var(--r-lg);background:var(--panel);color:var(--ink);
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .08s,transform .08s}
+.tappad .big{font-family:var(--serif);font-weight:900;font-size:28px;letter-spacing:.1em}
+.tappad .info{font-size:14.5px;color:var(--muted);text-align:center}
+.tappad small{font-size:12px;color:var(--muted)}
+@media (hover:none){ .tappad .kbd{display:none} }
+.tappad.hit{background:color-mix(in srgb,var(--gold) 24%,transparent);transform:scale(.99)}
+@media (max-width:720px){ .metro{grid-template-columns:1fr} .tappad{min-height:190px} .m-bpm b{font-size:80px} }
+@media (max-width:480px){ .tab .full{display:none} .tab .short{display:inline} }
+
 /* ---------- 安裝提示 ---------- */
 .install{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,calc(100% + 40px));transition:transform .3s ease;
   z-index:30;width:min(440px,calc(100vw - 32px));display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;
@@ -327,8 +351,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 <header class="bar">
   <div class="brand"><img class="mark" src="icons/icon.svg" alt=""><span class="name"><span>好玩就好</span> <span>樂理好想吐</span></span></div>
   <nav class="tabs" role="tablist">
-    <button class="tab active" data-tab="scale" role="tab">音階折返跑</button>
-    <button class="tab" data-tab="chord" role="tab">和弦練功房</button>
+    <button class="tab active" data-tab="scale" role="tab"><span class="full">音階折返跑</span><span class="short">折返跑</span></button>
+    <button class="tab" data-tab="chord" role="tab"><span class="full">和弦練功房</span><span class="short">和弦</span></button>
+    <button class="tab" data-tab="metro" role="tab">節拍器</button>
   </nav>
   <div class="bar-ctl" id="chordCtl" hidden>
     <div class="seg" id="subSeg"><button data-v="learn" class="on">圖鑑</button><button data-v="game">小遊戲</button></div>
@@ -338,7 +363,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 </header>
 
 <main class="app">
-  <div class="rotate-hint">把手機橫過來，鍵盤更好看也更好按</div>
+  <div class="rotate-hint" id="rotateHint">把手機橫過來，鍵盤更好看也更好按</div>
 
   <!-- ============ 音階折返跑 ============ -->
   <section id="tab-scale">
@@ -353,7 +378,6 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <button class="mini" id="stopBtn" aria-label="停止">■</button>
           <button class="keychip" id="openSheet"><span id="keyLabel">C 大調</span><small>調性與設定</small></button>
           <div class="tempo"><button class="mini" id="bpmDown" aria-label="減速">−</button><div class="bpm"><b id="bpmVal">120</b><small>BPM</small></div><button class="mini" id="bpmUp" aria-label="加速">+</button></div>
-          <button class="pill tap" id="tapBtn" title="跟著音樂敲幾下，自動算出速度（鍵盤 T 鍵也可以）">👆 <span id="tapLbl">敲拍子</span></button>
           <label class="pill"><input type="checkbox" id="metro"><span>節拍器</span></label>
           <span class="badge" id="muteBadge" hidden></span>
         </div>
@@ -417,6 +441,20 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         <div class="feedback" id="gFeedback"></div>
         <div class="floor"><div class="scroll"><div id="gameInst"></div></div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ 節拍器 ============ -->
+  <section id="tab-metro" hidden>
+    <div class="metro">
+      <div class="panel m-main">
+        <div class="m-bpm"><b id="mBpm">100</b><small>BPM</small><span class="m-term" id="mTerm"></span></div>
+        <div class="m-dots" id="mDots"></div>
+        <div class="m-slider"><button class="mini" id="mDown" aria-label="減速">−</button><input type="range" id="mRange" min="30" max="300" value="100" aria-label="速度"><button class="mini" id="mUp" aria-label="加速">+</button></div>
+        <div class="seg" id="mBeatSeg"><button data-v="2">2/4</button><button data-v="3">3/4</button><button data-v="4" class="on">4/4</button><button data-v="6">6/8</button></div>
+        <div class="m-actions"><button class="play" id="mPlay">▶ 開始</button><button class="ghost" id="mApply">套用到折返跑</button></div>
+      </div>
+      <button class="tappad" id="tapPad"><span class="big">👆 敲拍子</span><span class="info" id="tapInfo">跟著音樂敲 4 下以上，速度自動算出來</span><small class="kbd">電腦也可以按 T 鍵</small></button>
     </div>
   </section>
 </main>
@@ -719,6 +757,7 @@ function frame(){
       scalePiano.setLit([]); $('#nowPhase').textContent='完成一整趟折返跑！再按播放可以重來。'; updBtn();
     }
   }
+  if(ctx&&M.on) while(M.q.length&&M.q[0].t<=ctx.currentTime+0.01) mLight(M.q.shift().b);
   requestAnimationFrame(frame);
 }
 
@@ -735,25 +774,6 @@ const setBpm=v=>{S.bpm=Math.max(40,Math.min(240,v)); $('#bpm').value=S.bpm; $('#
 $('#bpm').oninput=e=>setBpm(+e.target.value);
 $('#bpmDown').onclick=()=>setBpm(S.bpm-5);
 $('#bpmUp').onclick=()=>setBpm(S.bpm+5);
-/* Tap tempo：量最近幾下的間隔取平均，BPM＝60 秒 ÷ 平均間隔；停 2 秒沒敲就重新算 */
-const taps=[]; let tapReset=null;
-function tap(){
-  const now=performance.now();
-  if(taps.length&&now-taps[taps.length-1]>2000) taps.length=0;
-  taps.push(now); if(taps.length>6) taps.shift();
-  ac(); click(ctx.currentTime,taps.length===1);
-  const b=$('#tapBtn'); b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),90);
-  if(taps.length>=2){
-    const avg=(taps[taps.length-1]-taps[0])/(taps.length-1);
-    setBpm(Math.round(60000/avg));
-    $('#tapLbl').textContent=`敲了 ${taps.length} 下`;
-  }else $('#tapLbl').textContent='再敲…';
-  clearTimeout(tapReset); tapReset=setTimeout(()=>{ taps.length=0; $('#tapLbl').textContent='敲拍子'; },2000);
-}
-$('#tapBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); tap(); });   // 用按下的瞬間計時，比 click 準
-document.addEventListener('keydown',e=>{
-  if((e.key==='t'||e.key==='T')&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)&&!$('#tab-scale').hidden){ tap(); saveHash(); }
-});
 $('#metro').onchange=e=>S.metro=e.target.checked;
 $('#loop').onchange=e=>S.loop=e.target.checked;
 $('#restBeat').onchange=e=>{ S.rest=e.target.checked; sStop(); S.seq=buildSeq(S.notes); };
@@ -1063,12 +1083,55 @@ segBind('#instSeg',v=>{ C.inst=v; renderLearn(); if(G.q){ if(G.mode==='build'&&!
 segBind('#labSeg',v=>{ C.lab=v; renderLearn(); renderGameInst(); });
 segBind('#subSeg',v=>{ C.sub=v; $('#learn').hidden=v!=='learn'; $('#game').hidden=v!=='game'; });
 
-/* ---- tabs ---- */
-$$('.tab').forEach(b=>b.onclick=()=>{
-  $$('.tab').forEach(x=>x.classList.toggle('active',x===b));
-  const t=b.dataset.tab; $('#tab-scale').hidden=t!=='scale'; $('#tab-chord').hidden=t!=='chord'; $('#chordCtl').hidden=t!=='chord'; closeSheet();
-  if(t!=='scale') sPause();
+/* ================= PART 3: 節拍器＋Tap tempo ================= */
+const M={bpm:100,beats:4,on:false,timer:null,next:0,beat:0,q:[]};
+const TERMS=[[60,'Largo 廣板'],[76,'Adagio 慢板'],[108,'Andante 行板'],[120,'Moderato 中板'],[168,'Allegro 快板'],[1e9,'Presto 急板']];
+function setMBpm(v){ M.bpm=Math.max(30,Math.min(300,Math.round(v))); $('#mBpm').textContent=M.bpm; $('#mRange').value=M.bpm; $('#mTerm').textContent=TERMS.find(t=>M.bpm<t[0])[1]; }
+function mDots(){ $('#mDots').innerHTML=Array.from({length:M.beats},(_,i)=>`<i class="${i?'':'acc'}"></i>`).join(''); }
+function mLight(b){ $$('#mDots i').forEach((d,i)=>d.classList.toggle('on',i===b)); }
+function mTick(){
+  const spb=60/M.bpm;
+  while(M.next<ctx.currentTime+0.12){ const b=M.beat%M.beats; click(M.next,b===0); M.q.push({t:M.next,b}); M.beat++; M.next+=spb; }
+}
+function mBtn(){ $('#mPlay').textContent=M.on?'■ 停止':'▶ 開始'; }
+function mStart(){ ac(); if(M.on) return; M.on=true; M.beat=0; M.q=[]; M.next=ctx.currentTime+0.06; M.timer=setInterval(mTick,25); mTick(); mBtn(); }
+function mStop(){ if(!M.on) return; clearInterval(M.timer); M.on=false; M.q=[]; mLight(-1); mBtn(); }
+$('#mPlay').onclick=()=>M.on?mStop():mStart();
+$('#mRange').oninput=e=>setMBpm(+e.target.value);
+$('#mDown').onclick=()=>setMBpm(M.bpm-1);
+$('#mUp').onclick=()=>setMBpm(M.bpm+1);
+$$('#mBeatSeg button').forEach(b=>b.onclick=()=>{ M.beats=+b.dataset.v; M.beat=0; $$('#mBeatSeg button').forEach(x=>x.classList.toggle('on',x===b)); mDots(); });
+$('#mApply').onclick=()=>{ setBpm(M.bpm); const b=$('#mApply'); b.textContent=`已套用 ${S.bpm} BPM ✓`; setTimeout(()=>b.textContent='套用到折返跑',1600); };
+// Tap tempo：量最近幾下的間隔取平均，BPM＝60 秒 ÷ 平均間隔；停 2 秒沒敲就重新算
+const taps=[]; let tapReset=null;
+function tap(){
+  const now=performance.now();
+  if(taps.length&&now-taps[taps.length-1]>2000) taps.length=0;
+  taps.push(now); if(taps.length>8) taps.shift();
+  ac();
+  if(!M.on) click(ctx.currentTime,taps.length===1);
+  const pad=$('#tapPad'); pad.classList.add('hit'); setTimeout(()=>pad.classList.remove('hit'),90);
+  if(taps.length>=2){
+    setMBpm(60000/((taps[taps.length-1]-taps[0])/(taps.length-1)));
+    if(M.on){ M.q=[]; M.beat=1; M.next=ctx.currentTime+60/M.bpm; }   // 節拍器對齊到剛剛敲的那一下
+    $('#tapInfo').textContent=`敲了 ${taps.length} 下`+(taps.length<4?'，再多敲幾下會更準':'');
+  }else $('#tapInfo').textContent='繼續敲…';
+  clearTimeout(tapReset); tapReset=setTimeout(()=>{ taps.length=0; $('#tapInfo').textContent='跟著音樂敲 4 下以上，速度自動算出來'; saveHash(); },2000);
+}
+$('#tapPad').addEventListener('pointerdown',e=>{ e.preventDefault(); tap(); });   // 用按下的瞬間計時，比 click 準
+document.addEventListener('keydown',e=>{
+  if((e.key==='t'||e.key==='T')&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!$('#tab-metro').hidden) tap();
 });
+
+/* ---- tabs ---- */
+function showTab(t){
+  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  ['scale','chord','metro'].forEach(k=>$('#tab-'+k).hidden=t!==k);
+  $('#chordCtl').hidden=t!=='chord'; $('#rotateHint').hidden=t==='metro';   // 橫放提示是給鋼琴用的
+  if(t!=='scale') sPause();
+  if(t!=='metro') mStop();
+}
+$$('.tab').forEach(b=>b.onclick=()=>{ showTab(b.dataset.tab); closeSheet(); });
 
 /* settings sheet */
 function openSheet(){ $('#sheet').classList.add('open'); $('#backdrop').hidden=false; $('#sheet').setAttribute('aria-hidden','false'); }
@@ -1077,11 +1140,11 @@ $('#openSheet').onclick=openSheet; $('#closeSheet').onclick=closeSheet; $('#back
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
 
 /* ---- URL hash：設定寫進網址，重新整理後保留 ---- */
-const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,rest:1,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th'};
+const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,rest:1,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th',mbpm:100,mbeats:4};
 function hashStr(){
   const s={tab:$('.tab.active').dataset.tab,mode:S.mode,key:S.key,bpm:S.bpm,metro:+S.metro,loop:+S.loop,rest:+S.rest,sus:S.sus,mute:S.muteMode,
     mset:[...S.muteSet].sort((a,b)=>a-b).join(','),mshow:+S.muteShow,sub:C.sub,inst:C.inst,lab:C.lab,root:C.root,cat:C.cat,type:C.type,
-    v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(',')};
+    v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(','),mbpm:M.bpm,mbeats:M.beats};
   const p=new URLSearchParams();
   for(const k in s) if(String(s[k])!==String(HDEF[k])) p.set(k,s[k]);   // 只寫跟預設不同的
   return p.toString();
@@ -1121,9 +1184,10 @@ function loadHash(){
   segOn('#gModeSeg',G.mode);
   G.cats=new Set(get('gcats',v=>/^[\w,]*$/.test(v)).split(',').filter(c=>CATS.some(x=>x[0]===c)));
   // 分頁
-  const tab=get('tab',oneOf(['scale','chord']));
-  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
-  $('#tab-scale').hidden=tab!=='scale'; $('#tab-chord').hidden=tab!=='chord'; $('#chordCtl').hidden=tab!=='chord';
+  // 節拍器
+  setMBpm(+get('mbpm',v=>/^\d+$/.test(v)));
+  M.beats=+get('mbeats',oneOf(['2','3','4','6'])); segOn('#mBeatSeg',String(M.beats)); mDots();
+  showTab(get('tab',oneOf(['scale','chord','metro'])));
 }
 ['click','change','input'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveHash,0)));
 window.addEventListener('hashchange',()=>{   // 手動改網址或貼上別人的連結
