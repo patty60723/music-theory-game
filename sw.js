@@ -1,5 +1,5 @@
 // 離線快取。改了網站內容要讓大家更新時，把 VERSION 加一。
-const VERSION = 'v1';
+const VERSION = 'v2';
 const APP = 'app-' + VERSION;
 const FONTS = 'fonts';
 const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
