@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#5a0e1b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="樂理好想吐">
 <title>好玩就好 樂理好想吐｜音階折返跑・和弦練功房</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,6 +409,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   <div class="field"><span class="lbl">調性</span><div class="keygrid" id="keyGrid"></div></div>
   <div class="field"><span class="lbl">速度 <b id="bpmVal2">120</b> BPM（一拍一個音）</span><input type="range" id="bpm" min="40" max="240" value="120"></div>
   <div class="field"><label class="chk"><input type="checkbox" id="loop"> 循環播放</label></div>
+  <div class="field"><label class="chk"><input type="checkbox" id="restBeat" checked> 每輪結尾休止一拍</label></div>
   <div class="field"><span class="lbl">餘音長度</span>
     <div class="seg" id="susSeg"><button data-v="short">短</button><button data-v="mid" class="on">中</button><button data-v="long">長（像踩踏板）</button></div>
   </div>
@@ -551,7 +559,7 @@ const MINOR_KEYS=['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'];
 const STEPS={major:[0,2,4,5,7,9,11,12],minor:[0,2,3,5,7,8,10,12]};
 const SOLFA={major:['Do','Re','Mi','Fa','Sol','La','Ti','Do'],minor:['La','Ti','Do','Re','Mi','Fa','Sol','La']};
 
-const S={mode:'major',key:'C',bpm:120,metro:false,loop:false,playing:false,seq:[],notes:[],next:0,nextTime:0,beat:0,cur:-1,timer:null,q:[],lastKey:'',sus:'mid',muteMode:'off',muteSet:new Set(),dice:null,muteShow:true};
+const S={mode:'major',key:'C',bpm:120,metro:false,loop:false,rest:true,playing:false,seq:[],notes:[],next:0,nextTime:0,beat:0,cur:-1,timer:null,q:[],lastKey:'',sus:'mid',muteMode:'off',muteSet:new Set(),dice:null,muteShow:true};
 let scalePiano=null;
 
 function scaleNotes(mode,key){
@@ -566,12 +574,12 @@ function buildSeq(notes){
   for(let k=0;k<8;k++){
     const path=[]; for(let i=0;i<=k;i++)path.push(i); for(let i=k-1;i>=0;i--)path.push(i);
     path.forEach((d,j)=>seq.push({...notes[d],phase:'up',round:k+1,path,pos:j}));
-    seq.push({rest:true,phase:'up',round:k+1,path,pos:path.length});   // 每輪最後休止一拍
+    if(S.rest) seq.push({rest:true,phase:'up',round:k+1,path,pos:path.length});   // 每輪最後休止一拍
   }
   for(let k=0;k<8;k++){
     const path=[]; for(let i=7;i>=7-k;i--)path.push(i); for(let i=8-k;i<=7;i++)path.push(i);
     path.forEach((d,j)=>seq.push({...notes[d],phase:'down',round:k+1,path,pos:j}));
-    seq.push({rest:true,phase:'down',round:k+1,path,pos:path.length});
+    if(S.rest) seq.push({rest:true,phase:'down',round:k+1,path,pos:path.length});
   }
   return seq;
 }
@@ -625,7 +633,7 @@ function sShow(idx,muted){
   const k=it.phase+it.round;
   if(k!==S.lastKey){
     S.lastKey=k;
-    $('#pathChips').innerHTML=it.path.map((d,j)=>`<span class="chip" data-j="${j}">${pretty(S.notes[d].name)}</span>`).join('')+`<span class="chip rest" data-j="${it.path.length}">休</span>`;
+    $('#pathChips').innerHTML=it.path.map((d,j)=>`<span class="chip" data-j="${j}">${pretty(S.notes[d].name)}</span>`).join('')+(S.rest?`<span class="chip rest" data-j="${it.path.length}">休</span>`:'');
   }
   $$('#pathChips .chip').forEach(c=>{const j=+c.dataset.j; c.classList.toggle('cur',j===it.pos&&!muted); c.classList.toggle('mute',j===it.pos&&!!muted); c.classList.toggle('done',j<it.pos);});
   $$('#scaleRow .deg').forEach(d=>{ const on=+d.dataset.i===it.i&&!hide; d.classList.toggle('cur',on); d.classList.toggle('mute',on&&!!muted); });
@@ -683,6 +691,7 @@ $('#bpmDown').onclick=()=>setBpm(S.bpm-5);
 $('#bpmUp').onclick=()=>setBpm(S.bpm+5);
 $('#metro').onchange=e=>S.metro=e.target.checked;
 $('#loop').onchange=e=>S.loop=e.target.checked;
+$('#restBeat').onchange=e=>{ S.rest=e.target.checked; sStop(); S.seq=buildSeq(S.notes); };
 $$('#susSeg button').forEach(b=>b.onclick=()=>{ S.sus=b.dataset.v; $$('#susSeg button').forEach(x=>x.classList.toggle('on',x===b)); pianoNote(S.notes[0].midi,0,S.sus==='short'?0.5:S.sus==='mid'?1.4:3.5,0.6); });
 $$('#muteSeg button').forEach(b=>b.onclick=()=>{
   S.muteMode=b.dataset.v; $$('#muteSeg button').forEach(x=>x.classList.toggle('on',x===b));
@@ -1003,9 +1012,9 @@ $('#openSheet').onclick=openSheet; $('#closeSheet').onclick=closeSheet; $('#back
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
 
 /* ---- URL hash：設定寫進網址，重新整理後保留 ---- */
-const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th'};
+const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,rest:1,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th'};
 function hashStr(){
-  const s={tab:$('.tab.active').dataset.tab,mode:S.mode,key:S.key,bpm:S.bpm,metro:+S.metro,loop:+S.loop,sus:S.sus,mute:S.muteMode,
+  const s={tab:$('.tab.active').dataset.tab,mode:S.mode,key:S.key,bpm:S.bpm,metro:+S.metro,loop:+S.loop,rest:+S.rest,sus:S.sus,mute:S.muteMode,
     mset:[...S.muteSet].sort((a,b)=>a-b).join(','),mshow:+S.muteShow,sub:C.sub,inst:C.inst,lab:C.lab,root:C.root,cat:C.cat,type:C.type,
     v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(',')};
   const p=new URLSearchParams();
@@ -1024,12 +1033,12 @@ function loadHash(){
   S.mode=get('mode',oneOf(['major','minor']));
   S.key=get('key',oneOf(keyList()));
   S.bpm=Math.max(40,Math.min(240,+get('bpm',v=>/^\d+$/.test(v))));
-  S.metro=get('metro',bit)==='1'; S.loop=get('loop',bit)==='1'; S.muteShow=get('mshow',bit)==='1';
+  S.metro=get('metro',bit)==='1'; S.loop=get('loop',bit)==='1'; S.rest=get('rest',bit)==='1'; S.muteShow=get('mshow',bit)==='1';
   S.sus=get('sus',oneOf(['short','mid','long']));
   S.muteMode=get('mute',oneOf(['off','pick','random']));
   S.muteSet=new Set(get('mset',v=>/^([0-6](,[0-6])*)?$/.test(v)).split(',').filter(Boolean).map(Number));
   segOn('#modeSeg',S.mode); setBpm(S.bpm); segOn('#susSeg',S.sus); segOn('#muteSeg',S.muteMode);
-  $('#metro').checked=S.metro; $('#loop').checked=S.loop; $('#muteShow').checked=S.muteShow;
+  $('#metro').checked=S.metro; $('#loop').checked=S.loop; $('#restBeat').checked=S.rest; $('#muteShow').checked=S.muteShow;
   $('#mutePick').hidden=S.muteMode!=='pick'; $('#muteRand').hidden=S.muteMode!=='random'; $('#muteShowWrap').hidden=S.muteMode==='off';
   // 和弦
   C.sub=get('sub',oneOf(['learn','game'])); C.inst=get('inst',oneOf(['piano','guitar'])); C.lab=get('lab',oneOf(['int','name']));
@@ -1061,6 +1070,7 @@ window.addEventListener('hashchange',()=>{   // 手動改網址或貼上別人�
 loadHash();
 sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns(); saveHash();
 requestAnimationFrame(frame);
+if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('sw.js');
 })();
 
 </script>
