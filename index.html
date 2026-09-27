@@ -55,7 +55,7 @@
   --c-root:#e03e3e; --c-third:#2b74e0; --c-fifth:#1d9a63; --c-seventh:#8a4fd0; --c-ext:#d9870b; --ok:#1d9a63; --bad:#e03e3e;
   --wood:#5a3a22; --inlay:#e3d3b0; color-scheme:light;
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}   /* 關掉手機點擊時的藍框 */
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1;min-height:100vh;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
@@ -105,6 +105,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
              linear-gradient(180deg,transparent 0%,var(--floor) 45%,var(--floor2) 100%)}
 
 /* ---------- 鋼琴 ---------- */
+.key.white.press{background:linear-gradient(180deg,#d6cdbb 0,#e9e1d1 12%,#e9e1d1 100%)}
+.key.black.press{background:linear-gradient(180deg,#3a3531,#1c1a18 80%)}
 .piano{position:relative;height:var(--piano-h);margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:manipulation;
   border:solid var(--case);border-width:14px 10px 0;border-radius:var(--r-sm) var(--r-sm) var(--r-xs) var(--r-xs);background:var(--case);
   box-shadow:0 -1px 0 1px color-mix(in srgb,var(--gold) 55%,transparent),0 20px 34px rgba(0,0,0,.55)}
@@ -640,7 +642,7 @@ function makePiano(host,lo,hi,onKey,keyW){
     const k=document.createElement('div'); k.className='key '+cls;
     k.style.left=left+'%'; k.style.width=width+'%';
     k.innerHTML='<span class="lab"></span>'+(m%12===0?'<span class="cn">C'+(Math.floor(m/12)-1)+'</span>':'');
-    k.addEventListener('pointerdown',e=>{e.preventDefault(); onKey&&onKey(m);});
+    k.addEventListener('pointerdown',e=>{e.preventDefault(); k.classList.add('press'); setTimeout(()=>k.classList.remove('press'),160); onKey&&onKey(m);});   // 按下去短暫變色，取代瀏覽器的藍框
     wrap.appendChild(k); keys[m]=k;
   };
   whites.forEach((m,i)=>mk(m,'white',i*W,W));
