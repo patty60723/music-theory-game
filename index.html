@@ -368,7 +368,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn-labels #tnCents{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .tn-hz{font-size:14px;color:var(--muted);text-align:center;min-height:1.5em;font-variant-numeric:tabular-nums}
 .tn-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.tn-actions .ghost:disabled{opacity:.45;cursor:default}
+.tn-refbox{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
+.tn-refbox .ghost{border-color:transparent;background:transparent}
+.tn-refbox .mini{font-size:18px}
+.tn-refbox button:disabled{opacity:.45;cursor:default}
 .tn-set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 22px;font-size:14px;color:var(--muted)}
 .tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
 .tn-mid{margin-left:8px;font-size:12px;color:var(--muted)}
@@ -515,7 +518,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         </div>
         <div class="tn-labels"><span>♭ 偏低</span><span id="tnCents">— cent</span><span>偏高 ♯</span></div>
         <div class="tn-hz" id="tnHz">按「開始調音」後對著麥克風發出聲音</div>
-        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button></div>
+        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><span class="tn-refbox"><button class="mini" id="tnRefDown" aria-label="低半音" disabled>‹</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button><button class="mini" id="tnRefUp" aria-label="高半音" disabled>›</button></span></div>
         <div class="tn-set">
           <label>簡譜 1＝<select id="tnKey"></select><small class="tn-mid" id="tnMid"></small></label>
           <span class="tn-a4">A4＝<button class="mini" id="tnA4Down" aria-label="降低基準音">−</button><b id="tnA4">440</b> Hz<button class="mini" id="tnA4Up" aria-label="提高基準音">+</button></span>
@@ -1236,7 +1239,7 @@ function tnShow(f){
   const m=69+12*Math.log2(f/TN.a4), n=Math.round(m), c=Math.round((m-n)*100);
   $('#tnName').textContent=PC_NAMES[((n%12)+12)%12]; $('#tnOct').textContent=Math.floor(n/12)-1;
   $('#tnJp').innerHTML=jianpu(n);
-  if(n!==TN.note){ TN.note=n; $('#tnRef').disabled=false; }
+  if(n!==TN.note){ TN.note=n; $$('.tn-refbox button').forEach(b=>b.disabled=false); }
   needle.style.left=(50+c)+'%';
   needle.className='tn-needle live '+(Math.abs(c)<=5?'ok':Math.abs(c)<=15?'near':'far');
   $('#tnCents').textContent=(c>0?'+':'')+c+' cent';
@@ -1283,12 +1286,15 @@ function tnStop(){
 }
 $('#tnStart').onclick=()=>TN.on?tnStop():tnStart();
 // 聽準音：用鋼琴彈出最後抓到的那個音的標準音高（A4 基準音也算進去）
-$('#tnRef').onclick=()=>{
-  if(TN.note==null) return;
-  const m=TN.note+12*Math.log2(TN.a4/440), hz=TN.a4*Math.pow(2,(TN.note-69)/12);
+function refPlay(){
+  const n=TN.note, m=n+12*Math.log2(TN.a4/440), hz=TN.a4*Math.pow(2,(n-69)/12);
   pianoNote(m,0,2.4,0.75); TN.mute=performance.now()+2200; TN.lastSeen=performance.now();
-  $('#tnHz').textContent=`標準的 ${PC_NAMES[((TN.note%12)+12)%12]}${Math.floor(TN.note/12)-1} 是 ${hz.toFixed(1)} Hz`;
-};
+  $('#tnHz').textContent=`鋼琴：${PC_NAMES[((n%12)+12)%12]}${Math.floor(n/12)-1}（${hz.toFixed(1)} Hz）`;
+}
+$('#tnRef').onclick=()=>{ if(TN.note!=null) refPlay(); };
+// ‹ › 往下／往上一個半音聽聽看（唱成隔壁的音時用）
+$('#tnRefDown').onclick=()=>{ if(TN.note!=null&&TN.note>21){ TN.note--; refPlay(); } };
+$('#tnRefUp').onclick=()=>{ if(TN.note!=null&&TN.note<108){ TN.note++; refPlay(); } };
 $('#tnKey').onchange=e=>{ TN.key=e.target.value; tnMid(); };
 $('#tnA4Down').onclick=()=>tnA4(TN.a4-1);
 $('#tnA4Up').onclick=()=>tnA4(TN.a4+1);
