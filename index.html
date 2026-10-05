@@ -346,11 +346,12 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn{width:min(640px,100%);display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 20px}
 .tn-read{display:flex;align-items:center;justify-content:center;gap:28px;min-height:130px}
 .tn-note{display:flex;align-items:flex-end;line-height:1}
-.tn-note b{font-family:var(--display);font-size:104px;font-weight:700;min-width:1.2em;text-align:center}
+.tn-note sub{width:1.4em;text-align:left}
+.tn-note b{font-family:var(--display);font-size:104px;font-weight:700;width:1.5em;text-align:right;white-space:nowrap}
 .tn-note sub{font-family:var(--display);font-size:32px;color:var(--muted);margin:0 0 12px 2px;min-width:.6em}
-.tn-jp{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;height:118px;
+.tn-jp{display:flex;flex-direction:column;align-items:center;justify-content:center;width:130px;height:118px;
   border-left:1px solid var(--line);padding-left:26px;font-family:var(--display);color:var(--gold)}
-.tn-jp b{font-size:68px;font-weight:700;line-height:1}
+.tn-jp b{font-size:68px;font-weight:700;line-height:1;white-space:nowrap}
 .tn-jp i{display:block;font-style:normal;font-size:22px;line-height:.5;letter-spacing:2px;height:12px;text-align:center}
 .tn-meter{position:relative;width:100%;max-width:520px;height:58px}
 .tn-scale{position:absolute;inset:18px 0 0;background:repeating-linear-gradient(90deg,var(--line) 0 2px,transparent 2px 10%) left/100% 22px no-repeat;
@@ -387,24 +388,25 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn-refbox button:disabled{opacity:.45;cursor:default}
 .tn-set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 22px;font-size:14px;color:var(--muted)}
 .tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
-.tn-a4{display:inline-flex;align-items:center;gap:8px}
+.tn-a4{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .tn-a4 b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2em;text-align:center}
 /* 手機橫向：高度不夠，改成左（音名）中（指針、設定）右（按鈕）三欄，一個畫面放得下 */
 @media (orientation:landscape) and (max-height:520px){
   .tool-switch{margin-bottom:8px}
-  .tn{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:22px;row-gap:4px;align-items:center;padding:12px 18px;
+  .tn{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) 176px;column-gap:18px;row-gap:4px;align-items:center;padding:12px 18px;
     grid-template-areas:"read meter act" "read labels act" "read hz act" "read set act"}
-  .tn-read{grid-area:read;min-height:0;gap:14px}
-  .tn-note b{font-size:64px} .tn-note sub{font-size:22px;margin-bottom:8px}
-  .tn-jp{height:84px;min-width:52px;padding-left:14px} .tn-jp b{font-size:44px}
+  .tn-read{grid-area:read;min-height:0;gap:10px}
+  .tn-note b{font-size:58px;width:1.45em} .tn-note sub{font-size:20px;margin-bottom:8px;width:1.1em}
+  .tn-jp{height:80px;width:78px;padding-left:12px} .tn-jp b{font-size:40px}
   .tn-meter{grid-area:meter;max-width:none;height:50px}
   .tn-labels{grid-area:labels;max-width:none}
   .tn-hz{grid-area:hz;font-size:13px}
   .tn-set{grid-area:set;font-size:13px;gap:6px 16px}
   .tn-actions{grid-area:act;gap:4px}
   .tn-go{width:62px;height:62px;margin:8px 0 12px} .tn-go svg{width:28px;height:28px} .tn-go .ic-stop{width:19px;height:19px}
-  .tn-go-lbl{font-size:12px;margin-bottom:4px}
-  .tn-refbox .mini{width:28px;height:28px;font-size:15px} .tn-refbox .ghost{padding:6px 8px;font-size:13px}
+  .tn-go-lbl{font-size:12px;margin-bottom:4px;white-space:nowrap}
+  .tn-refbox .mini{width:28px;height:28px;font-size:15px} .tn-refbox .ghost{padding:6px 6px;font-size:13px}
+  .tn-set label{white-space:nowrap}
 }
 @media (max-width:480px){ .tn-note b{font-size:84px} .tn-jp b{font-size:54px} .tn-read{gap:18px} .tn-jp{padding-left:18px} }
 
