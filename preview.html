@@ -371,6 +371,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn-actions .ghost:disabled{opacity:.45;cursor:default}
 .tn-set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 22px;font-size:14px;color:var(--muted)}
 .tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
+.tn-mid{margin-left:8px;font-size:12px;color:var(--muted)}
 .tn-a4{display:inline-flex;align-items:center;gap:8px}
 .tn-a4 b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2em;text-align:center}
 @media (max-width:480px){ .tn-note b{font-size:84px} .tn-jp b{font-size:54px} .tn-read{gap:18px} .tn-jp{padding-left:18px} }
@@ -514,9 +515,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         </div>
         <div class="tn-labels"><span>♭ 偏低</span><span id="tnCents">— cent</span><span>偏高 ♯</span></div>
         <div class="tn-hz" id="tnHz">按「開始調音」後對著麥克風發出聲音</div>
-        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><button class="ghost" id="tnRef" disabled>🔊 聽準音</button></div>
+        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button></div>
         <div class="tn-set">
-          <label>簡譜 1＝<select id="tnKey"></select></label>
+          <label>簡譜 1＝<select id="tnKey"></select><small class="tn-mid" id="tnMid"></small></label>
           <span class="tn-a4">A4＝<button class="mini" id="tnA4Down" aria-label="降低基準音">−</button><b id="tnA4">440</b> Hz<button class="mini" id="tnA4Up" aria-label="提高基準音">+</button></span>
         </div>
       </div>
@@ -1217,7 +1218,8 @@ function yin(b,sr){
   }
   return 0;
 }
-function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); }
+function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); tnMid(); }
+function tnMid(){ const k=parseNote(TN.key).pc; $('#tnMid').textContent=`（不加點的 1＝${pretty(TN.key)}${k<=6?4:3}）`; }
 function tnA4(v){ TN.a4=Math.max(415,Math.min(466,v)); $('#tnA4').textContent=TN.a4; }
 function jianpu(midi){
   const k=parseNote(TN.key).pc, base=(k<=6?60:48)+k;      // 中音的 1 放在中央 C 附近
@@ -1234,7 +1236,7 @@ function tnShow(f){
   const m=69+12*Math.log2(f/TN.a4), n=Math.round(m), c=Math.round((m-n)*100);
   $('#tnName').textContent=PC_NAMES[((n%12)+12)%12]; $('#tnOct').textContent=Math.floor(n/12)-1;
   $('#tnJp').innerHTML=jianpu(n);
-  if(n!==TN.note){ TN.note=n; const b=$('#tnRef'); b.disabled=false; b.textContent='🔊 聽準的 '+PC_NAMES[((n%12)+12)%12]+(Math.floor(n/12)-1); }
+  if(n!==TN.note){ TN.note=n; $('#tnRef').disabled=false; }
   needle.style.left=(50+c)+'%';
   needle.className='tn-needle live '+(Math.abs(c)<=5?'ok':Math.abs(c)<=15?'near':'far');
   $('#tnCents').textContent=(c>0?'+':'')+c+' cent';
@@ -1287,7 +1289,7 @@ $('#tnRef').onclick=()=>{
   pianoNote(m,0,2.4,0.75); TN.mute=performance.now()+2200; TN.lastSeen=performance.now();
   $('#tnHz').textContent=`標準的 ${PC_NAMES[((TN.note%12)+12)%12]}${Math.floor(TN.note/12)-1} 是 ${hz.toFixed(1)} Hz`;
 };
-$('#tnKey').onchange=e=>{ TN.key=e.target.value; };
+$('#tnKey').onchange=e=>{ TN.key=e.target.value; tnMid(); };
 $('#tnA4Down').onclick=()=>tnA4(TN.a4-1);
 $('#tnA4Up').onclick=()=>tnA4(TN.a4+1);
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) tnStop(); });
