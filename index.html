@@ -367,14 +367,26 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn-labels{display:flex;justify-content:space-between;width:100%;max-width:520px;font-size:13px;color:var(--muted)}
 .tn-labels #tnCents{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .tn-hz{font-size:14px;color:var(--muted);text-align:center;min-height:1.5em;font-variant-numeric:tabular-nums}
-.tn-actions{display:flex;flex-direction:column;align-items:center;gap:14px}   /* 開始/停止 與 聽鋼琴 分兩排，避免誤按 */
+.tn-actions{display:flex;flex-direction:column;align-items:center;gap:10px}
+/* 大圓鈕：麥克風＝開始，方塊＝停止；聆聽中外圈有光暈 */
+.tn-go{position:relative;width:84px;height:84px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 24px color-mix(in srgb,var(--gold) 40%,transparent);transition:transform .1s}
+.tn-go:active{transform:scale(.96)}
+.tn-go svg{width:36px;height:36px}
+.tn-go .ic-stop{display:none;width:26px;height:26px;border-radius:5px;background:currentColor}
+.tn-go.on .ic-mic{display:none}
+.tn-go.on .ic-stop{display:block}
+.tn-go.on::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--gold);animation:tnPulse 1.6s ease-out infinite}
+@keyframes tnPulse{from{transform:scale(.92);opacity:.9}to{transform:scale(1.18);opacity:0}}
+@media (prefers-reduced-motion:reduce){ .tn-go.on::after{animation:none;opacity:.6} }
+.tn-go-lbl{font-size:13px;color:var(--muted);margin-bottom:6px}   /* 開始/停止 與 聽鋼琴 分兩排，避免誤按 */
 .tn-refbox{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
 .tn-refbox .ghost{border-color:transparent;background:transparent}
 .tn-refbox .mini{font-size:18px}
 .tn-refbox button:disabled{opacity:.45;cursor:default}
 .tn-set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 22px;font-size:14px;color:var(--muted)}
 .tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
-.tn-mid{margin-left:8px;font-size:12px;color:var(--muted)}
 .tn-a4{display:inline-flex;align-items:center;gap:8px}
 .tn-a4 b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2em;text-align:center}
 @media (max-width:480px){ .tn-note b{font-size:84px} .tn-jp b{font-size:54px} .tn-read{gap:18px} .tn-jp{padding-left:18px} }
@@ -517,10 +529,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div class="tn-needle" id="tnNeedle"></div>
         </div>
         <div class="tn-labels"><span>♭ 偏低</span><span id="tnCents">— cent</span><span>偏高 ♯</span></div>
-        <div class="tn-hz" id="tnHz">按「開始調音」後對著麥克風發出聲音</div>
-        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><span class="tn-refbox"><button class="mini" id="tnRefDown" aria-label="低半音" disabled>‹</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button><button class="mini" id="tnRefUp" aria-label="高半音" disabled>›</button></span></div>
+        <div class="tn-hz" id="tnHz">按下麥克風，對著手機唱或彈</div>
+        <div class="tn-actions"><button class="tn-go" id="tnStart" aria-label="開始調音"><span class="ic-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><span class="ic-stop"></span></button><span class="tn-go-lbl" id="tnGoLbl">點一下開始調音</span><span class="tn-refbox"><button class="mini" id="tnRefDown" aria-label="低半音" disabled>‹</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button><button class="mini" id="tnRefUp" aria-label="高半音" disabled>›</button></span></div>
         <div class="tn-set">
-          <label>簡譜 1＝<select id="tnKey"></select><small class="tn-mid" id="tnMid"></small></label>
+          <label>簡譜 1＝<select id="tnKey"></select></label>
           <span class="tn-a4">A4＝<button class="mini" id="tnA4Down" aria-label="降低基準音">−</button><b id="tnA4">440</b> Hz<button class="mini" id="tnA4Up" aria-label="提高基準音">+</button></span>
         </div>
       </div>
@@ -1221,8 +1233,7 @@ function yin(b,sr){
   }
   return 0;
 }
-function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); tnMid(); }
-function tnMid(){ const k=parseNote(TN.key).pc; $('#tnMid').textContent=`（不加點的 1＝${pretty(TN.key)}${k<=6?4:3}）`; }
+function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); }
 function tnA4(v){ TN.a4=Math.max(415,Math.min(466,v)); $('#tnA4').textContent=TN.a4; }
 function jianpu(midi){
   const k=parseNote(TN.key).pc, base=(k<=6?60:48)+k;      // 中音的 1 放在中央 C 附近
@@ -1272,7 +1283,7 @@ async function tnStart(){
   TN.src=ctx.createMediaStreamSource(TN.stream);
   TN.an=ctx.createAnalyser(); TN.an.fftSize=4096; TN.buf=new Float32Array(TN.an.fftSize);
   TN.src.connect(TN.an);
-  TN.on=true; TN.hist=[]; TN.lastSeen=0; $('#tnStart').textContent='■ 停止'; $('#tnHz').textContent='聆聽中…';
+  TN.on=true; TN.hist=[]; TN.lastSeen=0; tnGo(true); $('#tnHz').textContent='聆聽中…';
   tnLoop();
 }
 function tnStop(){
@@ -1281,9 +1292,10 @@ function tnStop(){
   try{ TN.src.disconnect(); }catch(e){}
   TN.stream.getTracks().forEach(t=>t.stop());               // 關掉麥克風，瀏覽器的錄音指示燈才會熄
   try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
-  $('#tnStart').textContent='🎤 開始調音'; $('#tnNeedle').className='tn-needle'; $('#tnNeedle').style.left='50%';
-  $('#tnCents').textContent='— cent'; $('#tnHz').textContent='按「開始調音」後對著麥克風發出聲音';
+  tnGo(false); $('#tnNeedle').className='tn-needle'; $('#tnNeedle').style.left='50%';
+  $('#tnCents').textContent='— cent'; $('#tnHz').textContent='按下麥克風，對著手機唱或彈';
 }
+function tnGo(on){ const b=$('#tnStart'); b.classList.toggle('on',on); b.setAttribute('aria-label',on?'停止調音':'開始調音'); $('#tnGoLbl').textContent=on?'聆聽中，點一下停止':'點一下開始調音'; }
 $('#tnStart').onclick=()=>TN.on?tnStop():tnStart();
 // 聽準音：用鋼琴彈出最後抓到的那個音的標準音高（A4 基準音也算進去）
 function refPlay(){
@@ -1295,7 +1307,7 @@ $('#tnRef').onclick=()=>{ if(TN.note!=null) refPlay(); };
 // ‹ › 往下／往上一個半音聽聽看（唱成隔壁的音時用）
 $('#tnRefDown').onclick=()=>{ if(TN.note!=null&&TN.note>21){ TN.note--; refPlay(); } };
 $('#tnRefUp').onclick=()=>{ if(TN.note!=null&&TN.note<108){ TN.note++; refPlay(); } };
-$('#tnKey').onchange=e=>{ TN.key=e.target.value; tnMid(); };
+$('#tnKey').onchange=e=>{ TN.key=e.target.value; };
 $('#tnA4Down').onclick=()=>tnA4(TN.a4-1);
 $('#tnA4Up').onclick=()=>tnA4(TN.a4+1);
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) tnStop(); });
