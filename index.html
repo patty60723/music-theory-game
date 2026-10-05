@@ -340,6 +340,42 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:720px){ .metro{grid-template-columns:1fr} .tappad{min-height:190px} .m-bpm b{font-size:80px} }
 @media (max-width:480px){ .tab .full{display:none} .tab .short{display:inline} }
 
+/* ---------- 調音器 ---------- */
+.tool-switch{display:flex;justify-content:center;margin-bottom:16px}
+.tuner{display:flex;justify-content:center}
+.tn{width:min(640px,100%);display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 20px}
+.tn-read{display:flex;align-items:center;justify-content:center;gap:28px;min-height:130px}
+.tn-note{display:flex;align-items:flex-end;line-height:1}
+.tn-note b{font-family:var(--display);font-size:104px;font-weight:700;min-width:1.2em;text-align:center}
+.tn-note sub{font-family:var(--display);font-size:32px;color:var(--muted);margin:0 0 12px 2px;min-width:.6em}
+.tn-jp{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;height:118px;
+  border-left:1px solid var(--line);padding-left:26px;font-family:var(--display);color:var(--gold)}
+.tn-jp b{font-size:68px;font-weight:700;line-height:1}
+.tn-jp i{display:block;font-style:normal;font-size:22px;line-height:.5;letter-spacing:2px;height:12px;text-align:center}
+.tn-meter{position:relative;width:100%;max-width:520px;height:58px}
+.tn-scale{position:absolute;inset:18px 0 0;background:repeating-linear-gradient(90deg,var(--line) 0 2px,transparent 2px 10%) left/100% 22px no-repeat;
+  border-top:2px solid var(--line);z-index:1}
+.tn-scale::before{content:"";position:absolute;right:0;top:0;width:2px;height:22px;background:var(--line)}
+.tn-scale::after{content:"";position:absolute;left:calc(50% - 1.5px);top:-16px;width:3px;height:40px;background:var(--ink);border-radius:2px;opacity:.5}
+.tn-zone{position:absolute;left:45%;width:10%;top:16px;height:26px;background:color-mix(in srgb,var(--ok) 22%,transparent);border-radius:var(--r-xs)}
+.tn-needle{position:absolute;z-index:2;left:50%;top:0;width:4px;height:54px;margin-left:-2px;border-radius:2px;background:var(--muted);
+  transition:left .12s ease-out,background .15s;opacity:.35}
+.tn-needle.live{opacity:1}
+.tn-needle.ok{background:var(--ok);box-shadow:0 0 14px var(--ok)}
+.tn-needle.near{background:var(--gold)}
+.tn-needle.far{background:var(--bad)}
+.tn-labels{display:flex;justify-content:space-between;width:100%;max-width:520px;font-size:13px;color:var(--muted)}
+.tn-labels #tnCents{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.tn-hz{font-size:14px;color:var(--muted);text-align:center;min-height:1.5em;font-variant-numeric:tabular-nums}
+.tn-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.tn-actions .ghost:disabled{opacity:.45;cursor:default}
+.tn-set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 22px;font-size:14px;color:var(--muted)}
+.tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
+.tn-mid{margin-left:8px;font-size:12px;color:var(--muted)}
+.tn-a4{display:inline-flex;align-items:center;gap:8px}
+.tn-a4 b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2em;text-align:center}
+@media (max-width:480px){ .tn-note b{font-size:84px} .tn-jp b{font-size:54px} .tn-read{gap:18px} .tn-jp{padding-left:18px} }
+
 /* ---------- 安裝提示 ---------- */
 .foot{display:flex;justify-content:center;padding:4px 16px calc(28px + env(safe-area-inset-bottom,0px))}
 .foot .ghost{font-size:13.5px;color:var(--muted)}
@@ -362,7 +398,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="scale" role="tab"><span class="full">音階折返跑</span><span class="short">折返跑</span></button>
     <button class="tab" data-tab="chord" role="tab"><span class="full">和弦練功房</span><span class="short">和弦</span></button>
-    <button class="tab" data-tab="metro" role="tab">節拍器</button>
+    <button class="tab" data-tab="metro" role="tab"><span class="full">節拍・調音</span><span class="short">工具</span></button>
   </nav>
   <div class="bar-ctl" id="chordCtl" hidden>
     <div class="seg" id="subSeg"><button data-v="learn" class="on">圖鑑</button><button data-v="game">小遊戲</button></div>
@@ -455,7 +491,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 
   <!-- ============ 節拍器 ============ -->
   <section id="tab-metro" hidden>
-    <div class="metro">
+    <div class="tool-switch"><div class="seg" id="toolSeg"><button data-v="metro" class="on">🥁 節拍器</button><button data-v="tuner">🎤 調音器</button></div></div>
+    <div class="metro" id="metroBox">
       <div class="panel m-main">
         <div class="m-bpm"><b id="mBpm">100</b><small>BPM</small><span class="m-term" id="mTerm"></span></div>
         <div class="m-dots" id="mDots"></div>
@@ -464,6 +501,26 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         <div class="m-actions"><button class="play" id="mPlay">▶ 開始</button><button class="ghost" id="mApply">套用到折返跑</button></div>
       </div>
       <button class="tappad" id="tapPad"><span class="big">👆 敲拍子</span><span class="info" id="tapInfo">跟著音樂敲 4 下以上，速度自動算出來</span><small class="kbd">電腦也可以按 T 鍵</small></button>
+    </div>
+    <div class="tuner" id="tunerBox" hidden>
+      <div class="panel tn">
+        <div class="tn-read">
+          <div class="tn-note"><b id="tnName">—</b><sub id="tnOct"></sub></div>
+          <div class="tn-jp" id="tnJp" aria-label="簡譜"></div>
+        </div>
+        <div class="tn-meter" id="tnMeter">
+          <div class="tn-scale"></div>
+          <div class="tn-zone"></div>
+          <div class="tn-needle" id="tnNeedle"></div>
+        </div>
+        <div class="tn-labels"><span>♭ 偏低</span><span id="tnCents">— cent</span><span>偏高 ♯</span></div>
+        <div class="tn-hz" id="tnHz">按「開始調音」後對著麥克風發出聲音</div>
+        <div class="tn-actions"><button class="play" id="tnStart">🎤 開始調音</button><button class="ghost" id="tnRef" disabled>🔊 聽鋼琴</button></div>
+        <div class="tn-set">
+          <label>簡譜 1＝<select id="tnKey"></select><small class="tn-mid" id="tnMid"></small></label>
+          <span class="tn-a4">A4＝<button class="mini" id="tnA4Down" aria-label="降低基準音">−</button><b id="tnA4">440</b> Hz<button class="mini" id="tnA4Up" aria-label="提高基準音">+</button></span>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -1141,8 +1198,108 @@ function tap(){
 }
 $('#tapPad').addEventListener('pointerdown',e=>{ e.preventDefault(); tap(); });   // 用按下的瞬間計時，比 click 準
 document.addEventListener('keydown',e=>{
-  if((e.key==='t'||e.key==='T')&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!$('#tab-metro').hidden) tap();
+  if((e.key==='t'||e.key==='T')&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!$('#tab-metro').hidden&&tool==='metro') tap();
 });
+
+/* ================= PART 4: 調音器 ================= */
+// 麥克風 → 每個畫面算一次音高（YIN 演算法）→ 換成最接近的音、偏差幾 cent、簡譜
+const TN={on:false,stream:null,src:null,an:null,buf:null,raf:0,a4:440,key:'C',hist:[],lastSeen:0,note:null,mute:0};
+const JP=['1','♯1','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
+function yin(b,sr){
+  const n=b.length, half=n>>1; let rms=0; for(let i=0;i<n;i++) rms+=b[i]*b[i];
+  if(Math.sqrt(rms/n)<0.01) return 0;                       // 太小聲當作沒聲音
+  const tMin=Math.max(2,Math.floor(sr/1600)), tMax=Math.min(half-2,Math.floor(sr/50));
+  const d=new Float32Array(tMax+2); let run=0;
+  for(let t=1;t<=tMax+1;t++){ let x=0; for(let i=0;i<half;i++){ const v=b[i]-b[i+t]; x+=v*v; } run+=x; d[t]=x*t/(run||1); }
+  for(let t=tMin;t<=tMax;t++){
+    if(d[t]<0.15){ while(t<tMax&&d[t+1]<d[t]) t++;
+      const a=d[t-1], c=d[t+1], den=a-2*d[t]+c, sh=den?(a-c)/(2*den):0;
+      return sr/(t+(Math.abs(sh)<1?sh:0)); }
+  }
+  return 0;
+}
+function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); tnMid(); }
+function tnMid(){ const k=parseNote(TN.key).pc; $('#tnMid').textContent=`（不加點的 1＝${pretty(TN.key)}${k<=6?4:3}）`; }
+function tnA4(v){ TN.a4=Math.max(415,Math.min(466,v)); $('#tnA4').textContent=TN.a4; }
+function jianpu(midi){
+  const k=parseNote(TN.key).pc, base=(k<=6?60:48)+k;      // 中音的 1 放在中央 C 附近
+  const deg=midi-base, oct=Math.floor(deg/12), dots='•'.repeat(Math.min(3,Math.abs(oct)));
+  return `<i>${oct>0?dots:''}</i><b>${JP[((deg%12)+12)%12]}</b><i>${oct<0?dots:''}</i>`;
+}
+function tnShow(f){
+  const needle=$('#tnNeedle');
+  if(!f){
+    if(performance.now()-TN.lastSeen>900){ needle.className='tn-needle'; needle.style.left='50%'; $('#tnCents').textContent='— cent'; $('#tnHz').textContent='聆聽中…'; }
+    return;
+  }
+  TN.lastSeen=performance.now();
+  const m=69+12*Math.log2(f/TN.a4), n=Math.round(m), c=Math.round((m-n)*100);
+  $('#tnName').textContent=PC_NAMES[((n%12)+12)%12]; $('#tnOct').textContent=Math.floor(n/12)-1;
+  $('#tnJp').innerHTML=jianpu(n);
+  if(n!==TN.note){ TN.note=n; $('#tnRef').disabled=false; }
+  needle.style.left=(50+c)+'%';
+  needle.className='tn-needle live '+(Math.abs(c)<=5?'ok':Math.abs(c)<=15?'near':'far');
+  $('#tnCents').textContent=(c>0?'+':'')+c+' cent';
+  $('#tnHz').textContent=f.toFixed(1)+' Hz'+(Math.abs(c)<=5?'　✓ 準了':c<0?'　再高一點':'　再低一點');
+}
+function tnLoop(){
+  if(!TN.on) return;
+  if(performance.now()<TN.mute){ TN.hist.length=0; TN.raf=requestAnimationFrame(tnLoop); return; }   // 正在播標準音：先不聽，免得收到自己的聲音
+  TN.an.getFloatTimeDomainData(TN.buf);
+  const f=yin(TN.buf,ctx.sampleRate);
+  if(f){ TN.hist.push(f); if(TN.hist.length>5) TN.hist.shift(); }
+  else TN.hist.length=0;
+  // 取最近幾次的中位數，指針才不會亂跳
+  tnShow(TN.hist.length>=2?[...TN.hist].sort((a,b)=>a-b)[TN.hist.length>>1]:0);
+  TN.raf=requestAnimationFrame(tnLoop);
+}
+async function tnStart(){
+  if(TN.on) return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ $('#tnHz').textContent='這個瀏覽器不能用麥克風。LINE、FB 裡開的網頁請改用 Safari 或 Chrome。'; return; }
+  ac();
+  try{ if(navigator.audioSession) navigator.audioSession.type='play-and-record'; }catch(e){}   // iPhone：要能錄音
+  try{
+    TN.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  }catch(e){
+    try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(_){}
+    $('#tnHz').textContent=e.name==='NotAllowedError'?'麥克風被拒絕了，請到瀏覽器的網站設定允許麥克風再試一次。':'打不開麥克風：'+e.message;
+    return;
+  }
+  if(ctx.state==='suspended') await ctx.resume();
+  TN.src=ctx.createMediaStreamSource(TN.stream);
+  TN.an=ctx.createAnalyser(); TN.an.fftSize=4096; TN.buf=new Float32Array(TN.an.fftSize);
+  TN.src.connect(TN.an);
+  TN.on=true; TN.hist=[]; TN.lastSeen=0; $('#tnStart').textContent='■ 停止'; $('#tnHz').textContent='聆聽中…';
+  tnLoop();
+}
+function tnStop(){
+  if(!TN.on) return;
+  TN.on=false; cancelAnimationFrame(TN.raf);
+  try{ TN.src.disconnect(); }catch(e){}
+  TN.stream.getTracks().forEach(t=>t.stop());               // 關掉麥克風，瀏覽器的錄音指示燈才會熄
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  $('#tnStart').textContent='🎤 開始調音'; $('#tnNeedle').className='tn-needle'; $('#tnNeedle').style.left='50%';
+  $('#tnCents').textContent='— cent'; $('#tnHz').textContent='按「開始調音」後對著麥克風發出聲音';
+}
+$('#tnStart').onclick=()=>TN.on?tnStop():tnStart();
+// 聽準音：用鋼琴彈出最後抓到的那個音的標準音高（A4 基準音也算進去）
+$('#tnRef').onclick=()=>{
+  if(TN.note==null) return;
+  const m=TN.note+12*Math.log2(TN.a4/440), hz=TN.a4*Math.pow(2,(TN.note-69)/12);
+  pianoNote(m,0,2.4,0.75); TN.mute=performance.now()+2200; TN.lastSeen=performance.now();
+  $('#tnHz').textContent=`標準的 ${PC_NAMES[((TN.note%12)+12)%12]}${Math.floor(TN.note/12)-1} 是 ${hz.toFixed(1)} Hz`;
+};
+$('#tnKey').onchange=e=>{ TN.key=e.target.value; tnMid(); };
+$('#tnA4Down').onclick=()=>tnA4(TN.a4-1);
+$('#tnA4Up').onclick=()=>tnA4(TN.a4+1);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) tnStop(); });
+let tool='metro';
+function showTool(v){
+  tool=v; $$('#toolSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('#metroBox').hidden=v!=='metro'; $('#tunerBox').hidden=v!=='tuner';
+  if(v!=='metro') mStop(); if(v!=='tuner') tnStop();
+}
+$$('#toolSeg button').forEach(b=>b.onclick=()=>showTool(b.dataset.v));
 
 /* ---- tabs ---- */
 function showTab(t){
@@ -1150,7 +1307,7 @@ function showTab(t){
   ['scale','chord','metro'].forEach(k=>$('#tab-'+k).hidden=t!==k);
   $('#chordCtl').hidden=t!=='chord'; $('#rotateHint').hidden=t==='metro';   // 橫放提示是給鋼琴用的
   if(t!=='scale') sPause();
-  if(t!=='metro') mStop();
+  if(t!=='metro'){ mStop(); tnStop(); }
 }
 $$('.tab').forEach(b=>b.onclick=()=>{ showTab(b.dataset.tab); closeSheet(); });
 
@@ -1161,11 +1318,11 @@ $('#openSheet').onclick=openSheet; $('#closeSheet').onclick=closeSheet; $('#back
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
 
 /* ---- URL hash：設定寫進網址，重新整理後保留 ---- */
-const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,rest:1,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th',mbpm:100,mbeats:4};
+const HDEF={tab:'scale',mode:'major',key:'C',bpm:120,metro:0,loop:0,rest:1,sus:'mid',mute:'off',mset:'',mshow:1,sub:'learn',inst:'piano',lab:'int',root:'C',cat:'triad',type:'maj',v:0,all:0,gmode:'identify',gcats:'triad,7th',mbpm:100,mbeats:4,tool:'metro',a4:440,jp:'C'};
 function hashStr(){
   const s={tab:$('.tab.active').dataset.tab,mode:S.mode,key:S.key,bpm:S.bpm,metro:+S.metro,loop:+S.loop,rest:+S.rest,sus:S.sus,mute:S.muteMode,
     mset:[...S.muteSet].sort((a,b)=>a-b).join(','),mshow:+S.muteShow,sub:C.sub,inst:C.inst,lab:C.lab,root:C.root,cat:C.cat,type:C.type,
-    v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(','),mbpm:M.bpm,mbeats:M.beats};
+    v:C.vIdx,all:+C.showAll,gmode:G.mode,gcats:CATS.map(c=>c[0]).filter(c=>G.cats.has(c)).join(','),mbpm:M.bpm,mbeats:M.beats,tool,a4:TN.a4,jp:TN.key};
   const p=new URLSearchParams();
   for(const k in s) if(String(s[k])!==String(HDEF[k])) p.set(k,s[k]);   // 只寫跟預設不同的
   return p.toString();
@@ -1208,6 +1365,9 @@ function loadHash(){
   // 節拍器
   setMBpm(+get('mbpm',v=>/^\d+$/.test(v)));
   M.beats=+get('mbeats',oneOf(['2','3','4','6'])); segOn('#mBeatSeg',String(M.beats)); mDots();
+  // 調音器
+  tnA4(+get('a4',v=>/^\d{3}$/.test(v))); TN.key=get('jp',oneOf(MAJOR_KEYS)); tnKeys();
+  showTool(get('tool',oneOf(['metro','tuner'])));
   showTab(get('tab',oneOf(['scale','chord','metro'])));
 }
 ['click','change','input'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveHash,0)));
