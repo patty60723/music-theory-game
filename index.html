@@ -1245,21 +1245,22 @@ document.addEventListener('keydown',e=>{
 
 /* ================= PART 4: 調音器 ================= */
 // 麥克風 → 每個畫面算一次音高（YIN 演算法）→ 換成最接近的音、偏差幾 cent、簡譜
-const TN={on:false,stream:null,src:null,an:null,buf:null,raf:0,a4:440,key:'C',hist:[],lastSeen:0,note:null,mute:0};
+const TN={rms:0,floor:0.002,rmsLog:[],on:false,stream:null,src:null,an:null,buf:null,raf:0,a4:440,key:'C',hist:[],lastSeen:0,note:null,mute:0};
 const JP=['1','♯1','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
 function yin(b,sr){
   const n=b.length, half=n>>1; let rms=0; for(let i=0;i<n;i++) rms+=b[i]*b[i];
-  if(Math.sqrt(rms/n)<0.002) return 0;   // 幾乎沒聲音才放棄；電腦麥克風關掉自動增益後常常很小聲，不能用音量判斷
-  const tMin=Math.max(2,Math.floor(sr/1600)), tMax=Math.min(half-2,Math.floor(sr/50));
+  rms=Math.sqrt(rms/n); TN.rms=rms;
+  if(rms<Math.max(0.004,TN.floor*2.5)) return 0;   // 要明顯比環境噪音大聲才算有人在唱（手機很敏感，冷氣、冰箱聲都收得到）
+  const tMin=Math.max(2,Math.floor(sr/1600)), tMax=Math.min(half-2,Math.floor(sr/60));
   const d=new Float32Array(tMax+2); let run=0;
   for(let t=1;t<=tMax+1;t++){ let x=0; for(let i=0;i<half;i++){ const v=b[i]-b[i+t]; x+=v*v; } run+=x; d[t]=x*t/(run||1); }
   let best=0;
   for(let t=tMin;t<=tMax;t++){
-    if(d[t]<0.15){ while(t<tMax&&d[t+1]<d[t]) t++; best=t; break; }
+    if(d[t]<0.12){ while(t<tMax&&d[t+1]<d[t]) t++; best=t; break; }
   }
   if(!best){   // 沒有很明確的週期：退而求其次取最像的那個，但要夠像才算（純雜音不會過）
     let m=tMin; for(let t=tMin+1;t<=tMax;t++) if(d[t]<d[m]) m=t;
-    if(d[m]>=0.35) return 0;
+    if(d[m]>=0.2) return 0;   // 不夠像一個音就不讀
     // 雜音多時最低點常落在 2、3 倍週期（低八度）上：改取第一個跟最低點差不多深的谷
     best=m;
     for(let t=tMin+1;t<m;t++) if(d[t]<=d[t-1]&&d[t]<=d[t+1]&&d[t]<d[m]+0.06){ best=t; break; }
@@ -1295,11 +1296,18 @@ function tnLoop(){
   if(performance.now()<TN.mute){ TN.hist.length=0; TN.raf=requestAnimationFrame(tnLoop); return; }   // 正在播標準音：先不聽，免得收到自己的聲音
   TN.an.getFloatTimeDomainData(TN.buf);
   const f=yin(TN.buf,ctx.sampleRate), now=performance.now();
+  // 環境噪音＝最近 3 秒裡比較安靜的時候有多大聲（上限 0.01，免得長音把自己擋掉）
+  // 正在穩定讀到音的時候不學（不然長音會把自己當成背景擋掉）；剛開麥克風時的全靜音格子也不算
+  if(TN.rms>1e-4&&(now-TN.t0<400||!TN.steady)) TN.rmsLog.push({r:TN.rms,t:now});
+  TN.rmsLog=TN.rmsLog.filter(x=>now-x.t<3000);
+  if(TN.rmsLog.length>=10){ const rs=TN.rmsLog.map(x=>x.r).sort((a,b)=>a-b); TN.floor=Math.min(0.01,rs[Math.floor(rs.length*0.2)]); }   // 取最安靜的 20%，開頭短暫的低值不會拉低
+  if(now-TN.t0<400){ TN.hist.length=0; TN.raf=requestAnimationFrame(tnLoop); return; }   // 開頭先聽一下環境再開始讀
   if(f) TN.hist.push({f,t:now});
   TN.hist=TN.hist.filter(h=>now-h.t<300).slice(-7);   // 偶爾漏抓一格不清空，只丟掉 0.3 秒前的舊讀數
-  // 取最近幾次的中位數，指針才不會亂跳
+  // 要連續幾次讀到差不多的音高才顯示（差距在 60 cent 內），偶發的雜音不會跳出來；顯示中位數，指針才不會亂跳
   const fs=TN.hist.map(h=>h.f).sort((a,b)=>a-b);
-  tnShow(fs.length>=2?fs[fs.length>>1]:0);
+  const steady=fs.length>=3&&1200*Math.log2(fs[fs.length-1]/fs[0])<=60; TN.steady=steady;
+  tnShow(steady?fs[fs.length>>1]:0);
   TN.raf=requestAnimationFrame(tnLoop);
 }
 async function tnStart(){
@@ -1321,7 +1329,7 @@ async function tnStart(){
   const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=55; hp.Q.value=0.7;
   const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2200; lp.Q.value=0.7;
   TN.src.connect(hp); hp.connect(lp); lp.connect(TN.an);
-  TN.on=true; TN.hist=[]; TN.lastSeen=0; tnGo(true); $('#tnHz').textContent='聆聽中…';
+  TN.on=true; TN.hist=[]; TN.rmsLog=[]; TN.floor=0.002; TN.t0=performance.now(); TN.steady=false; TN.lastSeen=0; tnGo(true); $('#tnHz').textContent='聆聽中…';
   tnLoop();
 }
 function tnStop(){
