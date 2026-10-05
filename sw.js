@@ -25,8 +25,12 @@ self.addEventListener('fetch', e => {
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req, { cache: 'no-cache' })   // 跳過瀏覽器的 HTTP 快取，確保拿到剛推上去的版本
-        .then(res => { const copy = res.clone(); caches.open(APP).then(c => c.put('index.html', copy)); return res; })
-        .catch(() => caches.match('index.html'))
+        .then(res => {
+          // 只把首頁存進離線快取；preview.html 之類的測試頁不能蓋掉它
+          if (/\/(index\.html)?$/.test(url.pathname) && res.ok) { const copy = res.clone(); caches.open(APP).then(c => c.put('index.html', copy)); }
+          return res;
+        })
+        .catch(() => caches.match(req).then(hit => hit || caches.match('index.html')))
     );
     return;
   }
