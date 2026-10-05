@@ -389,6 +389,23 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tn-set select{margin-left:4px;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 12px}
 .tn-a4{display:inline-flex;align-items:center;gap:8px}
 .tn-a4 b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2em;text-align:center}
+/* 手機橫向：高度不夠，改成左（音名）中（指針、設定）右（按鈕）三欄，一個畫面放得下 */
+@media (orientation:landscape) and (max-height:520px){
+  .tool-switch{margin-bottom:8px}
+  .tn{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:22px;row-gap:4px;align-items:center;padding:12px 18px;
+    grid-template-areas:"read meter act" "read labels act" "read hz act" "read set act"}
+  .tn-read{grid-area:read;min-height:0;gap:14px}
+  .tn-note b{font-size:64px} .tn-note sub{font-size:22px;margin-bottom:8px}
+  .tn-jp{height:84px;min-width:52px;padding-left:14px} .tn-jp b{font-size:44px}
+  .tn-meter{grid-area:meter;max-width:none;height:50px}
+  .tn-labels{grid-area:labels;max-width:none}
+  .tn-hz{grid-area:hz;font-size:13px}
+  .tn-set{grid-area:set;font-size:13px;gap:6px 16px}
+  .tn-actions{grid-area:act;gap:4px}
+  .tn-go{width:62px;height:62px;margin:8px 0 12px} .tn-go svg{width:28px;height:28px} .tn-go .ic-stop{width:19px;height:19px}
+  .tn-go-lbl{font-size:12px;margin-bottom:4px}
+  .tn-refbox .mini{width:28px;height:28px;font-size:15px} .tn-refbox .ghost{padding:6px 8px;font-size:13px}
+}
 @media (max-width:480px){ .tn-note b{font-size:84px} .tn-jp b{font-size:54px} .tn-read{gap:18px} .tn-jp{padding-left:18px} }
 
 /* ---------- 安裝提示 ---------- */
@@ -1222,16 +1239,23 @@ const TN={on:false,stream:null,src:null,an:null,buf:null,raf:0,a4:440,key:'C',hi
 const JP=['1','♯1','2','♭3','3','4','♯4','5','♭6','6','♭7','7'];
 function yin(b,sr){
   const n=b.length, half=n>>1; let rms=0; for(let i=0;i<n;i++) rms+=b[i]*b[i];
-  if(Math.sqrt(rms/n)<0.01) return 0;                       // 太小聲當作沒聲音
+  if(Math.sqrt(rms/n)<0.002) return 0;   // 幾乎沒聲音才放棄；電腦麥克風關掉自動增益後常常很小聲，不能用音量判斷
   const tMin=Math.max(2,Math.floor(sr/1600)), tMax=Math.min(half-2,Math.floor(sr/50));
   const d=new Float32Array(tMax+2); let run=0;
   for(let t=1;t<=tMax+1;t++){ let x=0; for(let i=0;i<half;i++){ const v=b[i]-b[i+t]; x+=v*v; } run+=x; d[t]=x*t/(run||1); }
+  let best=0;
   for(let t=tMin;t<=tMax;t++){
-    if(d[t]<0.15){ while(t<tMax&&d[t+1]<d[t]) t++;
-      const a=d[t-1], c=d[t+1], den=a-2*d[t]+c, sh=den?(a-c)/(2*den):0;
-      return sr/(t+(Math.abs(sh)<1?sh:0)); }
+    if(d[t]<0.15){ while(t<tMax&&d[t+1]<d[t]) t++; best=t; break; }
   }
-  return 0;
+  if(!best){   // 沒有很明確的週期：退而求其次取最像的那個，但要夠像才算（純雜音不會過）
+    let m=tMin; for(let t=tMin+1;t<=tMax;t++) if(d[t]<d[m]) m=t;
+    if(d[m]>=0.35) return 0;
+    // 雜音多時最低點常落在 2、3 倍週期（低八度）上：改取第一個跟最低點差不多深的谷
+    best=m;
+    for(let t=tMin+1;t<m;t++) if(d[t]<=d[t-1]&&d[t]<=d[t+1]&&d[t]<d[m]+0.06){ best=t; break; }
+  }
+  const a=d[best-1], c=d[best+1], den=a-2*d[best]+c, sh=den?(a-c)/(2*den):0;
+  return sr/(best+(Math.abs(sh)<1?sh:0));
 }
 function tnKeys(){ $('#tnKey').innerHTML=MAJOR_KEYS.map(k=>`<option value="${k}" ${k===TN.key?'selected':''}>${pretty(k)}</option>`).join(''); }
 function tnA4(v){ TN.a4=Math.max(415,Math.min(466,v)); $('#tnA4').textContent=TN.a4; }
@@ -1260,11 +1284,12 @@ function tnLoop(){
   if(!TN.on) return;
   if(performance.now()<TN.mute){ TN.hist.length=0; TN.raf=requestAnimationFrame(tnLoop); return; }   // 正在播標準音：先不聽，免得收到自己的聲音
   TN.an.getFloatTimeDomainData(TN.buf);
-  const f=yin(TN.buf,ctx.sampleRate);
-  if(f){ TN.hist.push(f); if(TN.hist.length>5) TN.hist.shift(); }
-  else TN.hist.length=0;
+  const f=yin(TN.buf,ctx.sampleRate), now=performance.now();
+  if(f) TN.hist.push({f,t:now});
+  TN.hist=TN.hist.filter(h=>now-h.t<300).slice(-7);   // 偶爾漏抓一格不清空，只丟掉 0.3 秒前的舊讀數
   // 取最近幾次的中位數，指針才不會亂跳
-  tnShow(TN.hist.length>=2?[...TN.hist].sort((a,b)=>a-b)[TN.hist.length>>1]:0);
+  const fs=TN.hist.map(h=>h.f).sort((a,b)=>a-b);
+  tnShow(fs.length>=2?fs[fs.length>>1]:0);
   TN.raf=requestAnimationFrame(tnLoop);
 }
 async function tnStart(){
@@ -1282,7 +1307,10 @@ async function tnStart(){
   if(ctx.state==='suspended') await ctx.resume();
   TN.src=ctx.createMediaStreamSource(TN.stream);
   TN.an=ctx.createAnalyser(); TN.an.fftSize=4096; TN.buf=new Float32Array(TN.an.fftSize);
-  TN.src.connect(TN.an);
+  // 先濾掉人聲／樂器範圍外的低頻嗡嗡聲和高頻嘶嘶聲，小聲時比較不會誤判
+  const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=55; hp.Q.value=0.7;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2200; lp.Q.value=0.7;
+  TN.src.connect(hp); hp.connect(lp); lp.connect(TN.an);
   TN.on=true; TN.hist=[]; TN.lastSeen=0; tnGo(true); $('#tnHz').textContent='聆聽中…';
   tnLoop();
 }
