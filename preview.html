@@ -381,6 +381,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-rule .tip{margin:0 0 10px;padding:8px 10px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--gold) 14%,transparent);font-size:14px;line-height:1.7}
 .dt-rule .tip b{color:var(--ink)}
 .dt-rule .gap{display:block;font-size:12px;color:var(--muted)}
+.dt-where{margin:-4px 0 12px;font-size:13px;line-height:1.7;color:var(--muted)}
+.dt-where b{color:var(--ink)}
 .dt-rule .where{margin:8px 0 0;font-size:13px;color:var(--muted)}
 .dt-rule .where b{color:var(--ink)}
 .dt-build{margin-top:8px;font-size:14.5px}
@@ -439,6 +441,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .iv-qual span{border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 12px;font-size:13.5px;color:var(--muted)}
 .iv-qual span b{font-family:var(--display);font-size:17px;margin-right:2px}
 .iv-qual span.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);border-color:transparent}
+.iv-tip{display:block;margin-top:10px;padding:8px 10px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--gold) 14%,transparent);font-size:13.5px;line-height:1.7}
 .iv-feel{text-align:center;color:var(--muted);font-size:14px;line-height:1.7;margin:12px 0 0}
 .iv-feel b{color:var(--ink)}
 @media (max-width:720px){
@@ -639,6 +642,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div class="keygrid" id="dtKeys"></div>
         </details>
         <div class="seg" id="dt7Seg" style="margin:12px 0"><button data-v="0" class="on">三和弦</button><button data-v="1">七和弦</button></div>
+        <p class="dt-where" id="dtWhere" hidden></p>
         <span class="lbl">幾級和弦（點一下聽聽看）</span>
         <div class="dt-row" id="dtRow"></div>
         <p class="groupnote">順階和弦：只用這個調的音階音，在每個音上往上疊（隔一個音取一個）。從音階第幾個音開始疊，就叫「幾級和弦」。</p>
@@ -1443,8 +1447,7 @@ function dtRender(){
   $('#dtNotes').innerHTML=c.type.tones.map(tn=>`<span class="tone" style="--c:${degColor(tn.d)}">${toneName(c.root,tn)}</span>`).join('');
   $('#dtJp').innerHTML=idx.map((j,k)=>`<span class="tone" style="--c:${degColor(c.type.tones[k].d)}">${j+1}</span>`).join('');
   $('#dtKeyName').textContent=pretty(scale[0].name)+(D.mode==='minor'?'（小調從 6 唱起，這裡以主音當 1）':'');
-  const rp=parseNote(c.root).pc;
-  drawChord($('#dtInst'),{root:c.root,type:c.type,voicing:dtVoicing(c),reveal:true,extra:D.sev?[{midi:48+rp+12,color:'var(--c-root)',label:'高1',hollow:true}]:[]});
+  drawChord($('#dtInst'),{root:c.root,type:c.type,voicing:dtVoicing(c),reveal:true});
 }
 // 三和弦看兩個 3 度怎麼疊；七和弦＝底下的三和弦＋根音到 7 音的 7 度
 const THIRD=n=>n===4?'大3度':n===3?'小3度':n+'個半音';
@@ -1452,23 +1455,21 @@ const SEVENTH=n=>n===11?'大7度':n===10?'小7度':n===9?'減7度':n+'個半音'
 const DT_TRI=[['maj',4,3],['min',3,4],['dim',3,3]];
 const DT_SEV=[['maj7','maj','大7度'],['dom7','maj','小7度'],['m7','min','小7度'],['m7b5','dim','小7度']];
 function dtRule(c){
+  $('#dtWhere').hidden=!D.sev; if(D.sev) $('#dtWhere').innerHTML=dtWhere(DT[D.mode].sev);
   const t=DT[D.mode], R=pretty(c.root), sc=scaleNotes(D.mode,D.key);
   const nm=k=>toneName(c.root,c.type.tones[k]);
   if(!D.sev){
     const lo=c.type.tones[1].s, hi=c.type.tones[2].s-lo;
     $('#dtRule').innerHTML=`<h4>三和弦怎麼分？<small>看兩個 3 度怎麼疊（根音→3 音、3 音→5 音）</small></h4><table>`+
       DT_TRI.map(([id,a,b])=>`<tr class="${c.type.id===id?'on':''}"><td class="res">${TYPE[id].zh}</td><td>＝ ${THIRD(a)} ＋ ${THIRD(b)}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
-      `</table><p class="where">${dtWhere(t.tri)}</p>`;
+      `</table>`;
     $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${THIRD(lo)}</b>（${nm(0)}→${nm(1)}）＋ <b>${THIRD(hi)}</b>（${nm(1)}→${nm(2)}）→ ${c.type.zh}`;
   }else{
     const triId=t.tri[D.deg], sev=c.type.tones[3].s;
-    const gap=12-sev;
-    $('#dtRule').innerHTML=`<h4>七和弦怎麼分？<small>底下的三和弦 ＋ 最上面的 7 度（根音→7 音）</small></h4>
-      <p class="tip">🔍 <b>大7度還是小7度？</b>把根音升高八度（鍵盤上的「高1」），看第 4 個音（7 音）離它多遠：<br>差 <b>1 個半音</b>＝<b>大7度</b>（12−1＝11）　差 <b>2 個半音</b>（一個全音）＝<b>小7度</b>（12−2＝10）</p><table>`+
-      DT_SEV.map(([id,tri,sv])=>`<tr class="${c.type.id===id?'on':''}"><td>${TYPE[tri].zh} ＋ ${sv}<span class="gap">（7 音離高八度根音 ${sv==='大7度'?1:2} 個半音）</span></td><td class="res">＝ ${TYPE[id].zh}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
-      `</table><p class="where">${dtWhere(t.sev)}</p>`;
-    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${R}${TYPE[triId].suf} ${TYPE[triId].zh}</b>（${nm(0)} ${nm(1)} ${nm(2)}）＋ <b>${SEVENTH(sev)}</b>`+
-      `<br>怎麼算：7 音 ${nm(3)} → 高八度的 ${nm(0)}，差 <b>${gap} 個半音</b>${gap===1?'':'（全音）'} → 12 − ${gap} ＝ ${sev} 個半音 → <b>${SEVENTH(sev)}</b>`;
+    $('#dtRule').innerHTML=`<h4>七和弦怎麼分？<small>底下的三和弦 ＋ 最上面的 7 度（根音→7 音）</small></h4><table>`+
+      DT_SEV.map(([id,tri,sv])=>`<tr class="${c.type.id===id?'on':''}"><td>${TYPE[tri].zh} ＋ ${sv}</td><td class="res">＝ ${TYPE[id].zh}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
+      `</table><p class="where">大7度、小7度怎麼分？到「音程教室」選 7 度看看。</p>`;
+    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${R}${TYPE[triId].suf} ${TYPE[triId].zh}</b>（${nm(0)} ${nm(1)} ${nm(2)}）＋ <b>${SEVENTH(sev)}</b>（${nm(0)}→${nm(3)}）→ ${c.type.zh}`;
   }
 }
 // 「這個調裡：1、4、5 級是大三和弦…」
@@ -1541,6 +1542,7 @@ function ivDraw(host,root,iv,{numbers=true,hideTarget=false,onKey}={}){
   const p=makePiano(host,lo,hi,onKey||(m=>pianoNote(m,0,2,0.6)),22), lit=[{midi:r,color:'var(--c-root)',label:pretty(root)}];
   if(numbers) for(let i=1;i<iv.s;i++) lit.push({midi:r+i,color:'var(--muted)',label:String(i),hollow:true});
   if(!hideTarget) lit.push({midi:r+iv.s,color:'var(--c-third)',label:numbers?String(iv.s):'?'});
+  if(numbers&&iv.deg===7) lit.push({midi:r+12,color:'var(--c-root)',label:'高1',hollow:true});   // 7 度：標出高八度的根音，數它離 7 度的音多遠
   p.setLit(lit); return p;
 }
 function ivPlay(root,iv,mode){
@@ -1569,7 +1571,8 @@ function ivLearn(){
   $('#ivDegTxt').innerHTML=`從 ${a} 數到 ${b}，經過 ${iv.deg} 個音名 → <b>${iv.deg} 度</b>`;
   $('#ivQual').innerHTML=IV_QUAL[iv.deg].map(([n,z])=>`<span class="${n===iv.s?'on':''}"><b>${n}</b>個半音＝${z}</span>`).join('');
   $('#ivQualTxt').innerHTML=`${a} 到 ${b} 差 <b>${iv.s} 個半音</b>（鍵盤上的數字），所以是 <b>${iv.zh}</b>。`+
-    ([4,5,8].includes(iv.deg)?'<br>4、5、8 度叫「完全」，多一個半音叫「增」、少一個叫「減」。':'<br>'+iv.deg+' 度有「大」「小」兩種，差一個半音。');
+    ([4,5,8].includes(iv.deg)?'<br>4、5、8 度叫「完全」，多一個半音叫「增」、少一個叫「減」。':'<br>'+iv.deg+' 度有「大」「小」兩種，差一個半音。')+
+    (iv.deg===7?`<span class="iv-tip">🔍 <b>小技巧</b>：7 度要數 10、11 個半音太累了，改成把根音升高八度（鍵盤上的「高1」），看 ${b} 離它多遠：<br>差 <b>1 個半音</b>＝大7度（12−1＝11），差 <b>2 個半音</b>（一個全音）＝小7度（12−2＝10）。<br>這裡 ${b} → 高八度的 ${a} 差 <b>${12-iv.s} 個半音</b> → <b>${iv.zh}</b>。</span>`:'');
   ivDraw($('#ivPiano'),I.root,iv);
   $('#ivFeel').innerHTML=`🎧 聽起來：<b>${iv.feel}</b>`+(iv.song?`<br>🎵 記憶法：${iv.song}`:'');
 }
