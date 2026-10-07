@@ -357,6 +357,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-rule td.res{font-weight:700}
 .dt-rule tr.on td{background:color-mix(in srgb,var(--gold) 22%,transparent)}
 .dt-rule tr.on td:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)} .dt-rule tr.on td:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
+.dt-rule .tip{margin:0 0 10px;padding:8px 10px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--gold) 14%,transparent);font-size:14px;line-height:1.7}
+.dt-rule .tip b{color:var(--ink)}
+.dt-rule .gap{display:block;font-size:12px;color:var(--muted)}
 .dt-rule .where{margin:8px 0 0;font-size:13px;color:var(--muted)}
 .dt-rule .where b{color:var(--ink)}
 .dt-build{margin-top:8px;font-size:14.5px}
@@ -1180,11 +1183,11 @@ function chordMidisPiano(root,type){ const rp=parseNote(root).pc; return type.to
 function toneMap(root,type){ const rp=parseNote(root).pc; return new Map(type.tones.map(t=>[(rp+t.s)%12,t])); }
 // 鋼琴只畫到用得到的範圍：從 C3 往上，蓋住這些類別裡最高的音（任何根音）後停在下一個 C
 function chordHi(cats){ const top=Math.max(...TYPES.filter(t=>cats.includes(t.cat)).flatMap(t=>t.tones.map(x=>x.s))); return 48+Math.ceil((11+top)/12)*12; }
-function drawChord(host,{root,type,voicing,reveal=true,showAll=false,onPiano,onCell,hi=chordHi([type.cat])}){
+function drawChord(host,{root,type,voicing,reveal=true,showAll=false,onPiano,onCell,hi=chordHi([type.cat]),extra=[]}){
   if(C.inst==='piano'){
     const p=makePiano(host,48,hi,onPiano||(m=>pianoNote(m,0,2.5,0.6)),22);
     const rp=parseNote(root).pc;
-    p.setLit(type.tones.map(t=>({midi:48+rp+t.s,color:reveal?degColor(t.d):'var(--accent)',label:reveal?labelFor(root,t):''})));
+    p.setLit(type.tones.map(t=>({midi:48+rp+t.s,color:reveal?degColor(t.d):'var(--accent)',label:reveal?labelFor(root,t):''})).concat(extra));
   }else{
     const tm=toneMap(root,type), dots=[];
     if(showAll){
@@ -1389,7 +1392,8 @@ function dtRender(){
   $('#dtNotes').innerHTML=c.type.tones.map(tn=>`<span class="tone" style="--c:${degColor(tn.d)}">${toneName(c.root,tn)}</span>`).join('');
   $('#dtJp').innerHTML=idx.map((j,k)=>`<span class="tone" style="--c:${degColor(c.type.tones[k].d)}">${j+1}</span>`).join('');
   $('#dtKeyName').textContent=pretty(scale[0].name)+(D.mode==='minor'?'（小調從 6 唱起，這裡以主音當 1）':'');
-  drawChord($('#dtInst'),{root:c.root,type:c.type,voicing:dtVoicing(c),reveal:true});
+  const rp=parseNote(c.root).pc;
+  drawChord($('#dtInst'),{root:c.root,type:c.type,voicing:dtVoicing(c),reveal:true,extra:D.sev?[{midi:48+rp+12,color:'var(--c-root)',label:'高1',hollow:true}]:[]});
 }
 // 三和弦看兩個 3 度怎麼疊；七和弦＝底下的三和弦＋根音到 7 音的 7 度
 const THIRD=n=>n===4?'大3度':n===3?'小3度':n+'個半音';
@@ -1407,10 +1411,13 @@ function dtRule(c){
     $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${THIRD(lo)}</b>（${nm(0)}→${nm(1)}）＋ <b>${THIRD(hi)}</b>（${nm(1)}→${nm(2)}）→ ${c.type.zh}`;
   }else{
     const triId=t.tri[D.deg], sev=c.type.tones[3].s;
-    $('#dtRule').innerHTML=`<h4>七和弦怎麼分？<small>底下的三和弦 ＋ 最上面的 7 度（根音→7 音）</small></h4><table>`+
-      DT_SEV.map(([id,tri,sv])=>`<tr class="${c.type.id===id?'on':''}"><td>${TYPE[tri].zh} ＋ ${sv}</td><td class="res">＝ ${TYPE[id].zh}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
+    const gap=12-sev;
+    $('#dtRule').innerHTML=`<h4>七和弦怎麼分？<small>底下的三和弦 ＋ 最上面的 7 度（根音→7 音）</small></h4>
+      <p class="tip">🔍 <b>大7度還是小7度？</b>把根音升高八度（鍵盤上的「高1」），看第 4 個音（7 音）離它多遠：<br>差 <b>1 個半音</b>＝<b>大7度</b>（12−1＝11）　差 <b>2 個半音</b>（一個全音）＝<b>小7度</b>（12−2＝10）</p><table>`+
+      DT_SEV.map(([id,tri,sv])=>`<tr class="${c.type.id===id?'on':''}"><td>${TYPE[tri].zh} ＋ ${sv}<span class="gap">（7 音離高八度根音 ${sv==='大7度'?1:2} 個半音）</span></td><td class="res">＝ ${TYPE[id].zh}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
       `</table><p class="where">${dtWhere(t.sev)}</p>`;
-    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${R}${TYPE[triId].suf} ${TYPE[triId].zh}</b>（${nm(0)} ${nm(1)} ${nm(2)}）＋ <b>${SEVENTH(sev)}</b>（${nm(0)}→${nm(3)}）→ ${c.type.zh}`;
+    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${R}${TYPE[triId].suf} ${TYPE[triId].zh}</b>（${nm(0)} ${nm(1)} ${nm(2)}）＋ <b>${SEVENTH(sev)}</b>`+
+      `<br>怎麼算：7 音 ${nm(3)} → 高八度的 ${nm(0)}，差 <b>${gap} 個半音</b>${gap===1?'':'（全音）'} → 12 − ${gap} ＝ ${sev} 個半音 → <b>${SEVENTH(sev)}</b>`;
   }
 }
 // 「這個調裡：1、4、5 級是大三和弦…」
