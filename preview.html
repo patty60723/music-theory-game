@@ -394,7 +394,12 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-role{margin-top:12px;padding:10px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.7}
 .dt-role .lbl{display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .dt-role .tag{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:var(--r-pill);padding:0 8px}
-@media (max-width:980px){ .dt-detail{grid-template-columns:1fr} }
+/* 窄螢幕（手機直／橫、平板）：說明表移到鍵盤下面，先看到和弦和鍵盤 */
+@media (max-width:980px){
+  #diatonic .stage{display:flex;flex-direction:column}
+  .dt-detail{display:contents}
+  .dt-main{order:1} #diatonic .floor{order:2} .dt-rule{order:3;margin-top:14px} .dt-role{order:4} .dt-progbox{order:5}
+}
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
 .dt-progbox{margin-top:16px}
 .dt-progs{display:flex;flex-wrap:wrap;gap:6px}
