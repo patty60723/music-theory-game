@@ -407,7 +407,19 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   .dt-progs button{flex:1 1 calc(50% - 3px)}
 }
 
+/* 手機橫向（畫面很矮）：左欄跟著整頁捲，不要卡在固定高度裡；順階和弦卡改成一排 2 個 */
+@media (orientation:landscape) and (max-height:520px){
+  .split>.panel{position:static;max-height:none;overflow:visible}
+  .dt-row{grid-template-columns:1fr 1fr}
+  .dt-card{flex-direction:column;align-items:center;gap:0;padding:5px 4px}
+  .dt-card .rn,.dt-card b{min-width:0;text-align:center}
+  .dt-card b{font-size:17px} .dt-card small{margin-left:0}
+}
+
 /* ---------- 音程教室 ---------- */
+.ivdeg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
+.ivdeg button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-sm);padding:6px 0;font-family:var(--serif);font-weight:700;font-size:15px}
+.ivdeg button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);border-color:transparent}
 .ivlist{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
 .ivlist button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:5px 10px;text-align:left;line-height:1.25}
 .ivlist button b{display:block;font-family:var(--serif);font-size:15.5px}
@@ -432,8 +444,6 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:720px){
   .iv-explain{grid-template-columns:1fr}
   /* 手機：音程清單一排 4 個、只留名稱，選完不用捲很遠就看得到解說 */
-  .ivlist{grid-template-columns:repeat(4,1fr);gap:4px}
-  .ivlist button{padding:7px 2px;text-align:center} .ivlist button b{font-size:14px} .ivlist button small{display:none}
 }
 @media (max-width:400px){ .tab{padding:6px 5px;font-size:14px;letter-spacing:0} }   /* 四個分頁在小手機也排得下一行 */
 
@@ -574,7 +584,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     <div class="tool-switch"><div class="seg" id="ivSubSeg"><button data-v="learn" class="on">📖 認識音程</button><button data-v="game">🎮 小遊戲</button></div></div>
     <div id="ivLearn" class="split">
       <aside class="panel">
-        <span class="lbl">音程</span>
+        <span class="lbl">① 先選幾度</span>
+        <div class="ivdeg" id="ivDeg"></div>
+        <span class="lbl">② 再選大小／完全／增減</span>
         <div class="ivlist" id="ivList"></div>
         <span class="lbl">從哪個音開始（根音）</span>
         <div class="rootgrid" id="ivRoots"></div>
@@ -1503,6 +1515,7 @@ const IVS=[
  {id:'M3',deg:3,s:4,zh:'大3度',en:'Major 3rd',feel:'明亮、開心，是大三和弦的關鍵。',song:'〈When the Saints Go Marching In〉開頭（Do→Mi）'},
  {id:'P4',deg:4,s:5,zh:'完全4度',en:'Perfect 4th',feel:'穩定、空曠，有「出發」的感覺。',song:'〈結婚進行曲〉開頭「噹～噹噹噹」（Sol→Do）'},
  {id:'TT',deg:4,s:6,zh:'增4度',en:'Augmented 4th・三全音',feel:'懸疑、不穩定，剛好是八度的一半，也可以寫成減5度。',song:'動畫《辛普森家庭》主題開頭（Do→♯Fa）'},
+ {id:'d5',deg:5,s:6,zh:'減5度',en:'diminished 5th・三全音',feel:'跟增4度聽起來一模一樣（都是 6 個半音），只是寫法不同：從根音數到第 5 個音名，所以叫 5 度。',song:''},
  {id:'P5',deg:5,s:7,zh:'完全5度',en:'Perfect 5th',feel:'非常穩、很和諧，搖滾的強力和弦就是它。',song:'〈小星星〉「一閃一閃」（Do→Sol）'},
  {id:'m6',deg:6,s:8,zh:'小6度',en:'minor 6th',feel:'柔美、有點感傷。',song:''},
  {id:'M6',deg:6,s:9,zh:'大6度',en:'Major 6th',feel:'溫暖、開闊。',song:'〈My Bonnie Lies over the Ocean〉開頭（Sol→Mi）'},
@@ -1512,7 +1525,7 @@ const IVS=[
 ];
 const IV=Object.fromEntries(IVS.map(x=>[x.id,x]));
 const IV_QUAL={2:[[1,'小2度'],[2,'大2度']],3:[[3,'小3度'],[4,'大3度']],4:[[5,'完全4度'],[6,'增4度']],5:[[6,'減5度'],[7,'完全5度']],6:[[8,'小6度'],[9,'大6度']],7:[[10,'小7度'],[11,'大7度']],8:[[12,'完全8度']]};
-const IV_LV={basic:['M2','M3','P4','P5','P8'],more:IVS.filter(x=>x.id!=='TT').map(x=>x.id),all:IVS.map(x=>x.id)};
+const IV_LV={basic:['M2','M3','P4','P5','P8'],more:IVS.filter(x=>!['TT','d5'].includes(x.id)).map(x=>x.id),all:IVS.filter(x=>x.id!=='d5').map(x=>x.id)};   // 減5度和增4度同音，小遊戲只出增4度
 const I={sub:'learn',root:'C',iv:'M3',mode:'see',lv:'basic',q:null,answered:false,score:0,total:0,streak:0,best:0};
 const ivTarget=(root,iv)=>spellFrom(root,iv.s%12,iv.deg-1).name;
 const ivMidi=root=>60+parseNote(root).pc;
@@ -1536,7 +1549,14 @@ function ivPlay(root,iv,mode){
   else { pianoNote(r,t,1.2,0.6); pianoNote(r+iv.s,t+0.6,1.6,0.6); }
 }
 function ivLearnPickers(){
-  $('#ivList').innerHTML=IVS.map(x=>`<button data-i="${x.id}" class="${x.id===I.iv?'on':''}"><b>${x.zh}</b><small>${x.s} 個半音</small></button>`).join('');
+  const cur=IV[I.iv];
+  $('#ivDeg').innerHTML=[2,3,4,5,6,7,8].map(d=>`<button data-d="${d}" class="${d===cur.deg?'on':''}">${d}度</button>`).join('');
+  // 換度數時預設選大（2、3、6、7 度）或完全（4、5、8 度）
+  $$('#ivDeg button').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d; if(d===IV[I.iv].deg) return;
+    I.iv=IVS.find(x=>x.deg===d&&/^[MP]/.test(x.id)).id; ivLearnPickers(); ivLearn(); ivPlay(I.root,IV[I.iv],'mel'); });
+  const qs=IVS.filter(x=>x.deg===cur.deg).sort((a,b)=>a.s-b.s);
+  $('#ivList').style.gridTemplateColumns=qs.length===1?'1fr':'1fr 1fr';
+  $('#ivList').innerHTML=qs.map(x=>`<button data-i="${x.id}" class="${x.id===I.iv?'on':''}"><b>${x.zh}</b><small>${x.s} 個半音</small></button>`).join('');
   $$('#ivList button').forEach(b=>b.onclick=()=>{ I.iv=b.dataset.i; ivLearnPickers(); ivLearn(); ivPlay(I.root,IV[I.iv],'mel'); });
   $('#ivRoots').innerHTML=ROOTS.map(r=>`<button data-r="${r}" class="${r===I.root?'on':''}">${pretty(r)}</button>`).join('');
   $$('#ivRoots button').forEach(b=>b.onclick=()=>{ I.root=b.dataset.r; ivLearnPickers(); ivLearn(); ivPlay(I.root,IV[I.iv],'mel'); });
