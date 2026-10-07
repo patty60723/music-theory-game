@@ -414,13 +414,19 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   .dt-progs button{flex:1 1 calc(50% - 3px)}
 }
 
+@media (orientation:landscape) and (max-height:520px) and (min-width:721px){ #diatonic{grid-template-columns:168px minmax(0,1fr);gap:12px} }
 /* 手機橫向（畫面很矮）：左欄跟著整頁捲，不要卡在固定高度裡；順階和弦卡改成一排 2 個 */
 @media (orientation:landscape) and (max-height:520px){
   .split>.panel{position:static;max-height:none;overflow:visible}
-  .dt-row{grid-template-columns:1fr 1fr}
-  .dt-card{flex-direction:column;align-items:center;gap:0;padding:5px 4px}
-  .dt-card .rn,.dt-card b{min-width:0;text-align:center}
-  .dt-card b{font-size:17px} .dt-card small{margin-left:0}
+  /* 左欄縮窄，把寬度留給鋼琴；和弦清單改成一列一個、只寫羅馬數字＋和弦 */
+  #diatonic .panel{padding:10px}
+  .dt-keybox{padding:6px 8px} .dt-keybox summary{gap:6px} .dt-keybox summary .k{display:none} .dt-keybox summary b{font-size:15px}
+  #dt7Seg button{padding:4px 9px;font-size:13px}
+  .dt-where,#diatonic .groupnote{font-size:12px}
+  .dt-row{grid-template-columns:1fr;gap:3px}
+  .dt-card{flex-direction:row;align-items:baseline;gap:8px;padding:4px 8px}
+  .dt-card .rn{min-width:42px;font-size:13px;text-align:left} .dt-card b{font-size:16px;text-align:left}
+  .dt-card small{display:none}
 }
 
 /* ---------- 音程教室 ---------- */
