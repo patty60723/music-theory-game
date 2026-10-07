@@ -348,12 +348,26 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:480px){ .tab .full{display:none} .tab .short{display:inline} }
 
 /* ---------- 順階和弦 ---------- */
-.dt-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.dt-keybox{border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px;background:var(--soft)}
+.dt-keybox summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none}
+.dt-keybox summary::-webkit-details-marker{display:none}
+.dt-keybox summary .k{font-size:12.5px;color:var(--muted)}
+.dt-keybox summary b{font-family:var(--serif);font-size:17px}
+.dt-keybox summary .chg{margin-left:auto;font-size:13px;color:var(--gold);font-weight:700}
+.dt-keybox summary .chg::after{content:" ▾"}
+.dt-keybox[open] summary .chg::after{content:" ▴"}
+.dt-row{display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:12px}
 .dt-card{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;min-width:0}
 .dt-card .rn{font-family:var(--display);font-weight:700;font-size:15px;color:var(--gold)}
 .dt-card b{font-family:var(--display);font-size:22px;font-weight:700;white-space:nowrap}
 .dt-card small{font-size:11.5px;color:var(--ink);opacity:.72;white-space:nowrap}
 .dt-card.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
+@media (min-width:721px){
+  .dt-card{flex-direction:row;align-items:baseline;gap:10px;padding:6px 12px}
+  .dt-card .rn{min-width:50px;text-align:left}
+  .dt-card b{font-size:19px;min-width:76px;text-align:left}
+  .dt-card small{margin-left:auto} .dt-card small .lv{display:none}
+}
 .dt-card.play{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink)} .dt-card.play .rn,.dt-card.play small{color:var(--gold-ink)}
 .dt-rule{border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:color-mix(in srgb,var(--gold) 9%,transparent);border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px}
 .dt-rule h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;font-weight:900;letter-spacing:.04em}
@@ -607,15 +621,17 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     </div>
     <div id="diatonic" class="split">
       <aside class="panel">
-        <span class="lbl">調性</span>
-        <div class="seg" id="dtModeSeg" style="margin-bottom:10px"><button data-v="major" class="on">大調</button><button data-v="minor">小調</button></div>
-        <div class="keygrid" id="dtKeys"></div>
-        <span class="lbl" style="margin-top:14px">和弦</span>
-        <div class="seg" id="dt7Seg"><button data-v="0" class="on">三和弦</button><button data-v="1">七和弦</button></div>
+        <details class="dt-keybox" id="dtKeyBox">
+          <summary><span class="k">調性</span><b id="dtKeySum">C 大調</b><span class="chg">換調</span></summary>
+          <div class="seg" id="dtModeSeg" style="margin:10px 0"><button data-v="major" class="on">大調</button><button data-v="minor">小調</button></div>
+          <div class="keygrid" id="dtKeys"></div>
+        </details>
+        <div class="seg" id="dt7Seg" style="margin:12px 0"><button data-v="0" class="on">三和弦</button><button data-v="1">七和弦</button></div>
+        <span class="lbl">幾級和弦（點一下聽聽看）</span>
+        <div class="dt-row" id="dtRow"></div>
         <p class="groupnote">順階和弦：只用這個調的音階音，在每個音上往上疊（隔一個音取一個）。從音階第幾個音開始疊，就叫「幾級和弦」。</p>
       </aside>
       <div class="stage">
-        <div class="dt-row" id="dtRow"></div>
         <div class="dt-detail">
           <div class="dt-main">
             <div class="chord-head">
@@ -1393,7 +1409,8 @@ function dtChord(i){
 function dtPickers(){
   const keys=D.mode==='major'?MAJOR_KEYS:MINOR_KEYS;
   $('#dtKeys').innerHTML=keys.map(k=>`<button data-k="${k}" class="${k===D.key?'on':''}">${pretty(k)}${D.mode==='minor'?'m':''}</button>`).join('');
-  $$('#dtKeys button').forEach(b=>b.onclick=()=>{ D.key=b.dataset.k; dtStop(); dtPickers(); dtRender(); dtPlayDeg(D.deg); });
+  $$('#dtKeys button').forEach(b=>b.onclick=()=>{ D.key=b.dataset.k; dtStop(); dtPickers(); dtRender(); dtPlayDeg(D.deg); $('#dtKeyBox').open=false; });
+  $('#dtKeySum').textContent=pretty(D.key)+(D.mode==='major'?' 大調':' 小調');
   $('#dtProgs').innerHTML=DT[D.mode].progs.map((p,i)=>`<button data-p="${i}"><b>${p[0]}</b><small>${p[1]}</small></button>`).join('');
   $$('#dtProgs button').forEach(b=>b.onclick=()=>dtProg(+b.dataset.p,b));
 }
