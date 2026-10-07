@@ -77,7 +77,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tabs{display:flex;gap:4px}
 .tab{border:0;background:transparent;color:rgba(247,236,214,.7);padding:6px 12px;font-family:var(--serif);font-weight:600;font-size:16px;letter-spacing:.06em;border-bottom:2px solid transparent;border-radius:0}
 .tab.active{color:#f4d994;border-bottom-color:#f4d994;text-shadow:0 0 12px rgba(244,217,148,.55)}
-.bar-ctl{display:flex;gap:8px;flex-wrap:wrap}
+.chord-opts{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:-6px 0 16px}
+.chord-opts .lbl{margin:0 2px 0 0}
+.chord-opts .seg button{padding:4px 12px;font-size:13px}
 .bar .seg{background:rgba(0,0,0,.28);border-color:rgba(244,217,148,.3)}
 .bar .seg button{color:rgba(247,236,214,.75)}
 
@@ -89,6 +91,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .seg button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);font-weight:700}
 .seg.vert{display:flex;flex-direction:column;border-radius:var(--r-md)}
 .seg.vert button{border-radius:calc(var(--r-md) - 3px);text-align:left;padding:7px 12px}
+.seg.vert button small{display:block;font-size:11.5px;font-weight:400;opacity:.8;margin-top:1px}
 .play{border:0;background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);border-radius:var(--r-pill);padding:9px 22px;font-weight:700;font-size:15px;letter-spacing:.04em;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 20px color-mix(in srgb,var(--gold) 35%,transparent);white-space:nowrap}
 .ghost{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:var(--r-pill);padding:8px 16px;font-size:14.5px;white-space:nowrap}
@@ -242,6 +245,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .scorebar b{display:block;font-family:var(--display);font-size:30px;line-height:1.1;color:var(--ink)}
 .prompt-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
 .prompt{font-family:var(--serif);font-weight:600;font-size:20px;min-height:1.5em}
+.prompt .intro{display:block;font-family:var(--sans);font-weight:500;font-size:16px;line-height:1.7;max-width:34em}
+.prompt .intro small{color:var(--muted);font-size:13px}
 .prompt strong{font-family:var(--display);font-size:36px;color:var(--glow);margin:0 4px}
 .options{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
 .options:empty{display:none}
@@ -257,8 +262,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .feedback .fx{display:block;color:var(--muted);font-size:13px}
 .listen{display:flex;align-items:center;justify-content:center;height:var(--piano-h);border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted);font-family:var(--serif);font-size:20px;background:var(--panel)}
 
+#nowNote.idle{opacity:.45}
 .rotate-hint{display:none}
 .rotate-hint[hidden]{display:none!important}
+.rotate-hint .x{border:0;background:transparent;color:inherit;font-size:13px;margin-left:8px;padding:0 4px;opacity:.7}
 
 /* ---------- 手機橫放（主要情境） ---------- */
 @media (orientation:landscape) and (max-height:520px){
@@ -345,7 +352,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-card{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;min-width:0}
 .dt-card .rn{font-family:var(--display);font-weight:700;font-size:15px;color:var(--gold)}
 .dt-card b{font-family:var(--display);font-size:22px;font-weight:700;white-space:nowrap}
-.dt-card small{font-size:11px;color:var(--muted);white-space:nowrap}
+.dt-card small{font-size:11.5px;color:var(--ink);opacity:.72;white-space:nowrap}
 .dt-card.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
 .dt-card.play{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink)} .dt-card.play .rn,.dt-card.play small{color:var(--gold-ink)}
 .dt-rule{border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:color-mix(in srgb,var(--gold) 9%,transparent);border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px}
@@ -365,8 +372,13 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-build{margin-top:8px;font-size:14.5px}
 .dt-build b{color:var(--gold)}
 @media (max-width:480px){ .dt-rule td{padding:5px 4px;font-size:13px} .dt-rule td.sym{font-size:15px} }
-.dt-desc{margin:10px 0 0;font-size:14.5px;line-height:1.7}
-.dt-desc b{color:var(--gold)}
+.dt-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;margin-bottom:6px}
+.dt-detail .chord-head{align-items:flex-start}
+.dt-detail .dt-rule{margin-bottom:0}
+.dt-role{margin-top:12px;padding:10px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.7}
+.dt-role .lbl{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.dt-role .tag{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:var(--r-pill);padding:0 8px}
+@media (max-width:980px){ .dt-detail{grid-template-columns:1fr} }
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
 .dt-progbox{margin-top:16px}
 .dt-progs{display:flex;flex-wrap:wrap;gap:6px}
@@ -377,8 +389,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:720px){
   .dt-row{grid-template-columns:repeat(4,1fr)}
   .dt-card b{font-size:19px}
-  .dt-card small{white-space:normal;text-align:center;font-size:10.5px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
-  #chordLvSeg .full{display:none}
+  .dt-card small{white-space:normal;text-align:center;font-size:11px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
   .dt-progs button{flex:1 1 calc(50% - 3px)}
 }
 
@@ -386,7 +397,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .ivlist{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
 .ivlist button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:5px 10px;text-align:left;line-height:1.25}
 .ivlist button b{display:block;font-family:var(--serif);font-size:15.5px}
-.ivlist button small{color:var(--muted);font-size:11.5px}
+.ivlist button small{color:var(--ink);opacity:.7;font-size:12px}
 .ivlist button.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
 .iv-explain{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 6px}
 .iv-card{border:1px solid var(--line);background:var(--panel);border-radius:var(--r-md);padding:12px 14px}
@@ -515,15 +526,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     <button class="tab" data-tab="chord" role="tab"><span class="full">和弦練功房</span><span class="short">和弦</span></button>
     <button class="tab" data-tab="metro" role="tab"><span class="full">節拍・調音</span><span class="short">工具</span></button>
   </nav>
-  <div class="bar-ctl" id="chordCtl" hidden>
-    <div class="seg" id="subSeg"><button data-v="learn" class="on">圖鑑</button><button data-v="game">小遊戲</button></div>
-    <div class="seg" id="instSeg"><button data-v="piano" class="on">鋼琴</button><button data-v="guitar">吉他</button></div>
-    <div class="seg" id="labSeg"><button data-v="int" class="on">音程</button><button data-v="name">音名</button></div>
-  </div>
 </header>
 
 <main class="app">
-  <div class="rotate-hint" id="rotateHint">把手機橫過來，鍵盤更好看也更好按</div>
+  <div class="rotate-hint" id="rotateHint">把手機橫過來，鍵盤更好看也更好按<button class="x" id="rotateX" aria-label="不用了">✕</button></div>
 
   <!-- ============ 音階折返跑 ============ -->
   <section id="tab-scale">
@@ -562,7 +568,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
       <div class="stage">
         <div class="chord-head">
           <div><div class="sym" id="ivName"></div><div class="zh" id="ivSub"></div></div>
-          <div class="actions duo"><button id="ivMel"><span class="ic">♪︎</span>分開彈</button><button id="ivHarm"><span class="ic">▶︎</span>一起彈</button></div>
+          <div class="actions duo"><button id="ivHarm"><span class="ic">▶︎</span>一起彈</button><button id="ivMel"><span class="ic">♪︎</span>分開彈</button></div>
         </div>
         <div class="iv-explain">
           <div class="iv-card"><span class="lbl">① 幾度？數音名（頭尾都算）</span><div class="iv-letters" id="ivLetters"></div><p id="ivDegTxt"></p></div>
@@ -577,24 +583,28 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         <span class="lbl">玩法</span>
         <div class="seg vert" id="ivModeSeg" style="margin-bottom:14px"><button data-v="see" class="on">看＋聽 選音程</button><button data-v="ear">純聽力</button><button data-v="find">在鍵盤上找音</button></div>
         <span class="lbl">難度</span>
-        <div class="seg vert" id="ivLvSeg" style="margin-bottom:14px"><button data-v="basic" class="on">入門：大2、大3、完全4、完全5、完全8</button><button data-v="more">進階：加上小2、小3、6度、7度</button><button data-v="all">全部：再加上增4度</button></div>
+        <div class="seg vert" id="ivLvSeg" style="margin-bottom:14px"><button data-v="basic" class="on">入門<small>大2、大3、完全4、完全5、完全8</small></button><button data-v="more">進階<small>再加上小2、小3、6 度、7 度</small></button><button data-v="all">全部<small>再加上增4度</small></button></div>
         <div class="scorebar"><div><b id="ivScore">0</b>答對 / <span id="ivTotal">0</span></div><div><b id="ivStreak">0</b>連續答對</div><div><b id="ivBest">0</b>最佳紀錄</div></div>
       </aside>
       <div class="stage">
         <div class="prompt-row">
-          <div class="prompt" id="ivPrompt">選好玩法和難度後按「開始」</div>
+          <div class="prompt" id="ivPrompt"></div>
           <div class="actions"><button class="play" id="ivStart">開始</button><button class="ghost" id="ivReplay" hidden>🔊 再聽一次</button><button class="play" id="ivNext" hidden>下一題</button></div>
         </div>
         <div class="options" id="ivOptions"></div>
         <div class="feedback" id="ivFeedback"></div>
-        <div class="floor"><div class="scroll"><div id="ivGamePiano"></div></div></div>
+        <div class="floor" id="ivGameFloor" hidden><div class="scroll"><div id="ivGamePiano"></div></div></div>
       </div>
     </div>
   </section>
 
   <!-- ============ 和弦練功房 ============ -->
   <section id="tab-chord" hidden>
-    <div class="tool-switch" id="chordLvWrap"><div class="seg" id="chordLvSeg"><button data-v="simple" class="on">🌱 簡單版<span class="full">：順階和弦</span></button><button data-v="adv">📚 進階版<span class="full">：和弦圖鑑</span></button></div></div>
+    <div class="tool-switch"><div class="seg" id="chordViewSeg"><button data-v="simple" class="on">🌱 順階和弦</button><button data-v="adv">📚 和弦圖鑑</button><button data-v="game">🎮 小遊戲</button></div></div>
+    <div class="chord-opts" id="chordCtl"><span class="lbl">鍵盤顯示</span>
+      <div class="seg" id="instSeg"><button data-v="piano" class="on">鋼琴</button><button data-v="guitar">吉他</button></div>
+      <div class="seg" id="labSeg"><button data-v="int" class="on">音程</button><button data-v="name">音名</button></div>
+    </div>
     <div id="diatonic" class="split">
       <aside class="panel">
         <span class="lbl">調性</span>
@@ -605,15 +615,20 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         <p class="groupnote">順階和弦：只用這個調的音階音，在每個音上往上疊（隔一個音取一個）。從音階第幾個音開始疊，就叫「幾級和弦」。</p>
       </aside>
       <div class="stage">
-        <div class="dt-rule" id="dtRule"></div>
         <div class="dt-row" id="dtRow"></div>
-        <div class="chord-head">
-          <div><div class="sym" id="dtSym"></div><div class="zh" id="dtZh"></div><div class="dt-build" id="dtBuild"></div></div>
-          <div class="actions duo"><button id="dtPlay"><span class="ic">▶︎</span>一起彈</button><button id="dtArp"><span class="ic">♪︎</span>分解</button></div>
+        <div class="dt-detail">
+          <div class="dt-main">
+            <div class="chord-head">
+              <div><div class="sym" id="dtSym"></div><div class="zh" id="dtZh"></div></div>
+              <div class="actions duo"><button id="dtPlay"><span class="ic">▶︎</span>一起彈</button><button id="dtArp"><span class="ic">♪︎</span>分開彈</button></div>
+            </div>
+            <div class="dt-build" id="dtBuild"></div>
+            <div class="tones"><div class="formula" id="dtNotes"></div><span class="eq">＝</span><div class="formula" id="dtJp"></div><span class="dt-jpnote">（簡譜，1＝<span id="dtKeyName"></span>）</span></div>
+          </div>
+          <div class="dt-rule" id="dtRule"></div>
         </div>
-        <p class="dt-desc" id="dtDesc"></p>
-        <div class="tones"><div class="formula" id="dtNotes"></div><span class="eq">＝</span><div class="formula" id="dtJp"></div><span class="dt-jpnote">（簡譜，1＝<span id="dtKeyName"></span>）</span></div>
         <div class="floor"><div class="scroll"><div id="dtInst"></div></div></div>
+        <div class="dt-role" id="dtDesc"></div>
         <div class="dt-progbox"><span class="lbl">常見和弦進行（點了會依序播放）</span><div class="dt-progs" id="dtProgs"></div></div>
       </div>
     </div>
@@ -630,7 +645,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
       <div class="stage">
         <div class="chord-head">
           <div><div class="sym" id="cSym"></div><div class="zh" id="cZh"></div></div>
-          <div class="actions duo"><button id="cPlay"><span class="ic">▶︎</span>一起彈</button><button id="cArp"><span class="ic">♪︎</span>分解</button></div>
+          <div class="actions duo"><button id="cPlay"><span class="ic">▶︎</span>一起彈</button><button id="cArp"><span class="ic">♪︎</span>分開彈</button></div>
         </div>
         <div class="tones"><div class="formula" id="cFormula"></div><span class="eq">＝</span><div class="formula" id="cNotes"></div><span class="optnote" id="optNote" hidden><i></i>外框＝實際彈奏時常省略的音</span></div>
         <div class="guitar-tools" id="gTools" hidden>
@@ -654,7 +669,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
       </aside>
       <div class="stage">
         <div class="prompt-row">
-          <div class="prompt" id="gPrompt">選好範圍後按「開始」</div>
+          <div class="prompt" id="gPrompt"></div>
           <div class="actions">
             <button class="play" id="gStart">開始</button>
             <button class="ghost" id="gReplay" hidden>🔊 再聽一次</button>
@@ -665,7 +680,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         </div>
         <div class="options" id="gOptions"></div>
         <div class="feedback" id="gFeedback"></div>
-        <div class="floor"><div class="scroll"><div id="gameInst"></div></div></div>
+        <div class="floor" id="gameFloor" hidden><div class="scroll"><div id="gameInst"></div></div></div>
       </div>
     </div>
   </section>
@@ -959,13 +974,14 @@ function updMuteBadge(){
 }
 function sReset(){
   S.next=0; S.cur=-1; S.lastKey='';
-  $('#nowNote').textContent='—'; $('#nowSolfa').textContent=''; $('#nowPhase').textContent='按下播放開始折返跑';
+  $('#nowNote').textContent=S.notes.length?pretty(S.notes[0].name):'—'; $('#nowNote').classList.add('idle'); $('#nowNote').classList.remove('muted');
+  $('#nowSolfa').textContent=S.mode==='major'?'大調・從 Do 開始':'小調・從 La 開始'; $('#nowPhase').textContent='按 ▶ 播放開始折返跑，可以在「調性與設定」換調';
   $('#progBar').style.width='0'; $('#pathChips').innerHTML='';
   $$('#scaleRow .deg').forEach(d=>d.classList.remove('cur'));
   scalePiano&&scalePiano.setLit([]);
 }
 function sShow(idx,muted){
-  const it=S.seq[idx], hide=muted&&!S.muteShow;
+  const it=S.seq[idx], hide=muted&&!S.muteShow; $('#nowNote').classList.remove('idle');
   scalePiano.setLit(hide||it.rest?[]:[{midi:it.midi,color:'var(--glow)',label:pretty(it.name),hollow:muted}]);
   $('#nowNote').textContent=it.rest?'休':hide?'？':pretty(it.full);
   $('#nowNote').classList.toggle('muted',!!muted||!!it.rest);
@@ -1278,8 +1294,11 @@ function newQuestion(){
   renderGameInst(); setBtns();
   if(G.mode!=='build') playChord(root,type,voicing,false);
 }
+const G_INTRO={identify:'按「開始」後會彈一個和弦，鍵盤上也會亮出來，從選項選出它是哪個和弦。',ear:'按「開始」後只會聽到一個和弦，靠耳朵選出它是哪個和弦。',build:'按「開始」後會出一個和弦名稱，在鍵盤或指板上把它的音點出來，再按「檢查答案」。'};
+const gIntro=()=>`<span class="intro">${G_INTRO[G.mode]}<br><small>先在左邊選好題目範圍。</small></span>`;
 function renderGameInst(){
   const host=$('#gameInst'), q=G.q;
+  $('#gameFloor').hidden=!q;
   if(!q){ host.innerHTML=''; return; }
   if(G.mode==='ear'&&!G.answered){ host.innerHTML='<div class="listen">🎧 只用耳朵聽，答完才會看到答案</div>'; return; }
   if(G.mode==='build'&&!G.answered){
@@ -1332,7 +1351,7 @@ $('#gClear').onclick=()=>{G.userMidis=new Set(); G.userFrets=[-1,-1,-1,-1,-1,-1]
 $('#gCheck').onclick=()=>checkBuild();
 $$('#gModeSeg button').forEach(b=>b.onclick=()=>{
   G.mode=b.dataset.v; $$('#gModeSeg button').forEach(x=>x.classList.toggle('on',x===b));
-  G.q=null; G.answered=false; $('#gOptions').innerHTML=''; $('#gFeedback').innerHTML=''; $('#gPrompt').textContent='選好範圍後按「開始」';
+  G.q=null; G.answered=false; $('#gOptions').innerHTML=''; $('#gFeedback').innerHTML=''; $('#gPrompt').innerHTML=gIntro();
   renderGameInst(); setBtns();
 });
 
@@ -1340,7 +1359,7 @@ $$('#gModeSeg button').forEach(b=>b.onclick=()=>{
 function segBind(sel,fn){ $$(sel+' button').forEach(b=>b.onclick=()=>{ $$(sel+' button').forEach(x=>x.classList.toggle('on',x===b)); fn(b.dataset.v); }); }
 segBind('#instSeg',v=>{ C.inst=v; renderLearn(); dtRender(); if(G.q){ if(G.mode==='build'&&!G.answered){ G.userMidis=new Set(); G.userFrets=[-1,-1,-1,-1,-1,-1]; $('#gPrompt').innerHTML=`在${v==='piano'?'鋼琴':'吉他'}上組出 <strong>${symOf(G.q.root,G.q.type)}</strong>（${pretty(G.q.root)} ${G.q.type.zh}）`; } renderGameInst(); } });
 segBind('#labSeg',v=>{ C.lab=v; renderLearn(); dtRender(); renderGameInst(); });
-segBind('#subSeg',v=>{ C.sub=v; chordView(); });
+
 
 /* ================= 順階和弦（和弦練功房・簡單版） ================= */
 const DT={
@@ -1384,8 +1403,11 @@ function dtRender(){
   $$('#dtRow .dt-card').forEach(b=>b.onclick=()=>{ dtStop(); D.deg=+b.dataset.d; dtRender(); dtPlayDeg(D.deg); });
   const c=dtChord(D.deg), scale=scaleNotes(D.mode,D.key);
   $('#dtSym').textContent=symOf(c.root,c.type);
-  $('#dtZh').innerHTML=`${D.deg+1} 級和弦（${c.rn}）・${pretty(c.root)} ${c.type.zh}<span class="en">${pretty(c.root)} ${c.type.en}</span>`;
-  $('#dtDesc').innerHTML=t.desc[D.deg];
+  $('#dtZh').innerHTML=`${D.deg+1} 級和弦（${c.rn}）・${pretty(c.root)} ${c.type.zh}`;
+  // 「它在歌裡的角色」：功能名稱縮成小標籤，白話說明當內文
+  const m=t.desc[D.deg].match(/^<b>(.*?)<\/b>：(.*)$/), head=m?m[1]:'', body=m?m[2]:t.desc[D.deg];
+  const tag=head.includes('・')?head.split('・').slice(1).join('・'):'';
+  $('#dtDesc').innerHTML=`<span class="lbl">💡 它在歌裡的角色${tag?`<i class="tag">${tag}</i>`:''}</span>${body}`;
   dtRule(c);
   // 和弦音＝從第 N 個音開始，隔一個取一個
   const idx=c.type.tones.map((_,k)=>(D.deg+2*k)%7);
@@ -1447,12 +1469,13 @@ $$('#dt7Seg button').forEach(b=>b.onclick=()=>{ D.sev=b.dataset.v==='1'; $$('#dt
 // 簡單版／進階版
 let chordLv='simple';
 function chordView(){
-  $$('#chordLvSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===chordLv));
+  const view=C.sub==='game'?'game':chordLv;
+  $$('#chordViewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
   const learn=C.sub==='learn';
-  $('#chordLvWrap').hidden=!learn; $('#diatonic').hidden=!(learn&&chordLv==='simple'); $('#learn').hidden=!(learn&&chordLv==='adv'); $('#game').hidden=C.sub!=='game';
+  $('#diatonic').hidden=!(learn&&chordLv==='simple'); $('#learn').hidden=!(learn&&chordLv==='adv'); $('#game').hidden=C.sub!=='game';
   if(!(learn&&chordLv==='simple')) dtStop();
 }
-$$('#chordLvSeg button').forEach(b=>b.onclick=()=>{ chordLv=b.dataset.v; chordView(); });
+$$('#chordViewSeg button').forEach(b=>b.onclick=()=>{ const v=b.dataset.v; if(v==='game') C.sub='game'; else { C.sub='learn'; chordLv=v; } chordView(); });
 
 /* ================= 音程教室 ================= */
 // 度數＝從第一個音數到第二個音，經過幾個音名（頭尾都算）；大／小／完全＝看中間差幾個半音
@@ -1483,7 +1506,9 @@ function ivExplain(root,iv){
 }
 // 鍵盤：根音標音名，中間的鍵依序編號 1、2、3…，最後一個就是半音數
 function ivDraw(host,root,iv,{numbers=true,hideTarget=false,onKey}={}){
-  const r=ivMidi(root), p=makePiano(host,60,84,onKey||(m=>pianoNote(m,0,2,0.6)),22), lit=[{midi:r,color:'var(--c-root)',label:pretty(root)}];
+  const r=ivMidi(root), narrow=matchMedia('(max-width:720px)').matches;
+  const lo=narrow?(isBlack(r)?r-1:r):60, hi=narrow?(isBlack(r+12)?r+13:r+12):84;
+  const p=makePiano(host,lo,hi,onKey||(m=>pianoNote(m,0,2,0.6)),22), lit=[{midi:r,color:'var(--c-root)',label:pretty(root)}];
   if(numbers) for(let i=1;i<iv.s;i++) lit.push({midi:r+i,color:'var(--muted)',label:String(i),hollow:true});
   if(!hideTarget) lit.push({midi:r+iv.s,color:'var(--c-third)',label:numbers?String(iv.s):'?'});
   p.setLit(lit); return p;
@@ -1521,9 +1546,10 @@ $$('#ivSubSeg button').forEach(b=>b.onclick=()=>ivShowSub(b.dataset.v));
 // ---- 小遊戲 ----
 function ivScore(){ $('#ivScore').textContent=I.score; $('#ivTotal').textContent=I.total; $('#ivStreak').textContent=I.streak; $('#ivBest').textContent=I.best; }
 function ivBtns(){ const q=!!I.q; $('#ivStart').hidden=q; $('#ivReplay').hidden=!q||I.mode==='find'; $('#ivNext').hidden=!q||!I.answered; }
-function ivReset(){ I.q=null; I.answered=false; $('#ivOptions').innerHTML=''; $('#ivFeedback').innerHTML=''; $('#ivPrompt').textContent='選好玩法和難度後按「開始」'; $('#ivGamePiano').innerHTML=''; ivBtns(); }
+const IV_INTRO={see:'按「開始」後鍵盤上會亮出兩個音並彈給你聽，選出它們差幾度。',ear:'按「開始」後只會聽到兩個音，靠耳朵選出它們差幾度。',find:'按「開始」後會出題，例如「從 C 往上大3度是哪個音？」，直接在鍵盤上點出答案。'};
+function ivReset(){ I.q=null; I.answered=false; $('#ivOptions').innerHTML=''; $('#ivFeedback').innerHTML=''; $('#ivPrompt').innerHTML=`<span class="intro">${IV_INTRO[I.mode]}<br><small>先在左邊選好難度。</small></span>`; $('#ivGamePiano').innerHTML=''; ivBtns(); }
 function ivGameInst(){
-  const q=I.q, host=$('#ivGamePiano'); if(!q){ host.innerHTML=''; return; }
+  const q=I.q, host=$('#ivGamePiano'); $('#ivGameFloor').hidden=!q; if(!q){ host.innerHTML=''; return; }
   if(I.answered){ ivDraw(host,q.root,q.iv); return; }
   if(I.mode==='ear'){ host.innerHTML='<div class="listen">🎧 只用耳朵聽，答完才會看到答案</div>'; return; }
   if(I.mode==='see'){ ivDraw(host,q.root,q.iv,{numbers:false}); return; }
@@ -1726,11 +1752,13 @@ function showTool(v){
 }
 $$('#toolSeg button').forEach(b=>b.onclick=()=>showTool(b.dataset.v));
 
+const rotDismissed=()=>{ try{ return localStorage.getItem('rotateHintOff')==='1'; }catch(e){ return false; } };
+$('#rotateX').onclick=()=>{ $('#rotateHint').hidden=true; try{ localStorage.setItem('rotateHintOff','1'); }catch(e){} };
 /* ---- tabs ---- */
 function showTab(t){
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
   ['scale','intv','chord','metro'].forEach(k=>$('#tab-'+k).hidden=t!==k);
-  $('#chordCtl').hidden=t!=='chord'; $('#rotateHint').hidden=t==='metro';   // 橫放提示是給鋼琴用的
+  $('#rotateHint').hidden=t==='metro'||rotDismissed();   // 橫放提示是給鋼琴用的
   if(t!=='scale') sPause();
   if(t!=='chord') dtStop();
   if(t!=='metro'){ mStop(); tnStop(); }
@@ -1780,14 +1808,14 @@ function loadHash(){
   if(!p.has('cat')) C.cat=TYPE[t].cat;
   C.type=TYPE[t].cat===C.cat?t:TYPES.find(x=>x.cat===C.cat).id;
   C.vIdx=+get('v',v=>/^\d+$/.test(v)); C.showAll=get('all',bit)==='1';
-  segOn('#subSeg',C.sub); segOn('#instSeg',C.inst); segOn('#labSeg',C.lab);
+  segOn('#instSeg',C.inst); segOn('#labSeg',C.lab);
   $('#showAll').checked=C.showAll;
   chordLv=get('clv',oneOf(['simple','adv']));
   D.mode=get('dm',oneOf(['major','minor'])); D.key=get('dk',oneOf(D.mode==='major'?MAJOR_KEYS:MINOR_KEYS)); D.sev=get('d7',bit)==='1'; D.deg=+get('dd',oneOf(['0','1','2','3','4','5','6']));
   segOn('#dtModeSeg',D.mode); segOn('#dt7Seg',D.sev?'1':'0'); dtPickers(); dtRender(); chordView();
   // 小遊戲
   const gm=get('gmode',oneOf(['identify','ear','build']));
-  if(gm!==G.mode){ G.mode=gm; G.q=null; G.answered=false; $('#gOptions').innerHTML=''; $('#gFeedback').innerHTML=''; $('#gPrompt').textContent='選好範圍後按「開始」'; }
+  if(gm!==G.mode){ G.mode=gm; G.q=null; G.answered=false; $('#gOptions').innerHTML=''; $('#gFeedback').innerHTML=''; $('#gPrompt').innerHTML=gIntro(); }
   segOn('#gModeSeg',G.mode);
   G.cats=new Set(get('gcats',v=>/^[\w,]*$/.test(v)).split(',').filter(c=>CATS.some(x=>x[0]===c)));
   // 分頁
@@ -1812,7 +1840,10 @@ window.addEventListener('hashchange',()=>{   // 手動改網址或貼上別人�
 
 /* init */
 loadHash();
-sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns(); saveHash();
+sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns();
+if(!G.q) $('#gPrompt').innerHTML=gIntro();
+if(!I.q) ivReset();
+saveHash();
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('sw.js');
 
