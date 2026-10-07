@@ -348,6 +348,20 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-card small{font-size:11px;color:var(--muted);white-space:nowrap}
 .dt-card.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
 .dt-card.play{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink)} .dt-card.play .rn,.dt-card.play small{color:var(--gold-ink)}
+.dt-rule{border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:color-mix(in srgb,var(--gold) 9%,transparent);border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px}
+.dt-rule h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;font-weight:900;letter-spacing:.04em}
+.dt-rule h4 small{font-family:var(--sans);font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px;letter-spacing:0}
+.dt-rule table{border-collapse:collapse;font-size:14px}
+.dt-rule td{padding:5px 8px;border-top:1px solid var(--line);white-space:nowrap}
+.dt-rule td.sym{font-family:var(--display);font-weight:700;font-size:17px}
+.dt-rule td.res{font-weight:700}
+.dt-rule tr.on td{background:color-mix(in srgb,var(--gold) 22%,transparent)}
+.dt-rule tr.on td:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)} .dt-rule tr.on td:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
+.dt-rule .where{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.dt-rule .where b{color:var(--ink)}
+.dt-build{margin-top:8px;font-size:14.5px}
+.dt-build b{color:var(--gold)}
+@media (max-width:480px){ .dt-rule td{padding:5px 4px;font-size:13px} .dt-rule td.sym{font-size:15px} }
 .dt-desc{margin:10px 0 0;font-size:14.5px;line-height:1.7}
 .dt-desc b{color:var(--gold)}
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
@@ -360,7 +374,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:720px){
   .dt-row{grid-template-columns:repeat(4,1fr)}
   .dt-card b{font-size:19px}
-  .dt-card small{white-space:normal;text-align:center}
+  .dt-card small{white-space:normal;text-align:center;font-size:10.5px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
   #chordLvSeg .full{display:none}
   .dt-progs button{flex:1 1 calc(50% - 3px)}
 }
@@ -588,9 +602,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         <p class="groupnote">順階和弦：只用這個調的音階音，在每個音上往上疊（隔一個音取一個）。從音階第幾個音開始疊，就叫「幾級和弦」。</p>
       </aside>
       <div class="stage">
+        <div class="dt-rule" id="dtRule"></div>
         <div class="dt-row" id="dtRow"></div>
         <div class="chord-head">
-          <div><div class="sym" id="dtSym"></div><div class="zh" id="dtZh"></div></div>
+          <div><div class="sym" id="dtSym"></div><div class="zh" id="dtZh"></div><div class="dt-build" id="dtBuild"></div></div>
           <div class="actions duo"><button id="dtPlay"><span class="ic">▶︎</span>一起彈</button><button id="dtArp"><span class="ic">♪︎</span>分解</button></div>
         </div>
         <p class="dt-desc" id="dtDesc"></p>
@@ -1328,7 +1343,6 @@ segBind('#subSeg',v=>{ C.sub=v; chordView(); });
 const DT={
  major:{tri:['maj','min','min','maj','maj','min','dim'],sev:['maj7','m7','m7','maj7','dom7','m7','m7b5'],
    rn:['I','ii','iii','IV','V','vi','vii°'],rn7:['Imaj7','ii7','iii7','IVmaj7','V7','vi7','viiø7'],
-   fn:['主和弦','下屬功能','主功能','下屬和弦','屬和弦','關係小調','導和弦'],
    desc:['<b>1 級・主和弦（Tonic）</b>：「家」，最穩定。歌曲常從這裡開始、在這裡結束。',
      '<b>2 級</b>：屬於「下屬」功能，最常接到 5 級。「2–5–1」是流行和爵士最常見的結尾。',
      '<b>3 級</b>：和 1 級共用兩個音，色彩比較柔、帶點小調味，可以拿來代替 1 級。',
@@ -1339,7 +1353,6 @@ const DT={
    progs:[['1–5–6–4','流行萬用進行',[0,4,5,3]],['4–5–3–6','王道進行（日系流行）',[3,4,2,5]],['1–6–4–5','50 年代進行',[0,5,3,4]],['2–5–1','爵士經典結尾',[1,4,0]],['6–4–1–5','抒情常用',[5,3,0,4]]]},
  minor:{tri:['min','dim','maj','min','min','maj','maj'],sev:['m7','m7b5','maj7','m7','m7','maj7','dom7'],
    rn:['i','ii°','III','iv','v','VI','VII'],rn7:['i7','iiø7','IIImaj7','iv7','v7','VImaj7','VII7'],
-   fn:['主和弦','減和弦','關係大調','下屬和弦','屬和弦','下中音','下主音'],
    desc:['<b>1 級・主和弦</b>：小調的「家」，帶點憂傷但很穩定。',
      '<b>2 級・減和弦</b>：緊張、不穩定，常接到 5 級。',
      '<b>3 級・關係大調的主和弦</b>：一下子變明亮，像是轉到大調。',
@@ -1364,18 +1377,46 @@ function dtPickers(){
 }
 function dtRender(){
   const t=DT[D.mode];
-  $('#dtRow').innerHTML=[0,1,2,3,4,5,6].map(i=>{ const c=dtChord(i); return `<button class="dt-card ${i===D.deg?'on':''}" data-d="${i}"><span class="rn">${c.rn}</span><b>${symOf(c.root,c.type)}</b><small>${i+1} 級・${t.fn[i]}</small></button>`; }).join('');
+  $('#dtRow').innerHTML=[0,1,2,3,4,5,6].map(i=>{ const c=dtChord(i); return `<button class="dt-card ${i===D.deg?'on':''}" data-d="${i}"><span class="rn">${c.rn}</span><b>${symOf(c.root,c.type)}</b><small><span class="lv">${i+1} 級・</span>${c.type.zh}</small></button>`; }).join('');
   $$('#dtRow .dt-card').forEach(b=>b.onclick=()=>{ dtStop(); D.deg=+b.dataset.d; dtRender(); dtPlayDeg(D.deg); });
   const c=dtChord(D.deg), scale=scaleNotes(D.mode,D.key);
   $('#dtSym').textContent=symOf(c.root,c.type);
   $('#dtZh').innerHTML=`${D.deg+1} 級和弦（${c.rn}）・${pretty(c.root)} ${c.type.zh}<span class="en">${pretty(c.root)} ${c.type.en}</span>`;
   $('#dtDesc').innerHTML=t.desc[D.deg];
+  dtRule(c);
   // 和弦音＝從第 N 個音開始，隔一個取一個
   const idx=c.type.tones.map((_,k)=>(D.deg+2*k)%7);
   $('#dtNotes').innerHTML=c.type.tones.map(tn=>`<span class="tone" style="--c:${degColor(tn.d)}">${toneName(c.root,tn)}</span>`).join('');
   $('#dtJp').innerHTML=idx.map((j,k)=>`<span class="tone" style="--c:${degColor(c.type.tones[k].d)}">${j+1}</span>`).join('');
   $('#dtKeyName').textContent=pretty(scale[0].name)+(D.mode==='minor'?'（小調從 6 唱起，這裡以主音當 1）':'');
   drawChord($('#dtInst'),{root:c.root,type:c.type,voicing:dtVoicing(c),reveal:true});
+}
+// 三和弦看兩個 3 度怎麼疊；七和弦＝底下的三和弦＋根音到 7 音的 7 度
+const THIRD=n=>n===4?'大3度':n===3?'小3度':n+'個半音';
+const SEVENTH=n=>n===11?'大7度':n===10?'小7度':n===9?'減7度':n+'個半音';
+const DT_TRI=[['maj',4,3],['min',3,4],['dim',3,3]];
+const DT_SEV=[['maj7','maj','大7度'],['dom7','maj','小7度'],['m7','min','小7度'],['m7b5','dim','小7度']];
+function dtRule(c){
+  const t=DT[D.mode], R=pretty(c.root), sc=scaleNotes(D.mode,D.key);
+  const nm=k=>toneName(c.root,c.type.tones[k]);
+  if(!D.sev){
+    const lo=c.type.tones[1].s, hi=c.type.tones[2].s-lo;
+    $('#dtRule').innerHTML=`<h4>三和弦怎麼分？<small>看兩個 3 度怎麼疊（根音→3 音、3 音→5 音）</small></h4><table>`+
+      DT_TRI.map(([id,a,b])=>`<tr class="${c.type.id===id?'on':''}"><td class="res">${TYPE[id].zh}</td><td>＝ ${THIRD(a)} ＋ ${THIRD(b)}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
+      `</table><p class="where">${dtWhere(t.tri)}</p>`;
+    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${THIRD(lo)}</b>（${nm(0)}→${nm(1)}）＋ <b>${THIRD(hi)}</b>（${nm(1)}→${nm(2)}）→ ${c.type.zh}`;
+  }else{
+    const triId=t.tri[D.deg], sev=c.type.tones[3].s;
+    $('#dtRule').innerHTML=`<h4>七和弦怎麼分？<small>底下的三和弦 ＋ 最上面的 7 度（根音→7 音）</small></h4><table>`+
+      DT_SEV.map(([id,tri,sv])=>`<tr class="${c.type.id===id?'on':''}"><td>${TYPE[tri].zh} ＋ ${sv}</td><td class="res">＝ ${TYPE[id].zh}</td><td class="sym">${R}${TYPE[id].suf}</td></tr>`).join('')+
+      `</table><p class="where">${dtWhere(t.sev)}</p>`;
+    $('#dtBuild').innerHTML=`${R}${c.type.suf} ＝ <b>${R}${TYPE[triId].suf} ${TYPE[triId].zh}</b>（${nm(0)} ${nm(1)} ${nm(2)}）＋ <b>${SEVENTH(sev)}</b>（${nm(0)}→${nm(3)}）→ ${c.type.zh}`;
+  }
+}
+// 「這個調裡：1、4、5 級是大三和弦…」
+function dtWhere(ids){
+  const g={}; ids.forEach((id,i)=>{ (g[id]=g[id]||[]).push(i+1); });
+  return '這個調裡：'+Object.entries(g).map(([id,ns])=>`<b>${ns.join('、')} 級</b>是${TYPE[id].zh}`).join('，')+'。';
 }
 const dtVoicing=c=>{ const vs=genVoicings(parseNote(c.root).pc,c.type); return vs.length?vs[0]:null; };
 function dtPlayDeg(i){ const c=dtChord(i); playChord(c.root,c.type,dtVoicing(c),false); }
