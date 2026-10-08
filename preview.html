@@ -398,11 +398,12 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:980px){
   #diatonic .stage{display:flex;flex-direction:column}
   .dt-detail{display:contents}
-  .dt-main{order:1} #diatonic .floor{order:2} .dt-rule{order:3;margin-top:14px} .dt-role{order:4} .dt-progbox{order:5}
+  .dt-main{order:1} #diatonic .floor{order:2} .dt-progbox{order:3} .dt-rule{order:4;margin-top:14px} .dt-role{order:5}
 }
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
-.dt-progbox{margin-top:16px}
+.dt-progbox{margin-top:12px}
 .dt-progs{display:flex;flex-wrap:wrap;gap:6px}
+.dt-progs button{white-space:nowrap}
 .dt-progs button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:6px 10px;text-align:left;line-height:1.3}
 .dt-progs button b{font-family:var(--display);font-size:16px;margin-right:6px}
 .dt-progs button small{color:var(--muted);font-size:12px}
@@ -411,11 +412,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   .dt-row{grid-template-columns:repeat(4,1fr)}
   .dt-card b{font-size:19px}
   .dt-card small{white-space:normal;text-align:center;font-size:11px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
-  .dt-progs button{flex:1 1 calc(50% - 3px)}
+  .dt-progs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}   /* 手機：一排、左右滑 */
+  .dt-progs::-webkit-scrollbar{display:none}
+  .dt-progs button{flex:none}
 }
 
 @media (orientation:landscape) and (max-height:520px) and (min-width:721px){
   #diatonic{grid-template-columns:168px minmax(0,1fr);gap:12px}
+  .dt-progs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none} .dt-progs::-webkit-scrollbar{display:none} .dt-progs button{flex:none}
   /* 左右各自捲動：左欄黏在頭部下面、撐滿剩下的高度，內容多就在欄內捲 */
   .split>.panel{position:sticky;top:52px;max-height:calc(100dvh - 60px);overflow-y:auto;overscroll-behavior:contain}
 }
@@ -674,8 +678,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div class="dt-rule" id="dtRule"></div>
         </div>
         <div class="floor"><div class="scroll"><div id="dtInst"></div></div></div>
+        <div class="dt-progbox"><span class="lbl">🎵 常見和弦進行（點了會依序播放，左邊的和弦會跟著亮）</span><div class="dt-progs" id="dtProgs"></div></div>
         <div class="dt-role" id="dtDesc"></div>
-        <div class="dt-progbox"><span class="lbl">常見和弦進行（點了會依序播放）</span><div class="dt-progs" id="dtProgs"></div></div>
       </div>
     </div>
     <div id="learn" class="split" hidden>
