@@ -79,6 +79,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tab.active{color:#f4d994;border-bottom-color:#f4d994;text-shadow:0 0 12px rgba(244,217,148,.55)}
 .chord-opts{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:-6px 0 16px}
 .chord-opts .lbl{margin:0 2px 0 0}
+.chord-opts.in-panel{justify-content:flex-start;margin:0 0 14px}
+.chord-opts.in-panel .lbl{width:100%;margin-bottom:2px}
 .chord-opts .seg button{padding:4px 12px;font-size:13px}
 .bar .seg{background:rgba(0,0,0,.28);border-color:rgba(244,217,148,.3)}
 .bar .seg button{color:rgba(247,236,214,.75)}
@@ -91,7 +93,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .seg button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);font-weight:700}
 .seg.vert{display:flex;flex-direction:column;border-radius:var(--r-md)}
 .seg.vert button{border-radius:calc(var(--r-md) - 3px);text-align:left;padding:7px 12px}
-.seg.vert button small{display:block;font-size:11.5px;font-weight:400;opacity:.8;margin-top:1px}
+.seg.vert button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:1px}
 .play{border:0;background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--gold-ink);border-radius:var(--r-pill);padding:9px 22px;font-weight:700;font-size:15px;letter-spacing:.04em;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 20px color-mix(in srgb,var(--gold) 35%,transparent);white-space:nowrap}
 .ghost{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:var(--r-pill);padding:8px 16px;font-size:14.5px;white-space:nowrap}
@@ -125,8 +127,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .key .lab{font-weight:700;font-size:12px;color:#fff;background:rgba(0,0,0,.34);border-radius:var(--r-xs);padding:0 4px;margin-bottom:22px;white-space:nowrap}
 .key.black .lab{margin-bottom:8px}
 .key .lab:empty{display:none}
+.piano.even .key .lab{position:absolute;top:calc(var(--piano-h)*.6 - 34px);margin:0}   /* 音程教室：編號排成一條線，不用上下跳著看 */
 .key.hollow .lab{background:var(--glow);color:#1a1300}
-.key .cn{position:absolute;bottom:4px;font-size:10px;color:#7d7362}
+.key .cn{position:absolute;bottom:4px;font-size:12px;color:#7d7362}
 .key.inscale::before{content:"";position:absolute;top:8px;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.8}
 .key.black.inscale::before{background:var(--gold-hi)}
 
@@ -146,7 +149,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .tempo{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
 .tempo .bpm{display:flex;flex-direction:column;align-items:center;line-height:1;min-width:44px}
 .tempo .bpm b{font-family:var(--display);font-size:22px;font-weight:700}
-.tempo .bpm small{font-size:10px;color:var(--muted);letter-spacing:.1em}
+.tempo .bpm small{font-size:12px;color:var(--muted);letter-spacing:.1em}
 .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;cursor:pointer;font-size:14px;background:var(--soft)}
 .pill input{accent-color:var(--gold);margin:0;width:16px;height:16px}
 .badge{border:1px dashed var(--glow);color:var(--glow);border-radius:var(--r-pill);padding:5px 12px;font-size:13px;font-weight:700}
@@ -201,7 +204,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .typechips{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
 .typechips button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:5px 9px;text-align:left;line-height:1.25}
 .typechips button b{display:block;font-family:var(--display);font-size:19px;font-weight:700}
-.typechips button small{display:block;color:var(--muted);font-size:11.5px}
+.typechips button small{display:block;color:var(--muted);font-size:12px}
+@media (max-width:720px){ .typechips button small+small{display:none} }
 .typechips button.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
 .about{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .desc{margin:0 0 8px;font-size:13.5px}
@@ -241,7 +245,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 /* ---------- 遊戲 ---------- */
 .catchecks{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .scorebar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;border-top:1px solid var(--line);padding-top:12px}
-.scorebar div{font-size:11.5px;color:var(--muted)}
+.scorebar div{font-size:12px;color:var(--muted)}
 .scorebar b{display:block;font-family:var(--display);font-size:30px;line-height:1.1;color:var(--ink)}
 .prompt-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
 .prompt{font-family:var(--serif);font-weight:600;font-size:20px;min-height:1.5em}
@@ -324,6 +328,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 /* ---------- 節拍器 ---------- */
 .tab .short{display:none}
 .metro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+@media (min-width:721px) and (min-height:600px){ .metro{min-height:min(560px,calc(100vh - 200px))} .m-main{justify-content:center} }
 .m-main{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px}
 .m-bpm{display:flex;flex-direction:column;align-items:center;line-height:1}
 .m-bpm b{font-family:var(--display);font-size:96px;font-weight:700}
@@ -360,7 +365,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-card{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;min-width:0}
 .dt-card .rn{font-family:var(--display);font-weight:700;font-size:15px;color:var(--gold)}
 .dt-card b{font-family:var(--display);font-size:22px;font-weight:700;white-space:nowrap}
-.dt-card small{font-size:11.5px;color:var(--ink);opacity:.72;white-space:nowrap}
+.dt-card small{font-size:12px;color:var(--ink);opacity:.72;white-space:nowrap}
 .dt-card.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--gold) 25%,transparent)}
 @media (min-width:721px){
   .dt-card{flex-direction:row;align-items:baseline;gap:10px;padding:6px 12px}
@@ -398,10 +403,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:980px){
   #diatonic .stage{display:flex;flex-direction:column}
   .dt-detail{display:contents}
+  .dt-rule h4{cursor:pointer;margin:0} .dt-rule h4::after{content:" ▾";color:var(--gold)} .dt-rule.open h4::after{content:" ▴"} .dt-rule.open h4{margin-bottom:8px}
+  .dt-rule:not(.open)>:not(h4){display:none}
   .dt-main{order:1} #diatonic .floor{order:2} .dt-progbox{order:3} .dt-rule{order:4;margin-top:14px} .dt-role{order:5}
 }
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
 .dt-progbox{margin-top:12px}
+.dt-progbox .lbl .sub{font-size:12px;opacity:.85;margin-left:4px}
+.dt-progs.fade{-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
 .dt-progs{display:flex;flex-wrap:wrap;gap:6px}
 .dt-progs button{white-space:nowrap}
 .dt-progs button{border:1px solid var(--line);background:var(--soft);border-radius:var(--r-md);padding:6px 10px;text-align:left;line-height:1.3}
@@ -411,12 +420,31 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 @media (max-width:720px){
   .dt-row{grid-template-columns:repeat(4,1fr)}
   .dt-card b{font-size:19px}
-  .dt-card small{white-space:normal;text-align:center;font-size:11px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
+  .dt-card small{white-space:normal;text-align:center;font-size:12px} .dt-card small .lv{display:none}   /* 手機：羅馬數字已經看得出幾級，只寫和弦種類 */
   .dt-progs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}   /* 手機：一排、左右滑 */
   .dt-progs::-webkit-scrollbar{display:none}
   .dt-progs button{flex:none}
 }
 
+@media (orientation:landscape) and (max-height:520px){
+  /* 頂部切換與鍵盤顯示排成同一行，大標題縮小，讓鋼琴進第一個畫面 */
+  #tab-chord,#tab-intv{text-align:center} #tab-chord .split,#tab-intv .split{text-align:left}
+  #tab-chord>.tool-switch,#tab-chord>.chord-opts,#tab-intv>.tool-switch{display:inline-flex;vertical-align:middle;margin:0 4px 8px}
+  .chord-opts>.lbl{display:none}
+  .tool-switch .seg button,.chord-opts .seg button{padding:4px 10px;font-size:13px}
+  .sym{font-size:40px} .zh{font-size:14px;margin-top:2px} .zh .en{display:none}
+  .chord-head{gap:6px} .chord-head .duo button{padding:6px 12px;font-size:14px}
+  .iv-explain{margin:8px 0 4px}
+  .lbl .hint{display:none}
+  #tab-chord .floor .scroll,#tab-intv .floor .scroll{padding-top:12px}
+  .dt-build{margin-top:2px} #diatonic .tones{margin-top:4px}
+  /* 音程教室：鋼琴排在解說卡片前面 */
+  #ivLearn .stage{display:flex;flex-direction:column}
+  #ivLearn .chord-head{order:1} #ivLearn .floor{order:2} #ivLearn .iv-explain{order:3} #ivLearn .iv-feel{order:4}
+  /* 手指好按：至少 36px 高 */
+  .dt-card{min-height:36px} .keygrid button,.rootgrid button{min-height:36px}
+  .ivdeg{grid-template-columns:repeat(4,1fr)} .ivdeg button{min-height:36px}
+}
 @media (orientation:landscape) and (max-height:520px) and (min-width:721px){
   #diatonic{grid-template-columns:168px minmax(0,1fr);gap:12px}
   .dt-progs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none} .dt-progs::-webkit-scrollbar{display:none} .dt-progs button{flex:none}
@@ -431,7 +459,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   #dt7Seg button{padding:4px 9px;font-size:13px}
   .dt-where,#diatonic .groupnote{font-size:12px}
   .dt-row{grid-template-columns:1fr;gap:3px}
-  .dt-card{flex-direction:row;align-items:baseline;gap:8px;padding:4px 8px}
+  .dt-card{flex-direction:row;align-items:center;gap:8px;padding:6px 8px}
   .dt-card .rn{min-width:42px;font-size:13px;text-align:left} .dt-card b{font-size:16px;text-align:left}
   .dt-card small{display:none}
 }
@@ -605,9 +633,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     <div class="tool-switch"><div class="seg" id="ivSubSeg"><button data-v="learn" class="on">📖 認識音程</button><button data-v="game">🎮 小遊戲</button></div></div>
     <div id="ivLearn" class="split">
       <aside class="panel">
-        <span class="lbl">① 先選幾度</span>
+        <span class="lbl">度數</span>
         <div class="ivdeg" id="ivDeg"></div>
-        <span class="lbl">② 再選大小／完全／增減</span>
+        <span class="lbl">大小／完全／增減</span>
         <div class="ivlist" id="ivList"></div>
         <span class="lbl">從哪個音開始（根音）</span>
         <div class="rootgrid" id="ivRoots"></div>
@@ -661,7 +689,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
         </details>
         <div class="seg" id="dt7Seg" style="margin:12px 0"><button data-v="0" class="on">三和弦</button><button data-v="1">七和弦</button></div>
         <p class="dt-where" id="dtWhere" hidden></p>
-        <span class="lbl">幾級和弦（點一下聽聽看）</span>
+        <span class="lbl">幾級和弦<span class="hint">（點一下聽聽看）</span></span>
         <div class="dt-row" id="dtRow"></div>
         <p class="groupnote">順階和弦：只用這個調的音階音，在每個音上往上疊（隔一個音取一個）。從音階第幾個音開始疊，就叫「幾級和弦」。</p>
       </aside>
@@ -678,7 +706,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div class="dt-rule" id="dtRule"></div>
         </div>
         <div class="floor"><div class="scroll"><div id="dtInst"></div></div></div>
-        <div class="dt-progbox"><span class="lbl">🎵 常見和弦進行（點了會依序播放，左邊的和弦會跟著亮）</span><div class="dt-progs" id="dtProgs"></div></div>
+        <div class="dt-progbox"><span class="lbl">🎵 常見和弦進行 <small class="sub">點了會依序播放，和弦會跟著亮</small></span><div class="dt-progs" id="dtProgs"></div></div>
         <div class="dt-role" id="dtDesc"></div>
       </div>
     </div>
@@ -1447,6 +1475,7 @@ function dtPickers(){
   $('#dtKeySum').textContent=pretty(D.key)+(D.mode==='major'?' 大調':' 小調');
   $('#dtProgs').innerHTML=DT[D.mode].progs.map((p,i)=>`<button data-p="${i}"><b>${p[0]}</b><small>${p[1]}</small></button>`).join('');
   $$('#dtProgs button').forEach(b=>b.onclick=()=>dtProg(+b.dataset.p,b));
+  requestAnimationFrame(dtProgFade);
 }
 function dtRender(){
   const t=DT[D.mode];
@@ -1473,6 +1502,7 @@ const SEVENTH=n=>n===11?'大7度':n===10?'小7度':n===9?'減7度':n+'個半音'
 const DT_TRI=[['maj',4,3],['min',3,4],['dim',3,3]];
 const DT_SEV=[['maj7','maj','大7度'],['dom7','maj','小7度'],['m7','min','小7度'],['m7b5','dim','小7度']];
 function dtRule(c){
+  $('#dtRule').classList.toggle('open',!!D.ruleOpen);
   $('#dtWhere').hidden=!D.sev; if(D.sev) $('#dtWhere').innerHTML=dtWhere(DT[D.mode].sev);
   const t=DT[D.mode], R=pretty(c.root), sc=scaleNotes(D.mode,D.key);
   const nm=k=>toneName(c.root,c.type.tones[k]);
@@ -1498,12 +1528,15 @@ function dtWhere(ids){
 const dtVoicing=c=>{ const vs=genVoicings(parseNote(c.root).pc,c.type); return vs.length?vs[0]:null; };
 function dtPlayDeg(i){ const c=dtChord(i); playChord(c.root,c.type,dtVoicing(c),false); }
 function dtStop(){ D.timers.forEach(clearTimeout); D.timers=[]; $$('#dtProgs button').forEach(b=>b.classList.remove('on')); $$('#dtRow .dt-card').forEach(b=>b.classList.remove('play')); }
+function dtProgFade(){ const el=$('#dtProgs'); el.classList.toggle('fade',el.scrollWidth>el.clientWidth+2&&el.scrollLeft+el.clientWidth<el.scrollWidth-4); }
+$('#dtProgs').addEventListener('scroll',dtProgFade,{passive:true}); addEventListener('resize',dtProgFade);
 function dtProg(p,btn){
   dtStop(); btn.classList.add('on');
   const seq=DT[D.mode].progs[p][2];
   seq.forEach((d,k)=>D.timers.push(setTimeout(()=>{ D.deg=d; dtRender(); $(`#dtRow .dt-card[data-d="${d}"]`).classList.add('play'); dtPlayDeg(d); },k*1300)));
   D.timers.push(setTimeout(()=>{ $$('#dtRow .dt-card').forEach(b=>b.classList.remove('play')); btn.classList.remove('on'); },seq.length*1300+200));
 }
+$('#dtRule').addEventListener('click',e=>{ if(e.target.closest('h4')&&matchMedia('(max-width:980px)').matches){ D.ruleOpen=!D.ruleOpen; $('#dtRule').classList.toggle('open',D.ruleOpen); } });
 $('#dtPlay').onclick=()=>dtPlayDeg(D.deg);
 $('#dtArp').onclick=()=>{ const c=dtChord(D.deg); playChord(c.root,c.type,dtVoicing(c),true); };
 $$('#dtModeSeg button').forEach(b=>b.onclick=()=>{
@@ -1522,6 +1555,9 @@ function chordView(){
   const learn=C.sub==='learn';
   $('#diatonic').hidden=!(learn&&chordLv==='simple'); $('#learn').hidden=!(learn&&chordLv==='adv'); $('#game').hidden=C.sub!=='game';
   if(!(learn&&chordLv==='simple')) dtStop();
+  const ctl=$('#chordCtl'), gamePanel=$('#game aside.panel');
+  if(view==='game'){ if(ctl.parentElement!==gamePanel){ gamePanel.insertBefore(ctl,$('#gModeSeg').nextSibling); ctl.classList.add('in-panel'); } }
+  else if(ctl.classList.contains('in-panel')){ $('#chordViewSeg').closest('.tool-switch').after(ctl); ctl.classList.remove('in-panel'); }
 }
 $$('#chordViewSeg button').forEach(b=>b.onclick=()=>{ const v=b.dataset.v; if(v==='game') C.sub='game'; else { C.sub='learn'; chordLv=v; } chordView(); });
 
@@ -1561,7 +1597,7 @@ function ivDraw(host,root,iv,{numbers=true,hideTarget=false,onKey}={}){
   if(numbers) for(let i=1;i<iv.s;i++) lit.push({midi:r+i,color:'var(--muted)',label:String(i),hollow:true});
   if(!hideTarget) lit.push({midi:r+iv.s,color:'var(--c-third)',label:numbers?String(iv.s):'?'});
   if(numbers&&iv.deg===7) lit.push({midi:r+12,color:'var(--c-root)',label:'高1',hollow:true});   // 7 度：標出高八度的根音，數它離 7 度的音多遠
-  p.setLit(lit); return p;
+  p.setLit(lit); host.querySelector('.piano').classList.add('even'); return p;
 }
 function ivPlay(root,iv,mode){
   ac(); const r=ivMidi(root), t=ctx.currentTime+0.03;
