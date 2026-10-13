@@ -475,6 +475,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .pn-toggle .act{flex:none;color:var(--gold);font-weight:700;font-size:13px}
 .pn-toggle .act::after{content:" ▴"}
 .split.collapsed{grid-template-columns:1fr!important}
+@media (orientation:landscape) and (max-height:520px){ .pn-toggle{display:none} }
 .split.collapsed>.panel{position:static;max-height:none;overflow:visible;padding:8px 14px}
 .split.collapsed>.panel>:not(.pn-toggle){display:none!important}
 .split.collapsed>.panel>.pn-toggle{padding:0;margin:0;border:0}
@@ -1895,8 +1896,9 @@ const PN_SUM={
   ivGame:()=>`${({see:'看＋聽 選音程',ear:'純聽力',find:'在鍵盤上找音'})[I.mode]}・${({basic:'入門',more:'進階',all:'全部'})[I.lv]}・答對 ${I.score}/${I.total}`
 };
 let pnShut=new Set(); try{ pnShut=new Set(JSON.parse(localStorage.getItem('pnCollapsed')||'[]')); }catch(e){}
+const LAND=matchMedia('(orientation:landscape) and (max-height:520px)');   // 手機橫拿：左右兩欄本來就放得下鋼琴，一律展開
 function pnSync(){
-  Object.keys(PN_SUM).forEach(id=>{ const sp=$('#'+id); if(!sp) return; const shut=pnShut.has(id);
+  Object.keys(PN_SUM).forEach(id=>{ const sp=$('#'+id); if(!sp) return; const shut=pnShut.has(id)&&!LAND.matches;
     sp.classList.toggle('collapsed',shut); const t=sp.querySelector('.pn-toggle');
     t.querySelector('.sum').textContent=shut?PN_SUM[id]():'選項'; t.querySelector('.act').textContent=shut?'展開':'收起'; t.setAttribute('aria-expanded',!shut); });
 }
@@ -1907,6 +1909,7 @@ Object.keys(PN_SUM).forEach(id=>{
   pn.prepend(t);
 });
 document.addEventListener('click',()=>setTimeout(pnSync,0));
+LAND.addEventListener('change',pnSync);
 /* ---- tabs ---- */
 function showTab(t){
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
