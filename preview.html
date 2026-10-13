@@ -485,7 +485,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 #diatonic.collapsed .dt-card .rn{min-width:0!important;font-size:12px!important;text-align:center!important}
 #diatonic.collapsed .dt-card b{min-width:0!important;font-size:16px!important;text-align:center!important;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 #diatonic.collapsed .dt-card small{display:none!important}
-@media (max-width:560px){ #diatonic.collapsed>.panel>#dtRow{grid-template-columns:repeat(4,minmax(0,1fr))!important} }   /* 手機：一排 4 個，七和弦名稱才放得下 */
+/* 手機：只留級數（選中的和弦下面就有大字名稱），7 個排一排 */
+@media (max-width:560px){
+  #diatonic.collapsed .dt-card b{display:none!important}
+  #diatonic.collapsed .dt-card{padding:8px 0!important;min-height:38px}
+  #diatonic.collapsed .dt-card .rn{font-size:14px!important;white-space:nowrap}
+  #diatonic.collapsed .dt-card .rs{display:none}
+}
+@media (max-width:380px){ #diatonic.collapsed .dt-card .rn{font-size:12px!important} }
 
 /* ---------- 音程教室 ---------- */
 .ivdeg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
@@ -1508,7 +1515,7 @@ function dtPickers(){
 }
 function dtRender(){
   const t=DT[D.mode];
-  $('#dtRow').innerHTML=[0,1,2,3,4,5,6].map(i=>{ const c=dtChord(i); return `<button class="dt-card ${i===D.deg?'on':''}" data-d="${i}"><span class="rn">${c.rn}</span><b>${symOf(c.root,c.type)}</b><small><span class="lv">${i+1} 級・</span>${c.type.zh}</small></button>`; }).join('');
+  $('#dtRow').innerHTML=[0,1,2,3,4,5,6].map(i=>{ const c=dtChord(i); return `<button class="dt-card ${i===D.deg?'on':''}" data-d="${i}"><span class="rn">${c.rn.replace(/^([ivIV]+)(.+)$/,'$1<span class="rs">$2</span>')}</span><b>${symOf(c.root,c.type)}</b><small><span class="lv">${i+1} 級・</span>${c.type.zh}</small></button>`; }).join('');
   $$('#dtRow .dt-card').forEach(b=>b.onclick=()=>{ dtStop(); D.deg=+b.dataset.d; dtRender(); dtPlayDeg(D.deg); });
   const c=dtChord(D.deg), scale=scaleNotes(D.mode,D.key);
   $('#dtSym').textContent=symOf(c.root,c.type);
