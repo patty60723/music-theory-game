@@ -479,6 +479,13 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .split.collapsed>.panel>:not(.pn-toggle){display:none!important}
 .split.collapsed>.panel>.pn-toggle{padding:0;margin:0;border:0}
 .split.collapsed>.panel>.pn-toggle .act::after{content:" ▾"}
+/* 順階和弦收起時：7 個和弦留著，排成一排小按鈕 */
+#diatonic.collapsed>.panel>#dtRow{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;margin:8px 0 2px}
+#diatonic.collapsed .dt-card{flex-direction:column!important;align-items:center!important;gap:0!important;padding:5px 2px!important;min-height:0}
+#diatonic.collapsed .dt-card .rn{min-width:0!important;font-size:12px!important;text-align:center!important}
+#diatonic.collapsed .dt-card b{min-width:0!important;font-size:16px!important;text-align:center!important;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#diatonic.collapsed .dt-card small{display:none!important}
+@media (max-width:560px){ #diatonic.collapsed>.panel>#dtRow{grid-template-columns:repeat(4,minmax(0,1fr))!important} }   /* 手機：一排 4 個，七和弦名稱才放得下 */
 
 /* ---------- 音程教室 ---------- */
 .ivdeg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
@@ -1874,7 +1881,7 @@ const rotDismissed=()=>{ try{ return localStorage.getItem('rotateHintOff')==='1'
 $('#rotateX').onclick=()=>{ $('#rotateHint').hidden=true; try{ localStorage.setItem('rotateHintOff','1'); }catch(e){} };
 /* 左欄收起：每個左欄最上面一條，收起後只顯示目前選了什麼 */
 const PN_SUM={
-  diatonic:()=>`${pretty(D.key)} ${D.mode==='major'?'大調':'小調'}・${D.sev?'七和弦':'三和弦'}・${dtChord(D.deg).rn} ${symOf(dtChord(D.deg).root,dtChord(D.deg).type)}`,
+  diatonic:()=>`${pretty(D.key)} ${D.mode==='major'?'大調':'小調'}・${D.sev?'七和弦':'三和弦'}`,
   learn:()=>`${symOf(C.root,TYPE[C.type])}　${TYPE[C.type].zh}`,
   game:()=>`${({identify:'看＋聽 選和弦',ear:'純聽力',build:'自己組和弦'})[G.mode]}・答對 ${G.score}/${G.total}`,
   ivLearn:()=>`${IV[I.iv].zh}・從 ${pretty(I.root)} 開始`,
