@@ -393,19 +393,24 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .dt-build{margin-top:8px;font-size:14.5px}
 .dt-build b{color:var(--gold)}
 @media (max-width:480px){ .dt-rule td{padding:5px 4px;font-size:13px} .dt-rule td.sym{font-size:15px} }
-.dt-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;margin-bottom:6px}
+.dt-detail{margin-bottom:6px}
 .dt-detail .chord-head{align-items:flex-start}
-.dt-detail .dt-rule{margin-bottom:0}
+.dt-acts{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.dt-howbtn{border:1px dashed color-mix(in srgb,var(--gold) 60%,transparent);background:transparent;color:var(--gold);border-radius:var(--r-pill);padding:5px 14px;font-size:13.5px;font-weight:700}
+@media (max-width:720px){ .dt-acts{align-items:flex-start} }
+.dt-howbtn:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+.modal{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--panel-solid);color:var(--ink);padding:22px 20px 18px;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.modal::backdrop{background:rgba(0,0,0,.5)}
+.modal-x{position:absolute;top:10px;right:10px;border:0;background:transparent;color:var(--muted);font-size:18px;width:34px;height:34px;border-radius:50%}
+.modal .dt-rule{border:0;background:transparent;padding:0;margin:0}
+.modal .dt-rule table{width:100%}
 .dt-role{margin-top:12px;padding:10px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.7}
 .dt-role .lbl{display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .dt-role .tag{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:var(--r-pill);padding:0 8px}
 /* 窄螢幕（手機直／橫、平板）：說明表移到鍵盤下面，先看到和弦和鍵盤 */
 @media (max-width:980px){
   #diatonic .stage{display:flex;flex-direction:column}
-  .dt-detail{display:contents}
-  .dt-rule h4{cursor:pointer;margin:0} .dt-rule h4::after{content:" ▾";color:var(--gold)} .dt-rule.open h4::after{content:" ▴"} .dt-rule.open h4{margin-bottom:8px}
-  .dt-rule:not(.open)>:not(h4){display:none}
-  .dt-main{order:1} #diatonic .floor{order:2} .dt-progbox{order:3} .dt-rule{order:4;margin-top:14px} .dt-role{order:5}
+
 }
 .dt-jpnote{font-size:12.5px;color:var(--muted)}
 .dt-progbox{margin-top:12px}
@@ -463,6 +468,17 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
   .dt-card .rn{min-width:42px;font-size:13px;text-align:left} .dt-card b{font-size:16px;text-align:left}
   .dt-card small{display:none}
 }
+
+/* ---------- 左欄收起 ---------- */
+.pn-toggle{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;padding:0 0 10px;margin:0 0 10px;border-bottom:1px solid var(--line);color:var(--ink);text-align:left;font-size:13.5px}
+.pn-toggle .sum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.pn-toggle .act{flex:none;color:var(--gold);font-weight:700;font-size:13px}
+.pn-toggle .act::after{content:" ▴"}
+.split.collapsed{grid-template-columns:1fr!important}
+.split.collapsed>.panel{position:static;max-height:none;overflow:visible;padding:8px 14px}
+.split.collapsed>.panel>:not(.pn-toggle){display:none!important}
+.split.collapsed>.panel>.pn-toggle{padding:0;margin:0;border:0}
+.split.collapsed>.panel>.pn-toggle .act::after{content:" ▾"}
 
 /* ---------- 音程教室 ---------- */
 .ivdeg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
@@ -698,12 +714,14 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
           <div class="dt-main">
             <div class="chord-head">
               <div><div class="sym" id="dtSym"></div><div class="zh" id="dtZh"></div></div>
-              <div class="actions duo"><button id="dtPlay"><span class="ic">▶︎</span>一起彈</button><button id="dtArp"><span class="ic">♪︎</span>分開彈</button></div>
+              <div class="dt-acts">
+                <div class="actions duo"><button id="dtPlay"><span class="ic">▶︎</span>一起彈</button><button id="dtArp"><span class="ic">♪︎</span>分開彈</button></div>
+                <button class="dt-howbtn" id="dtHowBtn">📖 <span id="dtHowLbl">三和弦怎麼分？</span></button>
+              </div>
             </div>
             <div class="dt-build" id="dtBuild"></div>
             <div class="tones"><div class="formula" id="dtNotes"></div><span class="eq">＝</span><div class="formula" id="dtJp"></div><span class="dt-jpnote">（簡譜，1＝<span id="dtKeyName"></span>）</span></div>
           </div>
-          <div class="dt-rule" id="dtRule"></div>
         </div>
         <div class="floor"><div class="scroll"><div id="dtInst"></div></div></div>
         <div class="dt-progbox"><span class="lbl">🎵 常見和弦進行 <small class="sub">點了會依序播放，和弦會跟著亮</small></span><div class="dt-progs" id="dtProgs"></div></div>
@@ -798,6 +816,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
     </div>
   </section>
 </main>
+<dialog class="modal" id="dtModal" aria-label="和弦怎麼分">
+  <button class="modal-x" id="dtModalX" aria-label="關閉">✕</button>
+  <div class="dt-rule" id="dtRule"></div>
+</dialog>
 <footer class="foot"><button class="ghost" id="installLink" hidden>📲 安裝到主畫面</button></footer>
 
 <div class="backdrop" id="backdrop" hidden></div>
@@ -1502,7 +1524,7 @@ const SEVENTH=n=>n===11?'大7度':n===10?'小7度':n===9?'減7度':n+'個半音'
 const DT_TRI=[['maj',4,3],['min',3,4],['dim',3,3]];
 const DT_SEV=[['maj7','maj','大7度'],['dom7','maj','小7度'],['m7','min','小7度'],['m7b5','dim','小7度']];
 function dtRule(c){
-  $('#dtRule').classList.toggle('open',!!D.ruleOpen);
+  $('#dtHowLbl').textContent=D.sev?'七和弦怎麼分？':'三和弦怎麼分？';
   $('#dtWhere').hidden=!D.sev; if(D.sev) $('#dtWhere').innerHTML=dtWhere(DT[D.mode].sev);
   const t=DT[D.mode], R=pretty(c.root), sc=scaleNotes(D.mode,D.key);
   const nm=k=>toneName(c.root,c.type.tones[k]);
@@ -1536,7 +1558,9 @@ function dtProg(p,btn){
   seq.forEach((d,k)=>D.timers.push(setTimeout(()=>{ D.deg=d; dtRender(); $(`#dtRow .dt-card[data-d="${d}"]`).classList.add('play'); dtPlayDeg(d); },k*1300)));
   D.timers.push(setTimeout(()=>{ $$('#dtRow .dt-card').forEach(b=>b.classList.remove('play')); btn.classList.remove('on'); },seq.length*1300+200));
 }
-$('#dtRule').addEventListener('click',e=>{ if(e.target.closest('h4')&&matchMedia('(max-width:980px)').matches){ D.ruleOpen=!D.ruleOpen; $('#dtRule').classList.toggle('open',D.ruleOpen); } });
+$('#dtHowBtn').onclick=()=>$('#dtModal').showModal();
+$('#dtModalX').onclick=()=>$('#dtModal').close();
+$('#dtModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) $('#dtModal').close(); });   // 點視窗外面關閉
 $('#dtPlay').onclick=()=>dtPlayDeg(D.deg);
 $('#dtArp').onclick=()=>{ const c=dtChord(D.deg); playChord(c.root,c.type,dtVoicing(c),true); };
 $$('#dtModeSeg button').forEach(b=>b.onclick=()=>{
@@ -1848,6 +1872,27 @@ $$('#toolSeg button').forEach(b=>b.onclick=()=>showTool(b.dataset.v));
 
 const rotDismissed=()=>{ try{ return localStorage.getItem('rotateHintOff')==='1'; }catch(e){ return false; } };
 $('#rotateX').onclick=()=>{ $('#rotateHint').hidden=true; try{ localStorage.setItem('rotateHintOff','1'); }catch(e){} };
+/* 左欄收起：每個左欄最上面一條，收起後只顯示目前選了什麼 */
+const PN_SUM={
+  diatonic:()=>`${pretty(D.key)} ${D.mode==='major'?'大調':'小調'}・${D.sev?'七和弦':'三和弦'}・${dtChord(D.deg).rn} ${symOf(dtChord(D.deg).root,dtChord(D.deg).type)}`,
+  learn:()=>`${symOf(C.root,TYPE[C.type])}　${TYPE[C.type].zh}`,
+  game:()=>`${({identify:'看＋聽 選和弦',ear:'純聽力',build:'自己組和弦'})[G.mode]}・答對 ${G.score}/${G.total}`,
+  ivLearn:()=>`${IV[I.iv].zh}・從 ${pretty(I.root)} 開始`,
+  ivGame:()=>`${({see:'看＋聽 選音程',ear:'純聽力',find:'在鍵盤上找音'})[I.mode]}・${({basic:'入門',more:'進階',all:'全部'})[I.lv]}・答對 ${I.score}/${I.total}`
+};
+let pnShut=new Set(); try{ pnShut=new Set(JSON.parse(localStorage.getItem('pnCollapsed')||'[]')); }catch(e){}
+function pnSync(){
+  Object.keys(PN_SUM).forEach(id=>{ const sp=$('#'+id); if(!sp) return; const shut=pnShut.has(id);
+    sp.classList.toggle('collapsed',shut); const t=sp.querySelector('.pn-toggle');
+    t.querySelector('.sum').textContent=shut?PN_SUM[id]():'選項'; t.querySelector('.act').textContent=shut?'展開':'收起'; t.setAttribute('aria-expanded',!shut); });
+}
+Object.keys(PN_SUM).forEach(id=>{
+  const pn=$('#'+id+' > .panel'); if(!pn) return;
+  const t=document.createElement('button'); t.className='pn-toggle'; t.innerHTML='<span class="sum"></span><span class="act"></span>';
+  t.onclick=()=>{ pnShut.has(id)?pnShut.delete(id):pnShut.add(id); try{ localStorage.setItem('pnCollapsed',JSON.stringify([...pnShut])); }catch(e){} pnSync(); };
+  pn.prepend(t);
+});
+document.addEventListener('click',()=>setTimeout(pnSync,0));
 /* ---- tabs ---- */
 function showTab(t){
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
@@ -1937,6 +1982,7 @@ loadHash();
 sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns();
 if(!G.q) $('#gPrompt').innerHTML=gIntro();
 if(!I.q) ivReset();
+pnSync();
 saveHash();
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('sw.js');
