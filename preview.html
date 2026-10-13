@@ -402,7 +402,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .modal{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--panel-solid);color:var(--ink);padding:22px 20px 18px;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.45)}
 .modal::backdrop{background:rgba(0,0,0,.5)}
 .modal-x{position:absolute;top:10px;right:10px;border:0;background:transparent;color:var(--muted);font-size:18px;width:34px;height:34px;border-radius:50%}
-.modal .dt-rule{border:0;background:transparent;padding:0;margin:0}
+.modal .dt-rule{border:0;background:transparent;padding:0;margin:0;outline:none}
+.modal .dt-rule h4{padding-right:40px}
+.modal .dt-rule h4 small{display:block;margin:4px 0 0}   /* 不要壓到右上角的 ✕ */
+.modal-x:focus:not(:focus-visible){outline:none}
 .modal .dt-rule table{width:100%}
 .dt-role{margin-top:12px;padding:10px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.7}
 .dt-role .lbl{display:flex;align-items:center;gap:8px;margin-bottom:2px}
@@ -833,7 +836,7 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 </main>
 <dialog class="modal" id="dtModal" aria-label="和弦怎麼分">
   <button class="modal-x" id="dtModalX" aria-label="關閉">✕</button>
-  <div class="dt-rule" id="dtRule"></div>
+  <div class="dt-rule" id="dtRule" tabindex="-1" autofocus></div>
 </dialog>
 <footer class="foot"><button class="ghost" id="installLink" hidden>📲 安裝到主畫面</button></footer>
 
