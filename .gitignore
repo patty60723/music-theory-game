@@ -1,0 +1,10 @@
+tmp/
+dist/
+.wrangler/
+.dev.vars*
+.env*
+.private-assets.key
+node_modules/
+# Private score/audio sources stay local and are uploaded only behind the Worker.
+assets/
+__pycache__/

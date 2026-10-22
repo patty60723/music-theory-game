@@ -1,0 +1,16 @@
+{
+  "name": "music-theory-game-cloudflare",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build-worker.mjs",
+    "deploy": "node scripts/deploy-worker.mjs",
+    "dev": "wrangler dev",
+    "assets:seal": "node scripts/seal-private-assets.mjs",
+    "test": "npm run build && node --test tests/worker.test.mjs tests/private-assets.test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.152.0"
+  }
+}

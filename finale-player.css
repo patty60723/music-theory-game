@@ -1,0 +1,106 @@
+/* Extends the existing theatre palette and shared piano/control primitives. */
+:root{--scroll-thumb:var(--muted);--scroll-track:var(--bg2)}
+*{scrollbar-color:var(--scroll-thumb) var(--scroll-track);scrollbar-width:auto}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--scroll-track)}
+::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border:3px solid var(--scroll-track);border-radius:var(--r-pill)}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+::-webkit-scrollbar-thumb:active{background:var(--gold-hi)}
+.finale{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.finale>*{min-width:0}
+.finale[hidden]{display:none}
+.finale-room{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;min-width:0}
+.finale-room>*{min-width:0}
+.finale [hidden]{display:none!important}
+.finale-auth{max-width:640px;width:100%;box-sizing:border-box;justify-self:center;display:grid;gap:18px}
+.finale-auth form{display:grid;gap:8px}
+.finale-auth-actions{display:flex;gap:12px;flex-wrap:wrap}
+.finale-auth input{flex:1;min-width:120px;min-height:48px;padding:8px 12px;box-sizing:border-box;color:var(--ink);background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--r-sm);font:18px var(--sans)}
+.finale-auth button,.finale-title button{min-height:44px}
+#fnAuthStatus{min-height:1.7em}
+.finale h1{font-family:var(--display);font-size:clamp(26px,4vw,40px);margin:0 0 6px;line-height:1.2}
+.finale h2{font-family:var(--serif);font-size:20px;margin:0}
+.finale p{margin:0;color:var(--muted);line-height:1.7}
+.finale-title{display:flex;gap:16px;align-items:start;justify-content:space-between;flex-wrap:wrap}
+.finale-key-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.finale-karaoke{--voice-color:var(--c-root);border-top:3px solid var(--voice-color);padding:24px 28px}
+.finale-karaoke #fnLyricVoice{border-left:3px solid var(--voice-color);padding-left:10px}
+.finale-previous{font-size:16px;min-height:1.7em;padding-top:16px;opacity:.8}
+.finale-current-line{font-family:var(--serif);font-size:clamp(27px,3.8vw,46px);font-weight:700;line-height:1.55;min-height:3.1em;padding:12px 0;overflow-wrap:anywhere}
+.finale-word{color:var(--muted)}
+.finale-word.sung{color:var(--ink)}
+.finale-word.singing{color:transparent;background:linear-gradient(90deg,var(--ink) var(--word-progress),var(--muted) 0);background-clip:text;-webkit-background-clip:text;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:.15em}
+.finale-next-line{font-size:18px;min-height:3.4em;margin-bottom:16px!important}
+.finale-roll-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--muted);margin-bottom:8px}
+.finale-roll-caption strong{min-height:1.5em;font-size:18px;color:var(--ink)}
+.finale-roll{height:240px;position:relative;overflow:hidden;contain:paint;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg2);margin-bottom:18px;isolation:isolate}
+.finale-roll-track{--lane-height:14px;position:absolute;left:0;top:0;height:100%;background-image:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 80px),repeating-linear-gradient(90deg,var(--muted) 0 1px,transparent 1px 320px),repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px var(--lane-height));will-change:transform}
+.finale-roll-note{position:absolute;box-sizing:border-box;height:19px;transform:translateY(-50%);border:1px solid var(--voice-color);border-radius:var(--r-pill);background:color-mix(in srgb,var(--voice-color) 18%,var(--panel-solid));color:var(--ink);font:700 11px/17px var(--sans);text-align:center;white-space:nowrap;overflow:hidden}
+.finale-roll-note.active{background:color-mix(in srgb,var(--voice-color) 45%,var(--panel-solid));outline:2px solid var(--voice-color);outline-offset:1px;z-index:1}
+.finale-roll-note.past{opacity:.55}
+.finale-roll-head{position:absolute;top:0;bottom:0;width:2px;background:var(--gold-hi);box-shadow:0 0 8px var(--gold);pointer-events:none;z-index:2}
+.finale-roll-head::before{content:'';position:absolute;left:-4px;top:0;border:5px solid transparent;border-top-color:var(--gold-hi)}
+#fnToggleLyrics{min-height:44px}
+.finale-all-lyrics{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.finale-all-lyrics>p{font-size:13px;margin-bottom:8px}
+.finale-all-lyrics ol{max-height:340px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;list-style:none;margin:0;padding:4px}
+.finale-all-lyrics li+li{margin-top:4px}
+.finale-all-lyrics button{display:block;width:100%;min-height:44px;padding:10px 14px;border:1px solid transparent;border-left:3px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--ink);text-align:left;font:16px/1.6 var(--sans);cursor:pointer;overflow-wrap:anywhere}
+.finale-all-lyrics button:hover{background:var(--soft)}
+.finale-all-lyrics button[aria-current=true]{border-left-color:var(--voice-color);background:var(--soft);font-weight:700}
+.finale-stereo{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.finale-stereo button{min-height:44px}
+.finale-master{margin:0!important;font-weight:600}
+.finale-keys{overflow-x:auto;padding:28px 4px 20px;scrollbar-gutter:stable}
+.finale .key{cursor:pointer;padding:0;font-family:var(--sans)}
+.finale .key.black{border:0}
+.finale .key:focus-visible{outline-offset:-4px}
+.finale-shortcut{position:absolute;top:12px;font-size:10px;font-weight:700;color:var(--gold-ink);pointer-events:none}
+.finale .key.black .finale-shortcut{top:8px;color:var(--white-key)}
+.finale-piano-help{font-size:13px}
+.finale-console{display:grid;gap:20px}
+.finale-transport{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.finale-transport .play{min-width:180px;min-height:60px;font-size:21px}
+.finale-transport .ghost{min-height:52px;padding:10px 22px;font-size:17px}
+.finale-time{font-variant-numeric:tabular-nums;font-size:17px;white-space:nowrap;min-width:120px}
+.finale-transport .chk{min-height:44px;display:flex;align-items:center;gap:8px}
+.finale-seek-label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.finale-seek{width:100%;margin:0}
+.finale-tempo{display:grid;gap:10px}
+.finale-tempo>label{font-size:15px;font-weight:600}
+.finale-tempo>label span{color:var(--muted);font-weight:400;margin-left:4px}
+.finale-bpm-buttons{display:grid;grid-template-columns:54px 54px 110px 54px 54px minmax(110px,160px);gap:8px;align-items:center}
+.finale-bpm-buttons button{min-height:52px;font-size:20px;padding:8px}
+.finale-bpm-buttons #fnTap{font-size:16px}
+.finale-bpm-buttons input{font:700 28px var(--display);text-align:center;width:100%;min-width:0;min-height:56px;padding:4px 6px;box-sizing:border-box;background:var(--panel-solid);border:1px solid var(--line);color:var(--ink);border-radius:var(--r-sm);font-variant-numeric:tabular-nums}
+.finale-bpm-buttons input::-webkit-inner-spin-button{opacity:1}
+#fnTempoHint{font-size:13px}
+.finale-focus .lbl{margin-bottom:8px}
+.finale-focus .seg button{min-width:72px;min-height:44px}
+.finale-keyboard-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.finale-keyboard-controls button{min-height:44px}
+#fnOctave{font-size:14px;color:var(--muted)}
+.finale-status{min-height:1.7em;font-size:14px}
+.finale-mix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.finale-voice{--voice:var(--c-root);border-top:3px solid var(--voice);min-width:0}
+.finale-voice[data-voice="f2"]{--voice:var(--c-third)}
+.finale-voice[data-voice="m1"]{--voice:var(--c-fifth)}
+.finale-voice[data-voice="m2"]{--voice:var(--c-seventh)}
+.finale-voice-head,.finale-routing{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.finale-voice-head{justify-content:space-between;margin-bottom:14px}
+.finale-voice a{color:var(--gold);text-underline-offset:4px;font-size:14px}
+.finale-routing label{display:flex;align-items:center;gap:8px;min-height:44px;padding:4px 12px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm);cursor:pointer}
+.finale-routing input{accent-color:var(--gold);width:18px;height:18px}
+.finale-mute{min-height:44px;min-width:90px;border-radius:var(--r-sm)}
+.finale-mute[aria-pressed="true"]{border-color:var(--gold);background:var(--soft);color:var(--gold)}
+.finale-volume{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:14px}
+.finale-volume input{flex:1;min-width:40px}
+.finale-volume output{font-variant-numeric:tabular-nums;min-width:3em;text-align:right}
+.finale-part-line{font-size:18px;min-height:3.4em;overflow-wrap:anywhere;color:var(--ink)!important}
+.finale-pitch{min-height:1.7em;font-size:14px}
+.finale :focus-visible{outline:3px solid var(--gold-hi);outline-offset:3px}
+.finale button:disabled{opacity:.5;cursor:not-allowed}
+.finale input[type=range]{accent-color:var(--gold);min-height:36px}
+@media(max-width:720px){.finale-mix{grid-template-columns:1fr}.bar{flex-wrap:wrap}.tabs{flex-wrap:wrap}.finale-karaoke{padding:18px}.finale-current-line{min-height:4.65em}.finale-previous{min-height:3.4em}.finale-transport{display:grid;grid-template-columns:1fr 1fr;gap:10px}.finale-transport .play{min-width:0}.finale-transport .ghost{padding:10px;font-size:16px}.finale-bpm-buttons{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr}.finale-bpm-buttons #fnTap{grid-column:1/-1}.finale-focus .seg{display:flex}.finale-focus .seg button{min-width:0;flex:1;padding:5px 12px}.finale-next-line{font-size:16px}}
+@media(forced-colors:active){*{scrollbar-color:auto}.finale-word.singing{background:none;color:Highlight}.finale .key.on{outline:3px solid Highlight}}
+@media(prefers-reduced-motion:reduce){.finale *{animation:none!important;transition:none!important}.finale-word.singing{background:none;color:var(--ink)}}
