@@ -33,10 +33,11 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
     await page.route('**/*.mp3',route=>route.abort());
     await page.addInitScript(()=>{
-      window.pianoCalls=[];window.mergers=[];window.sampleRates=[];window.oscFrequencies=[];let factory;
+      window.pianoCalls=[];window.mergers=[];window.sampleRates=[];window.oscFrequencies=[];window.clickCalls=[];let factory;
       window.outputs=[];const connect=AudioNode.prototype.connect;AudioNode.prototype.connect=function(destination,...args){if(destination instanceof AudioDestinationNode)outputs.push(this);return connect.call(this,destination,...args);};
       const bufferStart=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){sampleRates.push(this.playbackRate.value);return bufferStart.apply(this,args);};
-      const oscStart=OscillatorNode.prototype.start;OscillatorNode.prototype.start=function(...args){oscFrequencies.push(this.frequency.value);return oscStart.apply(this,args);};
+      const oscStart=OscillatorNode.prototype.start;OscillatorNode.prototype.start=function(...args){oscFrequencies.push(this.frequency.value);if([1000,1500].includes(this.frequency.value)){this.testClick={frequency:this.frequency.value,time:args[0]??this.context.currentTime,stops:[]};clickCalls.push(this.testClick);}return oscStart.apply(this,args);};
+      const oscStop=OscillatorNode.prototype.stop;OscillatorNode.prototype.stop=function(...args){if(this.testClick)this.testClick.stops.push(args[0]??this.context.currentTime);return oscStop.apply(this,args);};
       Object.defineProperty(window,'createFinalePlayer',{configurable:true,get(){return factory;},set(fn){factory=options=>{const play=options.pianoNote;options.pianoNote=(midi,time,duration,velocity,destination)=>{const event={midi,time,duration,velocity,stopped:false};window.pianoCalls.push(event);const handle=play(midi,time,duration,velocity,destination);return {stop(){event.stopped=true;handle?.stop();}};};return fn(options);};}});
       const create=AudioContext.prototype.createChannelMerger;
       AudioContext.prototype.createChannelMerger=function(...args){const merger=create.apply(this,args);window.mergers.push(merger);return merger;};
@@ -115,6 +116,21 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     const normal=await page.evaluate(()=>pianoCalls.slice(0,4));assert.deepEqual(normal.map(n=>n.midi),first.map(n=>n.midi));assert.ok(Math.abs(normal[0].duration-.25)<.001);
     const normalPitch=await page.evaluate(()=>({samples:sampleRates.slice(0,4),osc:oscFrequencies.slice(0,16)}));assert.deepEqual(normalPitch,slowPitch);
     await page.locator('#fnPlay').click();
+    // Score-synchronous metronome: strong first beat, BPM timing, silence and note-off.
+    await page.locator('#fnStop').click();await page.locator('#fnMute-f1').click();await page.locator('#fnMetronome').check();
+    await page.locator('#fnBpm').fill('200');await page.locator('#fnBpm').press('Tab');
+    await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});
+    await page.locator('#fnPlay').click();await page.waitForFunction(()=>clickCalls.length>=3);
+    const clicks=await page.evaluate(()=>clickCalls.slice(0,3));assert.deepEqual(clicks.map(c=>c.frequency),[1500,1000,1000]);
+    await page.waitForFunction(()=>masterRms()>.0001);
+    assert.ok(Math.abs(clicks[1].time-clicks[0].time-.3)<.005);assert.ok(Math.abs(clicks[2].time-clicks[1].time-.3)<.005);
+    assert.ok(Math.abs(clicks[0].time-(await page.evaluate(()=>pianoCalls[0].time)))<.005);
+    await page.locator('#fnPlay').click();assert.equal(await page.locator('#fnBeats [aria-current=true]').count(),0);
+    const pausedClicks=await page.evaluate(()=>clickCalls.length);await page.waitForTimeout(180);assert.equal(await page.evaluate(()=>clickCalls.length),pausedClicks);
+    await page.locator('#fnMetroVolume').fill('25');assert.equal(await page.locator('#fnMetroVolumeOut').textContent(),'25%');
+    await page.locator('#fnMetronome').uncheck();await page.locator('#fnStop').click();await page.evaluate(()=>window.clickCalls=[]);
+    await page.locator('#fnPlay').click();await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>clickCalls.length),0);await page.waitForFunction(()=>masterRms()<.00001);await page.locator('#fnPlay').click();await page.locator('#fnMute-f1').click();
+    await page.locator('#fnBpm').fill('120');await page.locator('#fnBpm').press('Tab');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.locator('#fnCurrentLine [aria-current="true"]').textContent(),'in’');
     assert.ok(parseFloat(await page.locator('#fnCurrentLine [aria-current="true"]').evaluate(el=>el.style.getPropertyValue('--word-progress')))>0);

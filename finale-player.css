@@ -51,6 +51,15 @@
 .finale-stereo{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .finale-stereo button{min-height:44px}
 .finale-master{margin:0!important;font-weight:600}
+.finale-metronome{padding:14px 16px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm)}
+.finale-metro-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.finale-metro-head .chk{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;font-weight:600;color:var(--ink)}
+.finale-metro-head>span{font-size:13px;color:var(--muted)}
+.finale-metronome .finale-volume{margin:8px 0 0}
+.finale-beats{display:flex;gap:8px}
+.finale-beats span{display:grid;place-items:center;box-sizing:border-box;width:32px;height:32px;border:1px solid var(--line);border-radius:50%;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);background:var(--panel-solid)}
+.finale-beats span.active{border:3px solid var(--gold);background:var(--gold);color:var(--gold-ink);font-weight:700}
+.finale-beats span:first-child.active{outline:2px solid var(--gold);outline-offset:2px}
 .finale-keys{overflow-x:auto;padding:28px 4px 20px;scrollbar-gutter:stable}
 .finale .key{cursor:pointer;padding:0;font-family:var(--sans)}
 .finale .key.black{border:0}

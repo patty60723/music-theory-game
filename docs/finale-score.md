@@ -44,6 +44,13 @@ The BPM control is the starting tempo, bounded to 40–200 BPM. Written tempo
 changes retain their proportions; the current effective BPM is displayed.
 Tap tempo and ±1/±5 buttons supplement direct entry and the range slider.
 
+The practice-room metronome is optional and defaults off. It uses the same
+score clock and tempo map as the notes, with an accented first beat in 4/4,
+a four-beat indicator and an independent click-volume slider. It sounds in
+both channels, independently of voice mute/routing, and follows the master
+volume. Pause, stop, seek, tempo changes, tab changes and disabling the click
+cancel queued clicks; resuming or enabling it joins the next written beat.
+
 Each part routes its mono piano sound independently to left/right gains.
 Muting preserves its routing and volume. A compressor handles combined
 polyphony. Live keyboard notes have their own path and can be played over

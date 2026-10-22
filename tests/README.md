@@ -22,6 +22,8 @@ Verified in a real headless browser at desktop and 390px mobile widths:
   and seek correctly when a phrase is selected.
 - BPM changes scheduling duration while sample playback rates / oscillator
   frequencies remain unchanged for the same notes.
+- Optional metronome schedules actual accented clicks on score beats, changes
+  interval with BPM, follows pause/disable and exposes independent volume.
 - Ties merge into one audio event. Note counts, tempo-map boundaries and
   malformed-data rejection are also checked.
 - Computer-key chords, focused-button Enter/Space, pointer hold/release and
