@@ -43,8 +43,14 @@ are not described as a passing audit; real handlers are exercised above.
 
 `node --test tests/worker.test.mjs` checks authentication, protected URLs,
 Cookie tampering/expiry, password rotation, request origin, login throttling,
-and input bounds against the same Worker code. Build assets first with
+input bounds, authenticated R2 reads, shared edge-cache hits, version changes,
+and private outward response headers against the same Worker code. Unit tests
+use synthetic score/PDF objects and need no private files or keys. Build public files first with
 `node scripts/build-worker.mjs`.
+
+`node --test tests/private-assets.test.mjs` checks local R2 upload preparation,
+path validation and branch deployment guards. Browser tests use local originals
+through an R2 test binding; no real R2 requests are made.
 
 `python -m unittest discover -s tests -p test_score_notation.py` checks the
 retained PDF notation parser and score with PyMuPDF. The score can be rebuilt

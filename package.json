@@ -7,7 +7,8 @@
     "build": "node scripts/build-worker.mjs",
     "deploy": "node scripts/deploy-worker.mjs",
     "dev": "wrangler dev",
-    "assets:seal": "node scripts/seal-private-assets.mjs",
+    "assets:prepare": "node scripts/prepare-r2-assets.mjs",
+    "assets:upload": "node scripts/upload-r2-assets.mjs",
     "test": "npm run build && node --test tests/worker.test.mjs tests/private-assets.test.mjs"
   },
   "devDependencies": {

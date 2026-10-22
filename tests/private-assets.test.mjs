@@ -1,28 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,rm,readdir} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {encryptPrivateAssets,decryptPrivateAssets,loadPrivateAssets} from '../scripts/private-assets.mjs';
+import {localPrivateAssets,prepareR2Assets} from '../scripts/private-assets.mjs';
 import {assertCloudflareBranch} from '../scripts/cloudflare-branch.mjs';
-const key='12'.repeat(32),files={'score.json':Buffer.from(JSON.stringify({kind:'score-piano'}))};
-for(const id of ['f1','f2','m1','m2'])files[id+'.pdf']=Buffer.from('%PDF-private-test-'+id);
-test('encrypted assets round-trip and reject incorrect keys or modified ciphertext',()=>{
-  const envelope=encryptPrivateAssets(files,key);
-  assert.deepEqual(decryptPrivateAssets(envelope,key),files);
-  assert.equal(JSON.stringify(envelope).includes('private-test'),false);
-  assert.throws(()=>decryptPrivateAssets(envelope,'34'.repeat(32)));
-  const corrupt=structuredClone(envelope),bytes=Buffer.from(corrupt.data,'base64');bytes[0]^=1;corrupt.data=bytes.toString('base64');
-  assert.throws(()=>decryptPrivateAssets(corrupt,key));
-  assert.throws(()=>decryptPrivateAssets(envelope,'short'));
-  assert.notEqual(encryptPrivateAssets(files,key).iv,envelope.iv);
-});
-test('a clean checkout loads the sealed bundle with a build secret and fails without it',async()=>{
+test('R2 upload preparation keeps private data outside deployment files and rewrites PDF URLs',async()=>{
   const dir=await mkdtemp(path.join(os.tmpdir(),'finale-assets-test-'));
-  try{await mkdir(path.join(dir,'private'));await writeFile(path.join(dir,'private/finale-assets.enc.json'),JSON.stringify(encryptPrivateAssets(files,key)));
-    assert.deepEqual(await loadPrivateAssets(dir,{key,encryptedOnly:true}),files);
-    assert.deepEqual(await loadPrivateAssets(dir,{key}),files);
-    await assert.rejects(()=>loadPrivateAssets(dir,{key:'',encryptedOnly:true}),/Set FINALE_ASSETS_KEY/);
+  try{await mkdir(path.join(dir,'assets'));const score={kind:'score-piano',voices:{}};
+    for(const id of ['f1','f2','m1','m2']){score.voices[id]={pdf:'assets/'+id+'.pdf'};await writeFile(path.join(dir,'assets',id+'.pdf'),'%PDF-private-test-'+id);}
+    await writeFile(path.join(dir,'assets/finale-score.json'),JSON.stringify(score));
+    const entries=await prepareR2Assets(dir);assert.equal(entries.length,5);assert.equal(entries.at(-1).key,'finale/score.json');
+    const prepared=JSON.parse(await readFile(entries.at(-1).file,'utf8'));
+    for(const id of ['f1','f2','m1','m2'])assert.equal(prepared.voices[id].pdf,'/api/finale/pdf/'+id);
+    assert.equal((await readdir(dir)).includes('dist'),false);
+    const untouched=JSON.parse(await readFile(path.join(dir,'assets/finale-score.json'),'utf8'));assert.equal(untouched.voices.f1.pdf,'assets/f1.pdf');
+    score.voices.f1.pdf='../outside.pdf';await writeFile(path.join(dir,'assets/finale-score.json'),JSON.stringify(score));
+    await assert.rejects(()=>localPrivateAssets(dir),/Unexpected PDF path/);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 test('other branches cannot build or deploy the production Worker',()=>{

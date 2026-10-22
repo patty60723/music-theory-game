@@ -24,7 +24,7 @@ async function equalPassword(input,expected){
   for(let i=0;i<a.length;i++)mismatch|=a[i]^b[i];return mismatch===0;
 }
 const cookie=(value,age)=>`${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${age}`;
-async function api(request,env,url){
+async function api(request,env,url,ctx,getCache){
   if(!env.PRACTICE_PASSWORD||!env.SESSION_SECRET||env.SESSION_SECRET.length<32)return json({error:'練唱服務尚未完成設定。'},503);
   const path=url.pathname;
   if(path==='/api/finale/login'||path==='/api/finale/logout'){
@@ -51,16 +51,28 @@ async function api(request,env,url){
   if(path==='/api/finale/session')return json({authenticated},authenticated?200:401);
   if(!authenticated)return json({error:'請先輸入練唱密碼。'},401);
   let file,type;
-  if(path==='/api/finale/score'){file='/private/finale/score.json';type='application/json; charset=utf-8';}
-  else {const id=path.match(/^\/api\/finale\/pdf\/(f1|f2|m1|m2)$/)?.[1];if(!pdfIds.has(id))return json({error:'Not found'},404);file='/private/finale/'+id+'.pdf';type='application/pdf';}
-  const resource=new URL(file,url.origin),response=await env.ASSETS.fetch(new Request(resource,{method:request.method}));
-  if(!response.ok)return json({error:'樂譜暫時無法讀取。'},503);
-  return new Response(request.method==='HEAD'?null:response.body,{headers:{...privateHeaders,'Content-Type':type,...(type==='application/pdf'?{'Content-Disposition':'inline; filename="'+file.split('/').pop()+'"'}:{})}});
+  if(path==='/api/finale/score'){file='finale/score.json';type='application/json; charset=utf-8';}
+  else {const id=path.match(/^\/api\/finale\/pdf\/(f1|f2|m1|m2)$/)?.[1];if(!pdfIds.has(id))return json({error:'Not found'},404);file='finale/'+id+'.pdf';type='application/pdf';}
+  if(!env.SCORES)return json({error:'樂譜儲存空間尚未設定。'},503);
+  // Auth is checked above on every request, including cache hits. This internal
+  // URL is never exposed by the Worker's public route allowlist.
+  const cacheKey=new Request(new URL('/__score-cache/'+encodeURIComponent(env.SCORE_CACHE_VERSION||'1')+'/'+file,url.origin));
+  let cache,source;try{cache=getCache();source=await cache?.match(cacheKey);}catch{cache=null;}
+  const headers={...privateHeaders,'Content-Type':type,...(type==='application/pdf'?{'Content-Disposition':'inline; filename="'+file.split('/').pop()+'"'}:{})};
+  if(source)return new Response(request.method==='HEAD'?null:source.body,{headers});
+  let object;try{object=await env.SCORES[request.method==='HEAD'?'head':'get'](file);}catch{return json({error:'樂譜暫時無法讀取。'},503);}
+  if(!object)return json({error:'樂譜暫時無法讀取。'},503);
+  if(request.method==='HEAD')return new Response(null,{headers});
+  source=new Response(object.body,{headers:{'Content-Type':type,'Cache-Control':'public, max-age=3600'}});
+  if(cache){const copy=source.clone(),save=Promise.resolve().then(()=>cache.put(cacheKey,copy)).catch(()=>{});if(ctx?.waitUntil)ctx.waitUntil(save);else await save;}
+  // Only the internal object cache has a TTL; authenticated browser responses
+  // remain private/no-store and never enter the Service Worker's offline cache.
+  return new Response(source.body,{headers});
 }
-export default {
-  async fetch(request,env){
+export function createWorker({getCache=()=>globalThis.caches?.default}={}){return {
+  async fetch(request,env,ctx){
     const url=new URL(request.url);
-    if(url.pathname.startsWith('/api/finale/'))return api(request,env,url);
+    if(url.pathname.startsWith('/api/finale/'))return api(request,env,url,ctx,getCache);
     // Never expose the asset binding's private paths, source scores, or repo files.
     if(!publicFiles.has(url.pathname)&&!/^\/icons\/[a-zA-Z0-9-]+\.(png|svg)$/.test(url.pathname))return new Response('Not found',{status:404});
     if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
@@ -69,4 +81,5 @@ export default {
     if(url.pathname==='/sw.js')headers.set('Cache-Control','no-cache');
     return new Response(response.body,{status:response.status,headers});
   }
-};
+};}
+export default createWorker();

@@ -63,7 +63,7 @@
 
 ### Cloudflare 部署與密碼
 
-一般樂理工具維持公開；練唱室改由同網域 Cloudflare Worker 提供。密碼放在 Worker Secret `PRACTICE_PASSWORD`，Cookie 簽章金鑰放在 `SESSION_SECRET`（至少 32 字元隨機字串）。程式與 GitHub 不儲存這兩個值。`assets/`、`dist/` 與本機 `.dev.vars` 都排除 Git。完整操作見 [Worker 部署說明](docs/cloudflare-worker.md)。
+一般樂理工具維持公開；練唱室由同網域 Cloudflare Worker 提供。密碼放在 Worker Secret `PRACTICE_PASSWORD`，Cookie 簽章金鑰放在 `SESSION_SECRET`（至少 32 字元隨機字串）。樂譜與 PDF 存於私有 R2，不進 Git，程式部署也不會重傳；Worker 驗證登入後可共用邊緣快取，減少 R2 讀取。`assets/`、`dist/` 與本機 `.dev.vars` 都排除 Git。完整操作見 [Worker 部署說明](docs/cloudflare-worker.md)。
 
 - 主頁是 `index.html`（鋼琴音色已內嵌），四聲部功能另載入 `finale-player.js`、`finale-score.js` 和 `finale-player.css`。Worker 部署時自動執行 `scripts/build-worker.mjs` 建立明確區分公開／私有資源的輸出。
 - 離線快取在 `sw.js`。**改了圖示或其他快取檔案時，把 `VERSION` 加一**，已安裝的使用者才會更新。

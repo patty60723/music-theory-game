@@ -5,15 +5,31 @@
   "preview_urls": false,
   "main": "worker/index.mjs",
   "compatibility_date": "2026-10-01",
-  "build": { "command": "node scripts/build-worker.mjs" },
+  "vars": {
+    "SCORE_CACHE_VERSION": "8463cee1e3cf177b"
+  },
+  "build": {
+    "command": "node scripts/build-worker.mjs"
+  },
   "assets": {
-    "directory": "./dist",
+    "directory": "./dist/public",
     "binding": "ASSETS",
     "run_worker_first": true
   },
-  "ratelimits": [{
-    "name": "LOGIN_LIMITER",
-    "namespace_id": "1001",
-    "simple": { "limit": 5, "period": 60 }
-  }]
+  "r2_buckets": [
+    {
+      "binding": "SCORES",
+      "bucket_name": "music-theory-game-private"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "LOGIN_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ]
 }
