@@ -1,5 +1,5 @@
 // 離線快取。改了網站內容要讓大家更新時，把 VERSION 加一。
-const VERSION = 'v21';
+const VERSION = 'v22';
 const APP = 'app-' + VERSION;
 const FONTS = 'fonts';
 const PRECACHE = ['finale-player.css', 'finale-score.js', 'finale-player.js', './', 'index.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];

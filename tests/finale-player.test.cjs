@@ -45,10 +45,15 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await enter(page);
     await page.waitForFunction(()=>document.querySelector('#fnPlay')?.textContent==='播放');
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
+    assert.equal(await page.locator('.finale-console #fnMetronome').count(),1);
+    assert.equal(await page.locator('.finale-console #fnFocus-f1').count(),0);
+    assert.equal(await page.locator('#fnSettingsTempoPanel #fnFocus-f1').count(),1);
+    assert.equal(await page.locator('#fnSettingsTempoPanel #fnSwap').count(),1);
     assert.equal(await page.locator('#fnSettingsKeyboardPanel').isVisible(),false);
     await page.locator('#fnSettingsTempo').press('ArrowRight');
     assert.equal(await page.locator('#fnSettingsKeyboard').getAttribute('aria-selected'),'true');
     assert.equal(await page.locator('#fnSettingsTempoPanel').isVisible(),false);
+    assert.equal(await page.locator('#fnMetronome').isVisible(),true);
     await page.locator('#fnSettingsKeyboard').press('Home');
     assert.equal(await page.locator('#fnSettingsTempo').getAttribute('aria-selected'),'true');
     assert.equal(await page.locator('.finale-voice:visible').count(),4);

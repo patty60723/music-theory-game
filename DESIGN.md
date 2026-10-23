@@ -62,8 +62,10 @@ mute configuration. Clicking an active preset restores all parts unmuted.
 The compact tempo row keeps BPM increments and Return to original tempo
 visible. Reset restores the score tempo map without seeking or changing
 playback state. The four part cards immediately follow the common console.
-Other settings follow the cards in two accessible tabs: tempo/metronome
-and keyboard. Hidden settings retain values and keep functioning while
+The metronome stays visible in the common console. Other settings follow
+the cards in two accessible tabs: singing settings and keyboard. Singing
+settings contain the singing part, stereo swap, tempo slider, tap tempo
+and master volume. Hidden settings retain values and keep functioning while
 playing; changing these local tabs does not pause playback or change song.
 During playback the piano viewport follows the active pitch range, including
 nearby upcoming focus notes. If all parts cannot fit, the singing part takes
