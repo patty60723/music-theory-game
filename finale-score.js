@@ -3,6 +3,10 @@
   'use strict';
   const names=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
   const noteName=m=>names[m%12]+(Math.floor(m/12)-1);
+  function countInBeats(beat){
+    if(!Number.isFinite(beat)||beat<0)return 0;
+    const offset=beat%4;return offset<.000001||4-offset<.000001?4:offset;
+  }
   function validate(events){
     if(!Array.isArray(events)||events.length>50000)throw Error('音符資料格式不正確。');
     return events.map(e=>{
@@ -83,7 +87,7 @@
     }
     return {...data,tempos,voices,duration:secondsAt(data.endBeat),secondsAt,beatAt};
   }
-  const api={noteName,validate,activeAt,prepare,lyricPhrases};
+  const api={noteName,validate,activeAt,prepare,lyricPhrases,countInBeats};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   else root.FinaleScore=api;
 })(typeof window==='undefined'?globalThis:window);

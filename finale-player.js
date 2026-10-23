@@ -29,7 +29,7 @@
         <label class="finale-seek-label">播放位置<input class="finale-seek" id="fnSeek" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="播放位置（秒）"></label>
         <div id="fnSettingsPlaybackPanel" role="tabpanel" aria-labelledby="fnSettingsPlayback" tabindex="0"><div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
         <p id="fnTempoHint">調慢也不會變調；譜面中的速度變化會一同比例調整。</p></div>
-        <div class="finale-metronome"><label class="chk finale-count-option"><input type="checkbox" id="fnCountIn" checked> 播放前預備 4 拍</label><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
+        <div class="finale-metronome"><label class="chk finale-count-option"><input type="checkbox" id="fnCountIn" checked> 自動預備拍（從頭或選句開始）</label><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
         </div>        <div id="fnSettingsTempoPanel" role="tabpanel" aria-labelledby="fnSettingsTempo" tabindex="0" hidden><div class="finale-focus"><span class="lbl" id="fnFocusLabel">練唱聲部（主畫面歌詞）</span><div class="seg" role="group" aria-labelledby="fnFocusLabel">${voices.map(v=>`<button id="fnFocus-${v.id}" class="${v.id==='f1'?'on':''}" aria-pressed="${v.id==='f1'}">${v.name}</button>`).join('')}</div></div>
         <div class="finale-stereo"><span id="fnStereoSummary">練唱在左，其他在右</span><button class="ghost" id="fnSwap">左右對調 ⇄</button></div><label class="finale-seek-label">速度微調<input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"></label><div class="finale-tap-row"><button class="ghost" id="fnTap">敲拍定速</button></div><label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label></div>
         <div id="fnSettingsKeyboardPanel" role="tabpanel" aria-labelledby="fnSettingsKeyboard" tabindex="0" hidden><div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div><p>播放時鋼琴會自動跟隨音域；手動按住琴鍵時暫停跟隨。</p></div>
@@ -41,7 +41,7 @@
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
-    let countInStart=null,countInInterval=0;
+    let countInStart=null,countInInterval=0,knownStart=true;
     const isCounting=()=>playing&&countInStart!==null&&context.currentTime<origin;
     let focusSide='left';
     let authEpoch=0,checking=null;
@@ -123,7 +123,7 @@
       oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};clicks.push(click);
     }
     function pause(){
-      const was=playing||starting;token++;position=current();playing=false;starting=false;clearInterval(timer);timer=null;cancelAnimationFrame(frame);stopScheduled();if(was)status('已暫停。鋼琴仍可單獨彈奏。');render();
+      const was=playing||starting,counting=isCounting();token++;position=current();if(was&&!counting)knownStart=false;playing=false;starting=false;clearInterval(timer);timer=null;cancelAnimationFrame(frame);stopScheduled();if(was)status('已暫停。鋼琴仍可單獨彈奏。');render();
     }
     function schedule(){
       if(!playing)return;
@@ -150,12 +150,13 @@
       if(starting||playing||!data)return;const attempt=++token;starting=true;render();
       try{
         ensureGraph();await context.resume();if(attempt!==token||section.hidden)return;
-        if(position>=data.duration)position=0;
+        if(position>=data.duration){position=0;knownStart=true;}
         origin=context.currentTime+.035;originPosition=position;countInStart=null;
-        if(countIn&&$('#fnCountIn').checked){
+        if(countIn&&$('#fnCountIn').checked&&knownStart&&data.voices[focus].performance.some(n=>Math.abs(n.start-position)<.00001)){
           let tempo=data.tempos[0];for(const mark of data.tempos)if(data.secondsAt(mark.beat)<=position)tempo=mark;
-          countInInterval=60/(tempo.bpm*rate);countInStart=origin;origin+=4*countInInterval;
-          for(let beat=0;beat<4;beat++)scheduleClick(beat,countInStart+beat*countInInterval,'count-in');
+          const length=score.countInBeats(data.beatAt(position));
+          countInInterval=60/(tempo.bpm*rate);countInStart=origin;origin+=length*countInInterval;
+          for(let beat=0;beat<length-.000001;beat++)scheduleClick(beat,countInStart+beat*countInInterval,'count-in');
         }
         playing=true;
         nextClickBeat=Math.ceil(data.beatAt(position)-.000001);
@@ -166,10 +167,10 @@
     }
     function tick(){
       if(!playing)return;
-      if(current()>=data.duration){const loop=$('#fnLoop').checked;pause();position=loop?0:data.duration;render();if(loop)start();else status('播放結束。');return;}
+      if(current()>=data.duration){const loop=$('#fnLoop').checked;pause();position=loop?0:data.duration;knownStart=loop;render();if(loop)start();else status('播放結束。');return;}
       render();frame=requestAnimationFrame(tick);
     }
-    function seek(value){if(!data)return;const was=playing||starting,countIn=isCounting();pause();position=Math.max(0,Math.min(data.duration,Number(value)||0));render();if(was)start({countIn});}
+    function seek(value,{known=false}={}){if(!data)return;const was=playing||starting;pause();position=Math.max(0,Math.min(data.duration,Number(value)||0));knownStart=known;render();if(was)start({countIn:known});}
     function setBpm(value){
       const number=Number(value);if(!Number.isFinite(number)||number<40||number>200){$('#fnBpm').value=bpm;status('速度請設定為 40–200 BPM。');return;}
       const was=playing||starting,countIn=isCounting();if(was)pause();bpm=Math.round(number);rate=bpm/120;$('#fnBpm').value=bpm;$('#fnBpmRange').value=bpm;render();if(was)start({countIn});
@@ -227,7 +228,7 @@
     }
     function render(){
       const t=current(),counting=isCounting(),countBeat=counting?Math.max(1,Math.min(4,Math.floor((context.currentTime-countInStart)/countInInterval)+1)):0;
-      $('#fnCountStatus').hidden=!counting;const countText=counting?'預備拍 '+countBeat+' / 4':'';if($('#fnCountStatus').textContent!==countText)$('#fnCountStatus').textContent=countText;
+      $('#fnCountStatus').hidden=!counting;const countText=counting?'預備拍 '+countBeat:'';if($('#fnCountStatus').textContent!==countText)$('#fnCountStatus').textContent=countText;
       $('#fnTime').textContent=format(t)+' / '+(data?format(data.duration):'—');$('#fnSeek').value=t;
       for(const id of ['fnPlay','fnTopPlay']){const button=$('#'+id);button.disabled=starting||(!data&&!loadError);button.textContent=loadError?'重新讀取樂譜':!data?'讀取樂譜中…':starting?'準備播放…':playing?'暫停':'播放';button.setAttribute('aria-pressed',String(playing));}
       const lit=new Map();
@@ -268,7 +269,7 @@
       $('#fnOctave').textContent='電腦鍵盤 '+score.noteName(baseMidi)+'–'+score.noteName(baseMidi+16);$('#fnOctDown').disabled=baseMidi<=36;$('#fnOctUp').disabled=baseMidi>=72;
       if(!section.hidden)requestAnimationFrame(()=>revealKey(baseMidi,true));
     }
-    const togglePlayback=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnPlay').onclick=togglePlayback;$('#fnTopPlay').onclick=togglePlayback;$('#fnStop').onclick=()=>{pause();position=0;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
+    const togglePlayback=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnPlay').onclick=togglePlayback;$('#fnTopPlay').onclick=togglePlayback;$('#fnStop').onclick=()=>{pause();position=0;knownStart=true;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
     function guardTouchRange(input){
       const wrapper=document.createElement('span'),surface=document.createElement('span');wrapper.className='finale-range-wrap';surface.className='finale-range-touch';surface.setAttribute('aria-hidden','true');input.before(wrapper);wrapper.append(input,surface);
       let gesture=null;
@@ -302,7 +303,7 @@
     $('#fnMetronome').onchange=()=>{stopClicks('metronome');if(data)nextClickBeat=Math.ceil(data.beatAt(current())-.000001);if(playing)schedule();render();};
     $('#fnMetroVolume').oninput=e=>{const volume=Number(e.target.value);$('#fnMetroVolumeOut').textContent=volume+'%';if(graph)graph.metro.gain.setTargetAtTime(volume/100,context.currentTime,.008);};
     $('#fnToggleLyrics').onclick=()=>{const expanded=$('#fnAllLyrics').hidden;$('#fnAllLyrics').hidden=!expanded;$('#fnToggleLyrics').setAttribute('aria-expanded',String(expanded));$('#fnToggleLyrics').textContent=expanded?'收起全部歌詞':'顯示全部歌詞';render();};
-    $('#fnLyricsList').onclick=event=>{const row=event.target.closest('button[data-start]');if(row)seek(Number(row.dataset.start));};
+    $('#fnLyricsList').onclick=event=>{const row=event.target.closest('button[data-start]');if(row)seek(Number(row.dataset.start),{known:true});};
     $('#fnSwap').onclick=()=>{focusSide=focusSide==='left'?'right':'left';splitStereo();};
     for(const [id,delta] of [['fnBpmDown5',-5],['fnBpmDown',-1],['fnBpmUp',1],['fnBpmUp5',5]])$('#'+id).onclick=()=>setBpm(Math.max(40,Math.min(200,bpm+delta)));
     let taps=[];$('#fnTap').onclick=()=>{const now=performance.now();if(taps.length&&now-taps[taps.length-1]>2000)taps=[];taps.push(now);taps=taps.slice(-6);if(taps.length<2){status('繼續敲拍以設定速度。');return;}const intervals=taps.slice(1).map((t,i)=>t-taps[i]);setBpm(Math.max(40,Math.min(200,60000/(intervals.reduce((a,b)=>a+b,0)/intervals.length))));status('已依敲拍設定為 '+bpm+' BPM。');};
@@ -332,7 +333,7 @@
       finally{section.removeAttribute('aria-busy');render();}
     }
     function lock(message){
-      authEpoch++;pause();releaseAll();data=null;position=0;loadError=false;lyricSignature='';wordNodes=[];
+      authEpoch++;pause();releaseAll();data=null;position=0;knownStart=true;loadError=false;lyricSignature='';wordNodes=[];
       $('#fnRoom').hidden=true;$('#fnAuth').hidden=false;$('#fnCurrentLine').textContent='請先登入';
       for(const v of voices){$('#fnPdf-'+v.id).removeAttribute('href');$('#fnLyric-'+v.id).textContent='—';$('#fnPitch-'+v.id).textContent='—';}
       $('#fnNextLine').textContent='';$('#fnAuthStatus').textContent=message;render();

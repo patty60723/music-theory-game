@@ -10,6 +10,7 @@ assert.equal(Object.values(timeline.voices).reduce((s,v)=>s+v.notes.length,0),10
 assert.equal(Object.values(timeline.voices).every(v=>v.performance.length<v.notes.length),true);
 assert.equal(timeline.voices.f1.phrases[0].text,'Keep comin’ back;');
 for(const beat of [0,.5,96,100,144,200,260])assert.ok(Math.abs(timeline.beatAt(timeline.secondsAt(beat))-beat)<1e-8);
+for(const [beat,length] of [[0,4],[4,4],[1,1],[2,2],[3,3],[7.5,3.5],[122.5,2.5],[16.00000001,4]])assert.equal(score.countInBeats(beat),length);
 assert.equal(timeline.voices.f1.rhythm.find(n=>n.start<=.4&&.4<n.end).kind,'rest');
 const heldNote=timeline.voices.f1.rhythm.find(n=>n.start<=1.1&&1.1<n.end);assert.equal(heldNote.kind,'note');assert.equal(heldNote.endBeat-heldNote.beat,1.5);
 assert.equal(timeline.voices.f1.phrases.some(p=>/^ing\b|^fore\b|^vive\b/.test(p.text)),false);
@@ -183,14 +184,30 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.ok(await page.locator('#fnKeyboard .key.on').count()>0);assert.ok(await page.locator('#fnCurrentLine .singing').count()>0);
     await page.locator('#fnPlay').click();
     // A start at the later 126 BPM section, followed by a speed change during count-in.
-    await page.locator('#fnSeek').evaluate(el=>{el.value=48;el.dispatchEvent(new Event('input',{bubbles:true}));});
+    await page.locator('#fnToggleLyrics').click();await page.locator('#fnLyricsList button').nth(13).click();
     await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();await page.waitForFunction(()=>clickCalls.length===4);
     const laterCount=await page.evaluate(()=>clickCalls.slice());assert.ok(Math.abs(laterCount[1].time-laterCount[0].time-60/(126*200/120))<.005);
     await page.locator('#fnBpmReset').click();await page.waitForFunction(()=>clickCalls.length===8);
     const changedCount=await page.evaluate(()=>clickCalls.slice(4));assert.ok(Math.abs(changedCount[1].time-changedCount[0].time-60/126)<.005);
-    assert.equal(Number(await page.locator('#fnSeek').inputValue()),48);await page.locator('#fnPlay').click();
+    assert.ok(Math.abs(Number(await page.locator('#fnSeek').inputValue())-timeline.voices.f1.phrases[13].start)<.01);await page.locator('#fnPlay').click();
     assert.equal(await page.locator('#fnCountStatus').isVisible(),false);
     assert.equal(await page.evaluate(()=>clickCalls.slice(-3).every(c=>c.stops.some(t=>t<c.time))),true);
+    // A phrase on beat 4-and keeps its half beat: four clicks over 3.5 beats.
+    await page.locator('#fnBpm').fill('200');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnLyricsList button').nth(1).click();await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();
+    await page.waitForFunction(()=>clickCalls.length===4);const pickupClicks=await page.evaluate(()=>clickCalls.slice());
+    assert.equal(Number(await page.locator('#fnSeek').inputValue()),3.75);assert.equal(await page.locator('#fnKeyboard .key.on').count(),0);
+    await page.waitForFunction(()=>document.querySelector('#fnCountStatus').hidden&&Number(document.querySelector('#fnSeek').value)>3.75);
+    assert.ok(Math.abs((await page.evaluate(()=>pianoCalls[0].time))-pickupClicks[0].time-1.05)<.005);
+    await page.locator('#fnPlay').click();await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();
+    await page.waitForFunction(()=>pianoCalls.length>0);assert.equal(await page.evaluate(()=>clickCalls.length),0);assert.equal(await page.locator('#fnCountStatus').isVisible(),false);await page.locator('#fnPlay').click();
+    // A third-beat phrase needs two beats; arbitrary dragging gets no count-in.
+    await page.locator('#fnLyricsList button').nth(6).click();await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();
+    await page.waitForFunction(()=>clickCalls.length===2);const twoBeatClicks=await page.evaluate(()=>clickCalls.slice());
+    await page.waitForFunction(()=>pianoCalls.length>0);assert.ok(Math.abs((await page.evaluate(()=>pianoCalls[0].time))-twoBeatClicks[0].time-.6)<.005);await page.locator('#fnPlay').click();
+    await page.locator('#fnSeek').evaluate(el=>{el.value=24.17;el.dispatchEvent(new Event('input',{bubbles:true}));});await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();
+    await page.waitForFunction(()=>pianoCalls.length>0);assert.equal(await page.evaluate(()=>clickCalls.length),0);assert.equal(await page.locator('#fnCountStatus').isVisible(),false);await page.locator('#fnPlay').click();
+    await page.locator('#fnToggleLyrics').click();await page.locator('#fnBpmReset').click();
     await page.locator('#fnCountIn').uncheck();
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.locator('#fnCurrentLine [aria-current="true"]').textContent(),'in’');

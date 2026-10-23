@@ -142,15 +142,22 @@ vertical scrolling and pinch zoom remain native. Mouse/keyboard controls
 retain native range behavior. The top menu hides on downward page scrolling
 and returns on upward scrolling, page top or keyboard focus.
 
-Playback defaults to a four-beat audible count-in, independent of the
-optional ongoing metronome. Its clicks share the metronome volume and
+Automatic count-in defaults on and is independent of the optional ongoing
+metronome. Only the beginning or an explicitly selected lyric phrase is a
+known start; the selected part must also have an onset there. A known start
+on beat one gets four preparation beats, on beat three gets two, and on
+beat four-and gets 3.5. Fractional beat offsets are preserved. Dragging seek
+or resuming after actual song playback starts immediately without count-in.
+Its clicks share the metronome volume and
 master controls. The first beat is accented. The interval is computed from
 the tempo at the selected score position, scaled by the current BPM setting.
-The score audio origin is four intervals after the first count click.
+The score audio origin follows the calculated number of beat intervals.
 During this interval the score clock stays at the selected position,
 lyrics and roll stay still, and score key/word highlights remain off.
 Normal playback starts audio and highlights from the same clock origin.
-Pause/stop/logout cancel future notes and count clicks. User play/resume
-and loops count in; normal seek/tempo/register edits do not insert a delay.
-Edits made during a count-in restart it using the updated settings. Turning
+Pause/stop/logout cancel future notes and count clicks. Beginning/phrase
+starts and loops can count in; normal tempo/register edits add no delay.
+Pausing before the count finishes preserves the known start for another try.
+Tempo/register edits during count-in restart it; a dragged seek cancels it.
+Turning
 off count-in while counting starts the score immediately from that position.
