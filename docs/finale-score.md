@@ -93,6 +93,10 @@ update this same timeline. No rest or beat-count labels are shown.
 The full-lyrics button expands/collapses the selected part's phrase list.
 The current phrase is marked and each row can seek to that phrase's start.
 The list has independent scrolling so reading it does not move the controls.
+While playing, the current phrase is brought to the middle of this list on
+phrase changes, resume or expansion. Only the list scrolls; the document
+stays in place. Reduced-motion mode uses an immediate scroll. While paused,
+the list remains available for manual reading without automatic scrolling.
 
 Selecting a singing part sends it left and all other parts right. Swap
 reverses this split and keeps that orientation for subsequent selections.

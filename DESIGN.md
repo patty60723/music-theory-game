@@ -72,6 +72,10 @@ During playback the piano viewport follows the active pitch range, including
 nearby upcoming focus notes. If all parts cannot fit, the singing part takes
 priority. Holding a manual piano key suspends following until release.
 Following only scrolls the piano viewport, never the document.
+Expanded full lyrics also follow the current phrase during playback and
+on resume/expansion, scrolling only the lyric list. Follow occurs on phrase
+changes rather than continuously fighting manual reading. Pause stops lyric
+following; reduced motion uses an immediate scroll.
 Touch sliders require a deliberate horizontal drag; touch-down and vertical
 gestures never change values. Native mouse and keyboard interaction remains.
 The sticky top menu hides while scrolling down and returns on upward scroll,

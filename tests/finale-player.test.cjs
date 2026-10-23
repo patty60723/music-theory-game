@@ -89,6 +89,16 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnLyricsList button').nth(2).click();assert.equal(Number(await page.locator('#fnSeek').inputValue()),timeline.voices.f1.phrases[2].start);
     assert.equal(await page.locator('#fnLyricsList button[aria-current=true]').textContent(),timeline.voices.f1.phrases[2].text);
     await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f2').click();assert.equal(await page.locator('#fnLyricsList button').count(),timeline.voices.f2.phrases.length);await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f1').click();
+    // Expanded lyrics follow playback, including resume, without scrolling the page.
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.locator('#fnSeek').evaluate((el,time)=>{el.value=time;el.dispatchEvent(new Event('input',{bubbles:true}));},timeline.voices.f1.phrases[9].start-.15);
+    await page.locator('#fnLyricsList').evaluate(el=>el.scrollTop=0);await page.locator('#fnTopPlay').click();const lyricPageY=await page.evaluate(()=>scrollY);
+    await page.waitForFunction(start=>Number(document.querySelector('#fnLyricsList button[aria-current=true]').dataset.start)===start,timeline.voices.f1.phrases[9].start);
+    await page.waitForFunction(()=>{const host=document.querySelector('#fnLyricsList').getBoundingClientRect(),row=document.querySelector('#fnLyricsList button[aria-current=true]').getBoundingClientRect();return row.top>=host.top&&row.bottom<=host.bottom;});
+    assert.ok(await page.locator('#fnLyricsList').evaluate(el=>el.scrollTop>0));assert.equal(await page.evaluate(()=>scrollY),lyricPageY);
+    await page.locator('#fnTopPlay').click();await page.locator('#fnLyricsList').evaluate(el=>el.scrollTop=0);await page.locator('#fnTopPlay').click();
+    await page.waitForFunction(()=>document.querySelector('#fnLyricsList').scrollTop>0);await page.locator('#fnTopPlay').click();
+    await page.emulateMedia({reducedMotion:'no-preference'});
     await page.locator('#fnToggleLyrics').click();assert.equal(await page.locator('#fnAllLyrics').isVisible(),false);
     await page.locator('#fnStop').click();
     assert.equal(await page.locator('#fnOpenEditor').count(),0);

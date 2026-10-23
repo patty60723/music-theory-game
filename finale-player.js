@@ -45,7 +45,7 @@
     const isCounting=()=>playing&&countInStart!==null&&context.currentTime<origin;
     let focusSide='left';
     let authEpoch=0,checking=null;
-    let rollVoice='',rollNotes=[],lyricsListVoice='',lyricRows=[];
+    let rollVoice='',rollNotes=[],lyricsListVoice='',lyricRows=[],lyricsFollowSignature='';
     const beatWidth=80,reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     const codes=['KeyA','KeyW','KeyS','KeyE','KeyD','KeyF','KeyT','KeyG','KeyY','KeyH','KeyU','KeyJ','KeyK','KeyO','KeyL','KeyP','Semicolon'];
     const labels=['A','W','S','E','D','F','T','G','Y','H','U','J','K','O','L','P',';'];
@@ -195,6 +195,7 @@
       $('#fnRollCurrent').textContent=name;
     }
     function renderAllLyrics(time){
+      if(!playing||$('#fnAllLyrics').hidden)lyricsFollowSignature='';
       if($('#fnAllLyrics').hidden)return;
       const part=data.voices[focus];
       if(lyricsListVoice!==focus){
@@ -203,6 +204,12 @@
       }
       const currentPhrase=phraseAt(part,time);
       lyricRows.forEach((row,i)=>{if(i===currentPhrase)row.setAttribute('aria-current','true');else row.removeAttribute('aria-current');});
+      const signature=focus+':'+currentPhrase;
+      if(playing&&!isCounting()&&lyricsFollowSignature!==signature){
+        lyricsFollowSignature=signature;
+        const host=$('#fnLyricsList'),row=lyricRows[currentPhrase];
+        if(row&&host.clientHeight){const viewport=host.getBoundingClientRect(),rect=row.getBoundingClientRect();host.scrollTo({top:host.scrollTop+rect.top-viewport.top-(host.clientHeight-rect.height)/2,behavior:reducedMotion.matches?'instant':'smooth'});}
+      }
     }
     function renderLyrics(time){
       if(!data)return;
