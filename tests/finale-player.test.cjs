@@ -156,6 +156,13 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnPlay').click();assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'false');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     await page.locator('#fnBpmUp5').click();assert.equal(await page.locator('#fnBpm').inputValue(),'125');await page.locator('#fnBpmDown5').click();
+    await page.locator('#fnBpm').fill('80');await page.locator('#fnBpm').press('Tab');
+    const resetPosition=Number(await page.locator('#fnSeek').inputValue());await page.locator('#fnBpmReset').click();
+    assert.equal(await page.locator('#fnBpm').inputValue(),'120');assert.equal(await page.locator('#fnBpmRange').inputValue(),'120');
+    assert.equal(Number(await page.locator('#fnSeek').inputValue()),resetPosition);assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'false');
+    await page.locator('#fnTopPlay').click();await page.locator('#fnBpm').fill('80');await page.locator('#fnBpm').press('Tab');await page.locator('#fnBpmReset').click();
+    await page.waitForFunction(()=>document.querySelector('#fnTopPlay').getAttribute('aria-pressed')==='true');
+    assert.equal(await page.locator('#fnBpm').inputValue(),'120');await page.locator('#fnTopPlay').click();
     // Input focus must not play letter shortcuts.
     const before=await page.evaluate(()=>pianoCalls.length);await page.locator('#fnBpm').focus();await page.keyboard.press('a');assert.equal(await page.evaluate(()=>pianoCalls.length),before);
     await page.locator('#fnBpm').fill('90');await page.locator('#fnBpm').press('Tab');

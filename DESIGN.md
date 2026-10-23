@@ -59,6 +59,8 @@ the lower octave, and displayed pitches always match sounding pitches.
 Each part groups Mute, SOLO and Only mute this part in one equal-width row,
 above the separate left/right routing row. Pressed states reflect the actual
 mute configuration. Clicking an active preset restores all parts unmuted.
+The tempo action row pairs tap tempo with Return to original tempo. Reset
+restores the score tempo map without seeking or changing playback state.
 
 頁面最大寬度 1280px，自然文件捲動。練唱頁的閱讀順序固定為動態歌詞、可彈奏鋼琴、播放／速度控制台、四聲部混音。四聲部採兩欄卡片，720px 以下單欄。琴鍵區有水平捲動，歌詞區保留目前句、前後句的空間；手機目前句至少預留三行。播放與 BPM 控制採較大觸控目標。
 

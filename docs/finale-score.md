@@ -118,3 +118,7 @@ Each part groups Mute, SOLO (only this part) and Only mute this part
 four-part mute configuration; pressing an already active preset unmutes all.
 Pressed states are derived from the actual mute set, including manual edits.
 These actions preserve part volumes, routing and playback position.
+
+Return to original tempo resets the initial BPM to 120 (rate 1), preserving
+the score's later tempo changes and the current position/playback state.
+It sits beside tap tempo in the same action row, including on phones.
