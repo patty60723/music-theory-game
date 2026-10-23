@@ -4,6 +4,9 @@
     const $=s=>document.querySelector(s),score=window.FinaleScore;
     const voices=[{id:'f1',name:'女 1',color:'--c-root'},{id:'f2',name:'女 2',color:'--c-third'},{id:'m1',name:'男 1',color:'--c-fifth'},{id:'m2',name:'男 2',color:'--c-seventh'}];
     const section=$('#tab-finale');
+    const topMenu=$('.bar');let menuScroll=Math.max(0,window.scrollY);
+    window.addEventListener('scroll',()=>{const y=Math.max(0,window.scrollY),delta=y-menuScroll;if(y<20){topMenu.classList.remove('menu-scrolled-away');menuScroll=y;}else if(Math.abs(delta)>10){topMenu.classList.toggle('menu-scrolled-away',delta>0);menuScroll=y;}},{passive:true});
+    topMenu.addEventListener('focusin',()=>topMenu.classList.remove('menu-scrolled-away'));
     section.innerHTML=`
       <section class="panel finale-auth" id="fnAuth" aria-labelledby="fnAuthHeading"><h1 id="fnAuthHeading">四聲部練唱室</h1><p>輸入練唱密碼，即可使用樂譜、動態歌詞與鋼琴練唱。</p><form id="fnLogin"><label for="fnPassword">練唱密碼</label><div class="finale-auth-actions"><input id="fnPassword" type="password" autocomplete="current-password" required maxlength="256"><button class="play" id="fnUnlock" type="submit">進入練唱室</button></div></form><p id="fnAuthStatus" role="status">正在確認登入狀態…</p><button class="ghost" id="fnAuthRetry" hidden>重新連線</button></section>
       <div id="fnRoom" class="finale-room" hidden>
@@ -21,21 +24,20 @@
         <div class="finale-keys" id="fnKeyboard" role="group" aria-label="可彈奏的鋼琴"></div>
         <p class="finale-piano-help">A W S E D F T G Y H U J K O L P ; 對應半音階。按住發聲、放開收音；觸控可多指彈奏。練唱聲部即使靜音，仍會顯示歌詞與虛線琴鍵。</p>
       </section>
-      <section class="panel finale-console" aria-labelledby="fnConsoleHeading"><h2 id="fnConsoleHeading">練唱控制台</h2>
+      <section class="panel finale-console" aria-labelledby="fnConsoleHeading"><div class="finale-console-heading"><h2 id="fnConsoleHeading">練唱控制台</h2><div class="seg finale-settings-tabs" role="tablist" aria-label="控制台分頁"><button id="fnSettingsPlayback" role="tab" aria-controls="fnSettingsPlaybackPanel" aria-selected="true">播放</button><button id="fnSettingsTempo" role="tab" aria-controls="fnSettingsTempoPanel" aria-selected="false" tabindex="-1">其他設定</button><button id="fnSettingsKeyboard" role="tab" aria-controls="fnSettingsKeyboardPanel" aria-selected="false" tabindex="-1">鍵盤</button></div></div>
         <div class="finale-transport"><button class="play" id="fnPlay" disabled>讀取樂譜中…</button><button class="ghost" id="fnStop" disabled>回到開頭</button><span class="finale-time" id="fnTime">0:00 / —</span><label class="chk"><input type="checkbox" id="fnLoop"> 循環播放</label></div>
         <label class="finale-seek-label">播放位置<input class="finale-seek" id="fnSeek" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="播放位置（秒）"></label>
-        <div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
+        <div id="fnSettingsPlaybackPanel" role="tabpanel" aria-labelledby="fnSettingsPlayback" tabindex="0"><div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
         <p id="fnTempoHint">調慢也不會變調；譜面中的速度變化會一同比例調整。</p></div>
         <div class="finale-metronome"><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
+        </div>        <div id="fnSettingsTempoPanel" role="tabpanel" aria-labelledby="fnSettingsTempo" tabindex="0" hidden><div class="finale-focus"><span class="lbl" id="fnFocusLabel">練唱聲部（主畫面歌詞）</span><div class="seg" role="group" aria-labelledby="fnFocusLabel">${voices.map(v=>`<button id="fnFocus-${v.id}" class="${v.id==='f1'?'on':''}" aria-pressed="${v.id==='f1'}">${v.name}</button>`).join('')}</div></div>
+        <div class="finale-stereo"><span id="fnStereoSummary">練唱在左，其他在右</span><button class="ghost" id="fnSwap">左右對調 ⇄</button></div><label class="finale-seek-label">速度微調<input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"></label><div class="finale-tap-row"><button class="ghost" id="fnTap">敲拍定速</button></div><label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label></div>
+        <div id="fnSettingsKeyboardPanel" role="tabpanel" aria-labelledby="fnSettingsKeyboard" tabindex="0" hidden><div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div><p>播放時鋼琴會自動跟隨音域；手動按住琴鍵時暫停跟隨。</p></div>
+
         <p class="finale-status" id="fnStatus" role="status">正在讀取四聲部樂譜…</p>
       </section>
       <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-part-actions" role="group" aria-label="${v.name} 聲部聲音"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><button class="ghost" id="fnSolo-${v.id}" aria-pressed="false" aria-label="SOLO ${v.name}">SOLO<span>只聽此部</span></button><button class="ghost" id="fnExcept-${v.id}" aria-pressed="false" aria-label="只關${v.name}，開啟其他聲部">只關此部<span>其他有聲</span></button></div><div class="finale-routing"><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div>
-      <section class="panel finale-settings" aria-labelledby="fnSettingsHeading"><h2 id="fnSettingsHeading">其他設定</h2>
-        <div class="seg finale-settings-tabs" role="tablist" aria-label="練唱設定分類"><button id="fnSettingsTempo" role="tab" aria-controls="fnSettingsTempoPanel" aria-selected="true">練唱設定</button><button id="fnSettingsKeyboard" role="tab" aria-controls="fnSettingsKeyboardPanel" aria-selected="false" tabindex="-1">鍵盤設定</button></div>
-        <div id="fnSettingsTempoPanel" role="tabpanel" aria-labelledby="fnSettingsTempo" tabindex="0"><div class="finale-focus"><span class="lbl" id="fnFocusLabel">練唱聲部（主畫面歌詞）</span><div class="seg" role="group" aria-labelledby="fnFocusLabel">${voices.map(v=>`<button id="fnFocus-${v.id}" class="${v.id==='f1'?'on':''}" aria-pressed="${v.id==='f1'}">${v.name}</button>`).join('')}</div></div>
-        <div class="finale-stereo"><span id="fnStereoSummary">練唱在左，其他在右</span><button class="ghost" id="fnSwap">左右對調 ⇄</button></div><label class="finale-seek-label">速度微調<input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"></label><div class="finale-tap-row"><button class="ghost" id="fnTap">敲拍定速</button></div><label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label></div>
-        <div id="fnSettingsKeyboardPanel" role="tabpanel" aria-labelledby="fnSettingsKeyboard" tabindex="0" hidden><div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div><p>播放時鋼琴會自動跟隨音域；手動按住琴鍵時暫停跟隨。</p></div>
-      </section></div>`;
+      </div>`;
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
@@ -249,7 +251,30 @@
       if(!section.hidden)requestAnimationFrame(()=>revealKey(baseMidi,true));
     }
     const togglePlayback=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnPlay').onclick=togglePlayback;$('#fnTopPlay').onclick=togglePlayback;$('#fnStop').onclick=()=>{pause();position=0;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
-    const settingTabs=[$('#fnSettingsTempo'),$('#fnSettingsKeyboard')];
+    function guardTouchRange(input){
+      const wrapper=document.createElement('span'),surface=document.createElement('span');wrapper.className='finale-range-wrap';surface.className='finale-range-touch';surface.setAttribute('aria-hidden','true');input.before(wrapper);wrapper.append(input,surface);
+      let gesture=null;
+      const adjust=(value)=>{const min=Number(input.min)||0,max=Number(input.max)||100,step=Number(input.step)||1;input.value=Math.max(min,Math.min(max,min+Math.round((value-min)/step)*step));input.dispatchEvent(new Event('input',{bubbles:true}));};
+      surface.addEventListener('pointerdown',event=>{
+        if(input.disabled||event.button>0)return;
+        event.preventDefault();if(gesture)return;
+        gesture={id:event.pointerId,x:event.clientX,y:event.clientY,value:Number(input.value),direction:event.pointerType==='touch'?null:'adjust',touch:event.pointerType==='touch'};surface.setPointerCapture(event.pointerId);
+        if(!gesture.touch){input.focus({preventScroll:true});const rect=input.getBoundingClientRect(),min=Number(input.min)||0,max=Number(input.max)||100;adjust(min+(event.clientX-rect.left-12)/Math.max(1,rect.width-24)*(max-min));gesture.value=Number(input.value);}
+      });
+      surface.addEventListener('pointermove',event=>{
+        if(!gesture||event.pointerId!==gesture.id)return;
+        const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+        if(!gesture.direction){if(Math.max(Math.abs(dx),Math.abs(dy))<10)return;gesture.direction=Math.abs(dx)>Math.abs(dy)*1.3?'adjust':'scroll';}
+        if(gesture.direction!=='adjust')return;
+        event.preventDefault();
+        const min=Number(input.min)||0,max=Number(input.max)||100,width=Math.max(1,input.getBoundingClientRect().width-24);adjust(gesture.value+dx/width*(max-min));
+      });
+      const finish=event=>{if(!gesture||event.pointerId!==gesture.id)return;const changed=gesture.direction==='adjust';gesture=null;if(event.type==='pointerup'&&changed)input.dispatchEvent(new Event('change',{bubbles:true}));};
+      for(const name of ['pointerup','pointercancel','lostpointercapture'])surface.addEventListener(name,finish);
+      surface.addEventListener('click',event=>event.preventDefault());
+    }
+    section.querySelectorAll('input[type=range]').forEach(guardTouchRange);
+    const settingTabs=[$('#fnSettingsPlayback'),$('#fnSettingsTempo'),$('#fnSettingsKeyboard')];
     function selectSettings(tab){for(const button of settingTabs){const selected=button===tab;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;$('#'+button.getAttribute('aria-controls')).hidden=!selected;}}
     for(const tab of settingTabs){tab.onclick=()=>selectSettings(tab);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();event.stopPropagation();const index=event.key==='Home'?0:event.key==='End'?settingTabs.length-1:(settingTabs.indexOf(tab)+(event.key==='ArrowRight'?1:-1)+settingTabs.length)%settingTabs.length;selectSettings(settingTabs[index]);settingTabs[index].focus();};}
     $('#fnBpm').onchange=e=>setBpm(e.target.value);$('#fnBpmRange').oninput=e=>setBpm(e.target.value);

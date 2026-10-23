@@ -121,13 +121,19 @@ These actions preserve part volumes, routing and playback position.
 
 Return to original tempo resets the initial BPM to 120 (rate 1), preserving
 the score's later tempo changes and the current position/playback state.
-It stays in the compact BPM row, including on phones. The metronome lives
-in the common console. Singing-part selection, stereo swap, tempo slider,
-tap tempo and master volume live in the singing settings tab after the
-four-part mixer. A second tab holds manual-keyboard settings.
+It stays in the compact BPM row, including on phones. Three small tabs in
+the console switch playback (BPM/metronome), other settings (singing part,
+stereo swap, tempo slider, tap tempo/master volume) and manual keyboard.
+Transport and seek stay visible across tabs; all four mixer cards follow.
 Tab changes keep playback and control values, and support arrows/Home/End.
 
 Playback automatically pans the piano viewport to active pitches and nearby
 upcoming notes. When all parts fit, they remain visible together; otherwise
 the selected singing part has priority. A held manual key suspends following.
 Automatic panning neither scrolls the document nor triggers piano notes.
+
+On touch devices all practice sliders require a horizontal drag beyond
+10px before adjusting. Taps and vertical gestures do not change values;
+vertical scrolling and pinch zoom remain native. Mouse/keyboard controls
+retain native range behavior. The top menu hides on downward page scrolling
+and returns on upward scrolling, page top or keyboard focus.

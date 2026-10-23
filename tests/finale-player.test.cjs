@@ -46,18 +46,18 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.waitForFunction(()=>document.querySelector('#fnPlay')?.textContent==='播放');
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
     assert.equal(await page.locator('.finale-console #fnMetronome').count(),1);
-    assert.equal(await page.locator('.finale-console #fnFocus-f1').count(),0);
+    assert.equal(await page.locator('.finale-console #fnFocus-f1').count(),1);
     assert.equal(await page.locator('#fnSettingsTempoPanel #fnFocus-f1').count(),1);
     assert.equal(await page.locator('#fnSettingsTempoPanel #fnSwap').count(),1);
     assert.equal(await page.locator('#fnSettingsKeyboardPanel').isVisible(),false);
     await page.locator('#fnSettingsTempo').press('ArrowRight');
     assert.equal(await page.locator('#fnSettingsKeyboard').getAttribute('aria-selected'),'true');
     assert.equal(await page.locator('#fnSettingsTempoPanel').isVisible(),false);
-    assert.equal(await page.locator('#fnMetronome').isVisible(),true);
+    assert.equal(await page.locator('#fnMetronome').isVisible(),false);
     await page.locator('#fnSettingsKeyboard').press('Home');
-    assert.equal(await page.locator('#fnSettingsTempo').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('#fnSettingsPlayback').getAttribute('aria-selected'),'true');
     assert.equal(await page.locator('.finale-voice:visible').count(),4);
-    assert.equal(await page.evaluate(()=>{const mix=document.querySelector('.finale-mix'),settings=document.querySelector('.finale-settings');return Boolean(mix.compareDocumentPosition(settings)&Node.DOCUMENT_POSITION_FOLLOWING)&&Boolean(document.querySelector('.finale-console').compareDocumentPosition(mix)&Node.DOCUMENT_POSITION_FOLLOWING);}),true);
+    assert.equal(await page.locator('.finale-settings').count(),0);assert.equal(await page.locator('.finale-console [role=tablist]').count(),1);
     async function assertSplit(focus,left){for(const id of ['f1','f2','m1','m2']){assert.equal(await page.locator('#fnLeft-'+id).isChecked(),id===focus?left:!left);assert.equal(await page.locator('#fnRight-'+id).isChecked(),id===focus?!left:left);}}
     await assertSplit('f1',true);
     async function assertMutes(ids){for(const id of ['f1','f2','m1','m2'])assert.equal(await page.locator('#fnMute-'+id).getAttribute('aria-pressed'),String(ids.includes(id)));}
@@ -71,10 +71,10 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnExcept-m2').click();await assertMutes(['m2']);
     await page.locator('#fnExcept-m2').click();await assertMutes([]);
     await assertSplit('f1',true);
-    await page.locator('#fnFocus-f2').click();await assertSplit('f2',true);
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f2').click();await assertSplit('f2',true);
     await page.locator('#fnSwap').click();await assertSplit('f2',false);
-    await page.locator('#fnFocus-m2').click();await assertSplit('m2',false);
-    await page.locator('#fnSwap').click();await page.locator('#fnFocus-f1').click();await assertSplit('f1',true);
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-m2').click();await assertSplit('m2',false);
+    await page.locator('#fnSwap').click();await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f1').click();await assertSplit('f1',true);
     await page.locator('#fnSeek').evaluate(el=>{el.value=.4;el.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.locator('#fnRollCurrent').textContent(),'');assert.equal(await page.locator('#fnRollTrack .active').count(),0);
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.1;el.dispatchEvent(new Event('input',{bubbles:true}));});
@@ -87,7 +87,7 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnLyricsList button').count(),timeline.voices.f1.phrases.length);
     await page.locator('#fnLyricsList button').nth(2).click();assert.equal(Number(await page.locator('#fnSeek').inputValue()),timeline.voices.f1.phrases[2].start);
     assert.equal(await page.locator('#fnLyricsList button[aria-current=true]').textContent(),timeline.voices.f1.phrases[2].text);
-    await page.locator('#fnFocus-f2').click();assert.equal(await page.locator('#fnLyricsList button').count(),timeline.voices.f2.phrases.length);await page.locator('#fnFocus-f1').click();
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f2').click();assert.equal(await page.locator('#fnLyricsList button').count(),timeline.voices.f2.phrases.length);await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f1').click();
     await page.locator('#fnToggleLyrics').click();assert.equal(await page.locator('#fnAllLyrics').isVisible(),false);
     await page.locator('#fnStop').click();
     assert.equal(await page.locator('#fnOpenEditor').count(),0);
@@ -102,8 +102,8 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnKeyboard .key.on').count(),0);
     await page.evaluate(()=>{const output=outputs.at(-1);window.masterProbe=output.context.createAnalyser();masterProbe.fftSize=2048;output.connect(masterProbe);window.masterRms=()=>{const x=new Float32Array(2048);masterProbe.getFloatTimeDomainData(x);return Math.sqrt(x.reduce((s,n)=>s+n*n,0)/x.length);};});
     await page.locator('#fnRoom h1').click();await page.keyboard.down('a');await page.waitForFunction(()=>masterRms()>.0001);
-    await page.locator('#fnMaster').fill('0');await page.waitForFunction(()=>masterRms()<.000001);
-    await page.locator('#fnMaster').fill('100');await page.waitForFunction(()=>masterRms()>.0001);await page.keyboard.up('a');
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnMaster').fill('0');await page.waitForFunction(()=>masterRms()<.000001);
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnMaster').fill('100');await page.waitForFunction(()=>masterRms()>.0001);await page.keyboard.up('a');
     assert.equal(await page.evaluate(()=>pianoCalls.filter(n=>n.duration===60).every(n=>n.stopped)),true);
     const c4=page.locator('#fnKeyboard button[data-midi="60"]');await c4.focus();await c4.press('ArrowRight');
     assert.equal(await page.evaluate(()=>document.activeElement.dataset.midi),'61');
@@ -112,7 +112,7 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnLiveNote').textContent(),'C4');await page.mouse.up();
     assert.equal(await page.locator('#fnKeyboard .key.on').count(),0);
     // Slow enough to probe the first piano chord in the actual output graph.
-    await page.locator('#fnBpm').fill('40');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('40');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     for(const id of ['f2','m1','m2'])await page.locator('#fnMute-'+id).click();
     await page.locator('#fnRight-f1').uncheck();
     await page.evaluate(()=>{
@@ -135,14 +135,14 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnMute-f1').click();await page.waitForFunction(()=>{const [l,r]=rms();return r>.0003&&l<.00001;});
     // BPM changes scheduling duration, not MIDI pitch.
     await page.locator('#fnPlay').click();await page.locator('#fnStop').click();
-    await page.locator('#fnBpm').fill('120');await page.locator('#fnBpm').press('Tab');await page.evaluate(()=>{window.pianoCalls=[];window.sampleRates=[];window.oscFrequencies=[];});
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('120');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');await page.evaluate(()=>{window.pianoCalls=[];window.sampleRates=[];window.oscFrequencies=[];});
     await page.locator('#fnPlay').click();await page.waitForFunction(()=>pianoCalls.length>=4);
     const normal=await page.evaluate(()=>pianoCalls.slice(0,4));assert.deepEqual(normal.map(n=>n.midi),first.map(n=>n.midi));assert.ok(Math.abs(normal[0].duration-.25)<.001);
     const normalPitch=await page.evaluate(()=>({samples:sampleRates.slice(0,4),osc:oscFrequencies.slice(0,16)}));assert.deepEqual(normalPitch,slowPitch);
     await page.locator('#fnPlay').click();
     // Score-synchronous metronome: strong first beat, BPM timing, silence and note-off.
-    await page.locator('#fnStop').click();await page.locator('#fnMute-f1').click();await page.locator('#fnMetronome').check();
-    await page.locator('#fnBpm').fill('200');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnStop').click();await page.locator('#fnMute-f1').click();await page.locator('#fnSettingsPlayback').click();await page.locator('#fnMetronome').check();
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('200');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});
     await page.locator('#fnPlay').click();await page.waitForFunction(()=>clickCalls.length>=3);
     const clicks=await page.evaluate(()=>clickCalls.slice(0,3));assert.deepEqual(clicks.map(c=>c.frequency),[1500,1000,1000]);
@@ -151,14 +151,14 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.ok(Math.abs(clicks[0].time-(await page.evaluate(()=>pianoCalls[0].time)))<.005);
     await page.locator('#fnPlay').click();assert.equal(await page.locator('#fnBeats [aria-current=true]').count(),0);
     const pausedClicks=await page.evaluate(()=>clickCalls.length);await page.waitForTimeout(180);assert.equal(await page.evaluate(()=>clickCalls.length),pausedClicks);
-    await page.locator('#fnMetroVolume').fill('25');assert.equal(await page.locator('#fnMetroVolumeOut').textContent(),'25%');
-    await page.locator('#fnMetronome').uncheck();await page.locator('#fnStop').click();await page.evaluate(()=>window.clickCalls=[]);
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnMetroVolume').fill('25');assert.equal(await page.locator('#fnMetroVolumeOut').textContent(),'25%');
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnMetronome').uncheck();await page.locator('#fnStop').click();await page.evaluate(()=>window.clickCalls=[]);
     await page.locator('#fnPlay').click();await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>clickCalls.length),0);await page.waitForFunction(()=>masterRms()<.00001);await page.locator('#fnPlay').click();await page.locator('#fnMute-f1').click();
-    await page.locator('#fnBpm').fill('120');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('120');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.locator('#fnCurrentLine [aria-current="true"]').textContent(),'in’');
     assert.ok(parseFloat(await page.locator('#fnCurrentLine [aria-current="true"]').evaluate(el=>el.style.getPropertyValue('--word-progress')))>0);
-    await page.locator('#fnFocus-m1').click();assert.equal((await page.locator('#fnLyricVoice').textContent()).startsWith('男 1'),true);
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-m1').click();assert.equal((await page.locator('#fnLyricVoice').textContent()).startsWith('男 1'),true);
     assert.equal(await page.locator('#fnPreviousLine').count(),0);
     assert.equal(await page.locator('#fnRegister-m1').inputValue(),'-12');
     assert.equal(await page.locator('#fnRollCurrent').textContent(),'C4');
@@ -168,17 +168,17 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'true');
     await page.locator('#fnPlay').click();assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'false');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
-    await page.locator('#fnBpmUp5').click();assert.equal(await page.locator('#fnBpm').inputValue(),'125');await page.locator('#fnBpmDown5').click();
-    await page.locator('#fnBpm').fill('80');await page.locator('#fnBpm').press('Tab');
-    const resetPosition=Number(await page.locator('#fnSeek').inputValue());await page.locator('#fnBpmReset').click();
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpmUp5').click();assert.equal(await page.locator('#fnBpm').inputValue(),'125');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpmDown5').click();
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('80');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
+    const resetPosition=Number(await page.locator('#fnSeek').inputValue());await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpmReset').click();
     assert.equal(await page.locator('#fnBpm').inputValue(),'120');assert.equal(await page.locator('#fnBpmRange').inputValue(),'120');
     assert.equal(Number(await page.locator('#fnSeek').inputValue()),resetPosition);assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'false');
-    await page.locator('#fnTopPlay').click();await page.locator('#fnBpm').fill('80');await page.locator('#fnBpm').press('Tab');await page.locator('#fnBpmReset').click();
+    await page.locator('#fnTopPlay').click();await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('80');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpmReset').click();
     await page.waitForFunction(()=>document.querySelector('#fnTopPlay').getAttribute('aria-pressed')==='true');
     assert.equal(await page.locator('#fnBpm').inputValue(),'120');await page.locator('#fnTopPlay').click();
     // Input focus must not play letter shortcuts.
-    const before=await page.evaluate(()=>pianoCalls.length);await page.locator('#fnBpm').focus();await page.keyboard.press('a');assert.equal(await page.evaluate(()=>pianoCalls.length),before);
-    await page.locator('#fnBpm').fill('90');await page.locator('#fnBpm').press('Tab');
+    const before=await page.evaluate(()=>pianoCalls.length);await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').focus();await page.keyboard.press('a');assert.equal(await page.evaluate(()=>pianoCalls.length),before);
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('90');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-desktop.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -189,7 +189,7 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.locator('#fnTopPlay').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-landscape.png')});
     // Narrow landscape keyboard follows playback without page scrolling or extra notes.
-    await page.locator('#fnBpm').fill('40');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('40');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     await page.locator('#fnKeyboard').evaluate(el=>el.scrollLeft=0);
     const manualBeforeFollow=await page.evaluate(()=>pianoCalls.filter(n=>n.duration===60).length);
@@ -202,8 +202,8 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnKeyboard').evaluate(el=>el.scrollLeft),0);
     await page.keyboard.up('a');await page.waitForFunction(()=>document.querySelector('#fnKeyboard').scrollLeft>0);
     await page.locator('#fnSettingsKeyboard').click();assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'true');
-    await page.locator('#fnSettingsTempo').click();await page.locator('#fnTopPlay').click();
-    await page.locator('#fnBpm').fill('90');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnTopPlay').click();
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('90');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     await page.setViewportSize({width:390,height:844});
     await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-mobile.png'),fullPage:true});
@@ -232,7 +232,24 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     const cdp=await touchContext.newCDPSession(touchPage),points=boxes.map((b,i)=>({x:b.x+b.width/2,y:b.y+b.height-15,id:i+1}));
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
     await touchPage.waitForFunction(()=>document.querySelector('#fnLiveNote').textContent==='E4 · G4');
-    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.equal(await touchPage.locator('#fnKeyboard .key.on').count(),0);await touchContext.close();
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.equal(await touchPage.locator('#fnKeyboard .key.on').count(),0);
+    async function dragTouchRange(id,dx,dy){
+      const slider=touchPage.locator(id);await slider.scrollIntoViewIfNeeded();const b=await slider.boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
+      for(let i=1;i<=5;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/5,y:y+dy*i/5,id:1}]});await touchPage.waitForTimeout(20);}
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await touchPage.waitForTimeout(100);
+    }
+    for(const id of ['#fnSeek','#fnVolume-f1']){
+      await touchPage.locator(id).scrollIntoViewIfNeeded();const initialValue=await touchPage.locator(id).inputValue(),initialY=await touchPage.evaluate(()=>scrollY);
+      await dragTouchRange(id,3,-100);assert.equal(await touchPage.locator(id).inputValue(),initialValue);assert.ok(await touchPage.evaluate(()=>scrollY)>initialY);
+      await dragTouchRange(id,0,0);assert.equal(await touchPage.locator(id).inputValue(),initialValue);
+      await dragTouchRange(id,id==='#fnSeek'?50:-50,2);assert.notEqual(await touchPage.locator(id).inputValue(),initialValue);
+    }
+    await touchPage.evaluate(()=>window.scrollTo(0,0));await touchPage.waitForFunction(()=>!document.querySelector('.bar').classList.contains('menu-scrolled-away'));
+    await touchPage.evaluate(()=>window.scrollTo(0,500));await touchPage.waitForFunction(()=>document.querySelector('.bar').classList.contains('menu-scrolled-away'));
+    await touchPage.evaluate(()=>window.scrollTo(0,350));await touchPage.waitForFunction(()=>!document.querySelector('.bar').classList.contains('menu-scrolled-away'));
+    await touchPage.evaluate(()=>window.scrollTo(0,0));assert.equal(await touchPage.locator('.bar').evaluate(el=>el.classList.contains('menu-scrolled-away')),false);
+    await touchContext.close();
     // A score failure is retryable. The local instrument is still usable.
     const failing=await context.newPage();await failing.route('**/api/finale/score',route=>route.abort());
     await enter(failing,false);await failing.waitForFunction(()=>document.querySelector('#fnPlay')?.textContent==='重新讀取樂譜');

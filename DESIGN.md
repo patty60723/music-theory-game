@@ -62,17 +62,22 @@ mute configuration. Clicking an active preset restores all parts unmuted.
 The compact tempo row keeps BPM increments and Return to original tempo
 visible. Reset restores the score tempo map without seeking or changing
 playback state. The four part cards immediately follow the common console.
-The metronome stays visible in the common console. Other settings follow
-the cards in two accessible tabs: singing settings and keyboard. Singing
-settings contain the singing part, stereo swap, tempo slider, tap tempo
-and master volume. Hidden settings retain values and keep functioning while
+The console heading owns three small accessible tabs: playback, other
+settings and keyboard. Transport and seek remain visible across tabs.
+Playback contains BPM and metronome. Other settings contain the singing
+part, stereo swap, tempo slider, tap tempo and master volume.
+Hidden settings retain values and keep functioning while
 playing; changing these local tabs does not pause playback or change song.
 During playback the piano viewport follows the active pitch range, including
 nearby upcoming focus notes. If all parts cannot fit, the singing part takes
 priority. Holding a manual piano key suspends following until release.
 Following only scrolls the piano viewport, never the document.
+Touch sliders require a deliberate horizontal drag; touch-down and vertical
+gestures never change values. Native mouse and keyboard interaction remains.
+The sticky top menu hides while scrolling down and returns on upward scroll,
+at the page top or when focused. Reduced motion disables its transition.
 
-頁面最大寬度 1280px，自然文件捲動。練唱頁的閱讀順序為動態歌詞、可彈奏鋼琴、精簡播放／速度控制台、四聲部混音、其他設定分頁。四聲部採兩欄卡片，720px 以下單欄。琴鍵區水平捲動，歌詞顯示目前句與下一句。播放與 BPM 控制保留至少 44px 觸控目標。
+頁面最大寬度 1280px，自然文件捲動。練唱頁的閱讀順序為動態歌詞、可彈奏鋼琴、包含設定分頁的控制台、四聲部混音。四聲部採兩欄卡片，720px 以下單欄。琴鍵區水平捲動，歌詞顯示目前句與下一句。播放與 BPM 控制保留至少 44px 觸控目標。
 
 ## Elevation & Depth
 
