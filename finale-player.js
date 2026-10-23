@@ -33,7 +33,7 @@
         <div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div>
         <p class="finale-status" id="fnStatus" role="status">正在讀取四聲部樂譜…</p>
       </section>
-      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-routing"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div></div>`;
+      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-part-actions" role="group" aria-label="${v.name} 聲部聲音"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><button class="ghost" id="fnSolo-${v.id}" aria-pressed="false" aria-label="SOLO ${v.name}">SOLO<span>只聽此部</span></button><button class="ghost" id="fnExcept-${v.id}" aria-pressed="false" aria-label="只關${v.name}，開啟其他聲部">只關此部<span>其他有聲</span></button></div><div class="finale-routing"><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div></div>`;
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
@@ -79,6 +79,12 @@
       const volume=muted.has(v.id)?0:Number($('#fnVolume-'+v.id).value)/100;
       node.left.gain.setTargetAtTime($('#fnLeft-'+v.id).checked?volume:0,context.currentTime,.008);
       node.right.gain.setTargetAtTime($('#fnRight-'+v.id).checked?volume:0,context.currentTime,.008);
+    }
+    function applyMutes(){for(const v of voices)route(v);render();}
+    function setPartMix(id,solo){
+      const selected=voices.every(v=>muted.has(v.id)===(solo?v.id!==id:v.id===id));
+      muted.clear();if(!selected)for(const v of voices)if(solo?v.id!==id:v.id===id)muted.add(v.id);
+      applyMutes();
     }
     function stereoSummary(){
       const split=voices.every(v=>$('#fnLeft-'+v.id).checked===(v.id===focus?focusSide==='left':focusSide!=='left')&&$('#fnRight-'+v.id).checked===(v.id===focus?focusSide==='right':focusSide!=='right'));
@@ -198,6 +204,9 @@
         const activeBeat=Math.floor(data.beatAt(t)+.000001)%4+1;
         for(const light of $('#fnBeats').children){const active=playing&&$('#fnMetronome').checked&&Number(light.dataset.beat)===activeBeat;light.classList.toggle('active',active);if(active)light.setAttribute('aria-current','true');else light.removeAttribute('aria-current');}
         for(const v of voices){
+          const m=muted.has(v.id),muteButton=$('#fnMute-'+v.id);muteButton.setAttribute('aria-pressed',String(m));muteButton.setAttribute('aria-label',(m?'開啟':'靜音')+v.name);muteButton.textContent=m?'開啟聲部':'靜音';
+          $('#fnSolo-'+v.id).setAttribute('aria-pressed',String(voices.every(other=>muted.has(other.id)===(other.id!==v.id))));
+          $('#fnExcept-'+v.id).setAttribute('aria-pressed',String(voices.every(other=>muted.has(other.id)===(other.id===v.id))));
           const part=data.voices[v.id],notes=score.activeAt(part.notes,t),phrase=part.phrases[phraseAt(part,t)];
           $('#fnLyric-'+v.id).textContent=phrase?.text||'—';$('#fnPitch-'+v.id).textContent=(muted.has(v.id)?'已靜音 · ':'')+(notes.length?notes.map(n=>score.noteName(soundingMidi(v.id,n.midi))).join(' · '):'休止');
           if(playing&&(enabled(v)||v.id===focus))for(const n of notes)light(soundingMidi(v.id,n.midi),v.name,`var(${v.color})`,!enabled(v));
@@ -238,7 +247,9 @@
     $('#fnOctDown').onclick=()=>{releaseAll();baseMidi=Math.max(36,baseMidi-12);keyboardLabels();};$('#fnOctUp').onclick=()=>{releaseAll();baseMidi=Math.min(72,baseMidi+12);keyboardLabels();};$('#fnRelease').onclick=releaseAll;
     for(const v of voices){
       $('#fnRegister-'+v.id).onchange=()=>{const was=playing||starting;if(was)pause();render();if(v.id===focus)revealKey(focusedMidi(),true);if(was)start();};
-      $('#fnMute-'+v.id).onclick=()=>{muted.has(v.id)?muted.delete(v.id):muted.add(v.id);const m=muted.has(v.id),button=$('#fnMute-'+v.id);button.setAttribute('aria-pressed',String(m));button.setAttribute('aria-label',(m?'開啟':'靜音')+v.name);button.textContent=m?'開啟聲部':'靜音';route(v);render();};
+      $('#fnMute-'+v.id).onclick=()=>{muted.has(v.id)?muted.delete(v.id):muted.add(v.id);applyMutes();};
+      $('#fnSolo-'+v.id).onclick=()=>setPartMix(v.id,true);
+      $('#fnExcept-'+v.id).onclick=()=>setPartMix(v.id,false);
       ['Left','Right','Volume'].forEach(kind=>$('#fn'+kind+'-'+v.id).addEventListener('input',()=>{route(v);stereoSummary();render();}));
       $('#fnFocus-'+v.id).onclick=()=>{focus=v.id;splitStereo();for(const other of voices){const button=$('#fnFocus-'+other.id);button.classList.toggle('on',other.id===focus);button.setAttribute('aria-pressed',String(other.id===focus));}render();if(data)revealKey(focusedMidi(),true);};
     }

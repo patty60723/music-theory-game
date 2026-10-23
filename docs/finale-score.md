@@ -112,3 +112,9 @@ Male parts default to one octave below the written treble staff for practice.
 The PDFs do not explicitly mark an octave transposition. Each part has an
 original/lower-octave selector, applied consistently to audio, note names,
 the piano roll and lit keys. The manually playable piano keeps its own pitch.
+
+Each part groups Mute, SOLO (only this part) and Only mute this part
+(all other parts unmuted). SOLO and Only mute this part apply a complete
+four-part mute configuration; pressing an already active preset unmutes all.
+Pressed states are derived from the actual mute set, including manual edits.
+These actions preserve part volumes, routing and playback position.

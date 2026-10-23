@@ -47,6 +47,17 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
     async function assertSplit(focus,left){for(const id of ['f1','f2','m1','m2']){assert.equal(await page.locator('#fnLeft-'+id).isChecked(),id===focus?left:!left);assert.equal(await page.locator('#fnRight-'+id).isChecked(),id===focus?!left:left);}}
     await assertSplit('f1',true);
+    async function assertMutes(ids){for(const id of ['f1','f2','m1','m2'])assert.equal(await page.locator('#fnMute-'+id).getAttribute('aria-pressed'),String(ids.includes(id)));}
+    await page.locator('#fnSolo-m1').click();await assertMutes(['f1','f2','m2']);
+    assert.equal(await page.locator('#fnSolo-m1').getAttribute('aria-pressed'),'true');
+    await page.locator('#fnSolo-f2').click();await assertMutes(['f1','m1','m2']);
+    await page.locator('#fnExcept-m2').click();await assertMutes(['m2']);
+    assert.equal(await page.locator('#fnExcept-m2').getAttribute('aria-pressed'),'true');
+    await page.locator('#fnMute-f1').click();await assertMutes(['f1','m2']);
+    assert.equal(await page.locator('#fnExcept-m2').getAttribute('aria-pressed'),'false');
+    await page.locator('#fnExcept-m2').click();await assertMutes(['m2']);
+    await page.locator('#fnExcept-m2').click();await assertMutes([]);
+    await assertSplit('f1',true);
     await page.locator('#fnFocus-f2').click();await assertSplit('f2',true);
     await page.locator('#fnSwap').click();await assertSplit('f2',false);
     await page.locator('#fnFocus-m2').click();await assertSplit('m2',false);
