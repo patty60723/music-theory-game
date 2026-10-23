@@ -76,6 +76,13 @@ Touch sliders require a deliberate horizontal drag; touch-down and vertical
 gestures never change values. Native mouse and keyboard interaction remains.
 The sticky top menu hides while scrolling down and returns on upward scroll,
 at the page top or when focused. Reduced motion disables its transition.
+Manual playback starts with an optional four-beat count-in, enabled by
+default. Its tempo follows the score tempo at the selected start position
+and the current BPM adjustment. A top count indicator shows 1–4. During
+count-in, score time/lyrics/roll are frozen and score key/word highlights
+remain off; everything starts on the same audio-clock boundary. Stop/pause
+cancel pending notes and clicks. Tempo/seek edits during normal playback
+continue directly; edits during count-in restart the count at the new tempo.
 
 頁面最大寬度 1280px，自然文件捲動。練唱頁的閱讀順序為動態歌詞、可彈奏鋼琴、包含設定分頁的控制台、四聲部混音。四聲部採兩欄卡片，720px 以下單欄。琴鍵區水平捲動，歌詞顯示目前句與下一句。播放與 BPM 控制保留至少 44px 觸控目標。
 

@@ -10,7 +10,7 @@
     section.innerHTML=`
       <section class="panel finale-auth" id="fnAuth" aria-labelledby="fnAuthHeading"><h1 id="fnAuthHeading">四聲部練唱室</h1><p>輸入練唱密碼，即可使用樂譜、動態歌詞與鋼琴練唱。</p><form id="fnLogin"><label for="fnPassword">練唱密碼</label><div class="finale-auth-actions"><input id="fnPassword" type="password" autocomplete="current-password" required maxlength="256"><button class="play" id="fnUnlock" type="submit">進入練唱室</button></div></form><p id="fnAuthStatus" role="status">正在確認登入狀態…</p><button class="ghost" id="fnAuthRetry" hidden>重新連線</button></section>
       <div id="fnRoom" class="finale-room" hidden>
-      <div class="finale-title"><div><h1>四聲部鋼琴練唱</h1><p>I Love You, You’re Perfect, Now Change · Finale</p></div><div class="finale-title-actions"><button class="play" id="fnTopPlay" disabled>讀取樂譜中…</button><button class="ghost" id="fnLogout">登出練唱室</button></div></div>
+      <div class="finale-title"><div><h1>四聲部鋼琴練唱</h1><p>I Love You, You’re Perfect, Now Change · Finale</p></div><div class="finale-title-actions"><span id="fnCountStatus" class="finale-count-status" role="status" hidden></span><button class="play" id="fnTopPlay" disabled>讀取樂譜中…</button><button class="ghost" id="fnLogout">登出練唱室</button></div></div>
       <section class="panel finale-karaoke" aria-labelledby="fnLyricsHeading">
         <div class="finale-key-caption"><h2 id="fnLyricsHeading">動態歌詞</h2><span id="fnLyricVoice">女 1 · 練唱歌詞</span></div>
         <div class="finale-current-line" id="fnCurrentLine" role="region" aria-label="本句歌詞">正在讀取樂譜…</div>
@@ -29,7 +29,7 @@
         <label class="finale-seek-label">播放位置<input class="finale-seek" id="fnSeek" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="播放位置（秒）"></label>
         <div id="fnSettingsPlaybackPanel" role="tabpanel" aria-labelledby="fnSettingsPlayback" tabindex="0"><div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
         <p id="fnTempoHint">調慢也不會變調；譜面中的速度變化會一同比例調整。</p></div>
-        <div class="finale-metronome"><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
+        <div class="finale-metronome"><label class="chk finale-count-option"><input type="checkbox" id="fnCountIn" checked> 播放前預備 4 拍</label><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
         </div>        <div id="fnSettingsTempoPanel" role="tabpanel" aria-labelledby="fnSettingsTempo" tabindex="0" hidden><div class="finale-focus"><span class="lbl" id="fnFocusLabel">練唱聲部（主畫面歌詞）</span><div class="seg" role="group" aria-labelledby="fnFocusLabel">${voices.map(v=>`<button id="fnFocus-${v.id}" class="${v.id==='f1'?'on':''}" aria-pressed="${v.id==='f1'}">${v.name}</button>`).join('')}</div></div>
         <div class="finale-stereo"><span id="fnStereoSummary">練唱在左，其他在右</span><button class="ghost" id="fnSwap">左右對調 ⇄</button></div><label class="finale-seek-label">速度微調<input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"></label><div class="finale-tap-row"><button class="ghost" id="fnTap">敲拍定速</button></div><label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label></div>
         <div id="fnSettingsKeyboardPanel" role="tabpanel" aria-labelledby="fnSettingsKeyboard" tabindex="0" hidden><div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div><p>播放時鋼琴會自動跟隨音域；手動按住琴鍵時暫停跟隨。</p></div>
@@ -41,6 +41,8 @@
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
+    let countInStart=null,countInInterval=0;
+    const isCounting=()=>playing&&countInStart!==null&&context.currentTime<origin;
     let focusSide='left';
     let authEpoch=0,checking=null;
     let rollVoice='',rollNotes=[],lyricsListVoice='',lyricRows=[];
@@ -110,14 +112,14 @@
       for(const v of voices){const left=v.id===focus?focusSide==='left':focusSide!=='left';$('#fnLeft-'+v.id).checked=left;$('#fnRight-'+v.id).checked=!left;route(v);}
       stereoSummary();
     }
-    function stopClicks(){while(clicks.length)clicks.pop().stop();}
+    function stopClicks(kind){for(let i=clicks.length-1;i>=0;i--)if(!kind||clicks[i].kind===kind){clicks[i].stop();clicks.splice(i,1);}}
     function stopScheduled(){while(scheduled.length)scheduled.pop().handle?.stop();stopClicks();}
-    function scheduleClick(beat,when){
+    function scheduleClick(beat,when,kind='metronome'){
       const oscillator=context.createOscillator(),gain=context.createGain();
       oscillator.type='sine';oscillator.frequency.value=beat%4===0?1500:1000;
       gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(.22,when+.001);gain.gain.exponentialRampToValueAtTime(.0001,when+.04);
       oscillator.connect(gain);gain.connect(graph.metro);oscillator.start(when);oscillator.stop(when+.045);
-      const click={until:when+.05,stopped:false,stop(){if(this.stopped)return;this.stopped=true;gain.gain.cancelScheduledValues(context.currentTime);gain.gain.setTargetAtTime(.0001,context.currentTime,.002);oscillator.stop(context.currentTime+.01);}};
+      const click={kind,until:when+.05,stopped:false,stop(){if(this.stopped)return;this.stopped=true;gain.gain.cancelScheduledValues(context.currentTime);gain.gain.setTargetAtTime(.0001,context.currentTime,.002);oscillator.stop(context.currentTime+.01);}};
       oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};clicks.push(click);
     }
     function pause(){
@@ -125,6 +127,7 @@
     }
     function schedule(){
       if(!playing)return;
+      if(context.currentTime+.18<origin)return;
       const now=current(),horizon=now+.18*rate;
       for(const v of voices){
         const notes=data.voices[v.id].performance;let i=cursors.get(v.id)||0;
@@ -143,12 +146,18 @@
       }
       for(let i=clicks.length-1;i>=0;i--)if(clicks[i].until<context.currentTime)clicks.splice(i,1);
     }
-    async function start(){
+    async function start({countIn=true}={}){
       if(starting||playing||!data)return;const attempt=++token;starting=true;render();
       try{
         ensureGraph();await context.resume();if(attempt!==token||section.hidden)return;
         if(position>=data.duration)position=0;
-        origin=context.currentTime+.035;originPosition=position;playing=true;
+        origin=context.currentTime+.035;originPosition=position;countInStart=null;
+        if(countIn&&$('#fnCountIn').checked){
+          let tempo=data.tempos[0];for(const mark of data.tempos)if(data.secondsAt(mark.beat)<=position)tempo=mark;
+          countInInterval=60/(tempo.bpm*rate);countInStart=origin;origin+=4*countInInterval;
+          for(let beat=0;beat<4;beat++)scheduleClick(beat,countInStart+beat*countInInterval,'count-in');
+        }
+        playing=true;
         nextClickBeat=Math.ceil(data.beatAt(position)-.000001);
         for(const v of voices){const i=data.voices[v.id].performance.findIndex(n=>n.end>position);cursors.set(v.id,i<0?data.voices[v.id].performance.length:i);}
         schedule();timer=setInterval(schedule,25);frame=requestAnimationFrame(tick);status('鋼琴播放中。可同時彈奏，或切換下方聲部控制。');
@@ -160,10 +169,10 @@
       if(current()>=data.duration){const loop=$('#fnLoop').checked;pause();position=loop?0:data.duration;render();if(loop)start();else status('播放結束。');return;}
       render();frame=requestAnimationFrame(tick);
     }
-    function seek(value){if(!data)return;const was=playing||starting;pause();position=Math.max(0,Math.min(data.duration,Number(value)||0));render();if(was)start();}
+    function seek(value){if(!data)return;const was=playing||starting,countIn=isCounting();pause();position=Math.max(0,Math.min(data.duration,Number(value)||0));render();if(was)start({countIn});}
     function setBpm(value){
       const number=Number(value);if(!Number.isFinite(number)||number<40||number>200){$('#fnBpm').value=bpm;status('速度請設定為 40–200 BPM。');return;}
-      const was=playing||starting;if(was)pause();bpm=Math.round(number);rate=bpm/120;$('#fnBpm').value=bpm;$('#fnBpmRange').value=bpm;render();if(was)start();
+      const was=playing||starting,countIn=isCounting();if(was)pause();bpm=Math.round(number);rate=bpm/120;$('#fnBpm').value=bpm;$('#fnBpmRange').value=bpm;render();if(was)start({countIn});
     }
     function phraseAt(part,time){let i=part.phrases.findIndex(p=>p.start>time)-1;if(i===-2)i=part.phrases.length-1;return Math.max(0,i);}
     function renderRoll(time){
@@ -182,7 +191,7 @@
       const beat=data.beatAt(time),head=Math.min(90,host.clientWidth*.2),page=Math.max(1,Math.floor((host.clientWidth-head)/beatWidth)),from=reducedMotion.matches?Math.floor(beat/page)*page:beat;
       track.style.transform=`translate3d(${head-from*beatWidth}px,0,0)`;$('#fnRollHead').style.left=(head+(beat-from)*beatWidth)+'px';
       let name='';
-      for(const {note,bar} of rollNotes){const active=note.start<=time&&time<note.end;bar.classList.toggle('active',active);bar.classList.toggle('past',note.end<=time);if(active){bar.setAttribute('aria-current','true');name=score.noteName(note.midi);}else bar.removeAttribute('aria-current');}
+      for(const {note,bar} of rollNotes){const active=!isCounting()&&note.start<=time&&time<note.end;bar.classList.toggle('active',active);bar.classList.toggle('past',note.end<=time);if(active){bar.setAttribute('aria-current','true');name=score.noteName(note.midi);}else bar.removeAttribute('aria-current');}
       $('#fnRollCurrent').textContent=name;
     }
     function renderAllLyrics(time){
@@ -207,29 +216,31 @@
         else $('#fnCurrentLine').textContent='此聲部沒有歌詞';
         $('#fnNextLine').textContent=part.phrases[index+1]?'下一句　'+part.phrases[index+1].text:'　';$('#fnPhraseCount').textContent=phrase?`第 ${index+1} / ${part.phrases.length} 句`:'';
       }
-      for(const {word,span} of wordNodes){const active=word.start<=time&&time<word.end;span.classList.toggle('sung',time>=word.end);span.classList.toggle('singing',active);span.style.setProperty('--word-progress',(Math.max(0,Math.min(1,(time-word.start)/(word.end-word.start)))*100)+'%');if(active)span.setAttribute('aria-current','true');else span.removeAttribute('aria-current');}
+      for(const {word,span} of wordNodes){const active=!isCounting()&&word.start<=time&&time<word.end;span.classList.toggle('sung',time>=word.end);span.classList.toggle('singing',active);span.style.setProperty('--word-progress',(Math.max(0,Math.min(1,(time-word.start)/(word.end-word.start)))*100)+'%');if(active)span.setAttribute('aria-current','true');else span.removeAttribute('aria-current');}
     }
     function render(){
-      const t=current();$('#fnTime').textContent=format(t)+' / '+(data?format(data.duration):'—');$('#fnSeek').value=t;
+      const t=current(),counting=isCounting(),countBeat=counting?Math.max(1,Math.min(4,Math.floor((context.currentTime-countInStart)/countInInterval)+1)):0;
+      $('#fnCountStatus').hidden=!counting;const countText=counting?'預備拍 '+countBeat+' / 4':'';if($('#fnCountStatus').textContent!==countText)$('#fnCountStatus').textContent=countText;
+      $('#fnTime').textContent=format(t)+' / '+(data?format(data.duration):'—');$('#fnSeek').value=t;
       for(const id of ['fnPlay','fnTopPlay']){const button=$('#'+id);button.disabled=starting||(!data&&!loadError);button.textContent=loadError?'重新讀取樂譜':!data?'讀取樂譜中…':starting?'準備播放…':playing?'暫停':'播放';button.setAttribute('aria-pressed',String(playing));}
       const lit=new Map();
       function light(midi,label,color,hollow){if(!lit.has(midi))lit.set(midi,[]);lit.get(midi).push({label,color,hollow});}
       if(data){
         renderLyrics(t);
         renderRoll(t);renderAllLyrics(t);
-        const activeBeat=Math.floor(data.beatAt(t)+.000001)%4+1;
-        for(const light of $('#fnBeats').children){const active=playing&&$('#fnMetronome').checked&&Number(light.dataset.beat)===activeBeat;light.classList.toggle('active',active);if(active)light.setAttribute('aria-current','true');else light.removeAttribute('aria-current');}
+        const activeBeat=counting?countBeat:Math.floor(data.beatAt(t)+.000001)%4+1;
+        for(const light of $('#fnBeats').children){const active=playing&&(counting||$('#fnMetronome').checked)&&Number(light.dataset.beat)===activeBeat;light.classList.toggle('active',active);if(active)light.setAttribute('aria-current','true');else light.removeAttribute('aria-current');}
         for(const v of voices){
           const m=muted.has(v.id),muteButton=$('#fnMute-'+v.id);muteButton.setAttribute('aria-pressed',String(m));muteButton.setAttribute('aria-label',(m?'開啟':'靜音')+v.name);muteButton.textContent=m?'開啟聲部':'靜音';
           $('#fnSolo-'+v.id).setAttribute('aria-pressed',String(voices.every(other=>muted.has(other.id)===(other.id!==v.id))));
           $('#fnExcept-'+v.id).setAttribute('aria-pressed',String(voices.every(other=>muted.has(other.id)===(other.id===v.id))));
           const part=data.voices[v.id],notes=score.activeAt(part.notes,t),phrase=part.phrases[phraseAt(part,t)];
           $('#fnLyric-'+v.id).textContent=phrase?.text||'—';$('#fnPitch-'+v.id).textContent=(muted.has(v.id)?'已靜音 · ':'')+(notes.length?notes.map(n=>score.noteName(soundingMidi(v.id,n.midi))).join(' · '):'休止');
-          if(playing&&(enabled(v)||v.id===focus))for(const n of notes)light(soundingMidi(v.id,n.midi),v.name,`var(${v.color})`,!enabled(v));
+          if(playing&&!counting&&(enabled(v)||v.id===focus))for(const n of notes)light(soundingMidi(v.id,n.midi),v.name,`var(${v.color})`,!enabled(v));
         }
         let tempo=data.tempos[0];for(const mark of data.tempos)if(data.secondsAt(mark.beat)<=t)tempo=mark;
         $('#fnTempoHint').textContent=`目前 ${Math.round(tempo.bpm*rate)} BPM · 調慢也不會變調；譜面中的速度變化會一同比例調整。`;
-        if(playing&&!held.size)followPiano(t,lit);
+        if(playing&&!counting&&!held.size)followPiano(t,lit);
       }
       for(const [midi] of held)light(midi,'彈奏','var(--gold-hi)',false);
       piano.setLit([...lit].map(([midi,items])=>({midi,label:[...new Set(items.map(x=>x.label))].join('／'),color:items.length>1?'var(--gold-hi)':items[0].color,hollow:items.every(x=>x.hollow)})));
@@ -280,7 +291,8 @@
     $('#fnBpm').onchange=e=>setBpm(e.target.value);$('#fnBpmRange').oninput=e=>setBpm(e.target.value);
     $('#fnBpmReset').onclick=()=>setBpm(120);
     $('#fnMaster').oninput=e=>{const volume=Number(e.target.value);$('#fnMasterOut').textContent=volume+'%';if(graph)graph.master.gain.setTargetAtTime(volume/100,context.currentTime,.008);};
-    $('#fnMetronome').onchange=()=>{stopClicks();if(data)nextClickBeat=Math.ceil(data.beatAt(current())-.000001);if(playing)schedule();render();};
+    $('#fnCountIn').onchange=()=>{if(isCounting()&&!$('#fnCountIn').checked){pause();start({countIn:false});}};
+    $('#fnMetronome').onchange=()=>{stopClicks('metronome');if(data)nextClickBeat=Math.ceil(data.beatAt(current())-.000001);if(playing)schedule();render();};
     $('#fnMetroVolume').oninput=e=>{const volume=Number(e.target.value);$('#fnMetroVolumeOut').textContent=volume+'%';if(graph)graph.metro.gain.setTargetAtTime(volume/100,context.currentTime,.008);};
     $('#fnToggleLyrics').onclick=()=>{const expanded=$('#fnAllLyrics').hidden;$('#fnAllLyrics').hidden=!expanded;$('#fnToggleLyrics').setAttribute('aria-expanded',String(expanded));$('#fnToggleLyrics').textContent=expanded?'收起全部歌詞':'顯示全部歌詞';render();};
     $('#fnLyricsList').onclick=event=>{const row=event.target.closest('button[data-start]');if(row)seek(Number(row.dataset.start));};
@@ -289,7 +301,7 @@
     let taps=[];$('#fnTap').onclick=()=>{const now=performance.now();if(taps.length&&now-taps[taps.length-1]>2000)taps=[];taps.push(now);taps=taps.slice(-6);if(taps.length<2){status('繼續敲拍以設定速度。');return;}const intervals=taps.slice(1).map((t,i)=>t-taps[i]);setBpm(Math.max(40,Math.min(200,60000/(intervals.reduce((a,b)=>a+b,0)/intervals.length))));status('已依敲拍設定為 '+bpm+' BPM。');};
     $('#fnOctDown').onclick=()=>{releaseAll();baseMidi=Math.max(36,baseMidi-12);keyboardLabels();};$('#fnOctUp').onclick=()=>{releaseAll();baseMidi=Math.min(72,baseMidi+12);keyboardLabels();};$('#fnRelease').onclick=releaseAll;
     for(const v of voices){
-      $('#fnRegister-'+v.id).onchange=()=>{const was=playing||starting;if(was)pause();render();if(v.id===focus)revealKey(focusedMidi(),true);if(was)start();};
+      $('#fnRegister-'+v.id).onchange=()=>{const was=playing||starting,countIn=isCounting();if(was)pause();render();if(v.id===focus)revealKey(focusedMidi(),true);if(was)start({countIn});};
       $('#fnMute-'+v.id).onclick=()=>{muted.has(v.id)?muted.delete(v.id):muted.add(v.id);applyMutes();};
       $('#fnSolo-'+v.id).onclick=()=>setPartMix(v.id,true);
       $('#fnExcept-'+v.id).onclick=()=>setPartMix(v.id,false);

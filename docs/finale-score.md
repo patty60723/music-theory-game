@@ -137,3 +137,16 @@ On touch devices all practice sliders require a horizontal drag beyond
 vertical scrolling and pinch zoom remain native. Mouse/keyboard controls
 retain native range behavior. The top menu hides on downward page scrolling
 and returns on upward scrolling, page top or keyboard focus.
+
+Playback defaults to a four-beat audible count-in, independent of the
+optional ongoing metronome. Its clicks share the metronome volume and
+master controls. The first beat is accented. The interval is computed from
+the tempo at the selected score position, scaled by the current BPM setting.
+The score audio origin is four intervals after the first count click.
+During this interval the score clock stays at the selected position,
+lyrics and roll stay still, and score key/word highlights remain off.
+Normal playback starts audio and highlights from the same clock origin.
+Pause/stop/logout cancel future notes and count clicks. User play/resume
+and loops count in; normal seek/tempo/register edits do not insert a delay.
+Edits made during a count-in restart it using the updated settings. Turning
+off count-in while counting starts the score immediately from that position.

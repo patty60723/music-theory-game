@@ -51,6 +51,8 @@
 .finale-stereo button{min-height:44px}
 .finale-master{margin:0!important;font-weight:600}
 .finale-metronome{padding:14px 16px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm)}
+.finale-count-option{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}
+.finale-count-status{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--gold)}
 .finale-metro-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .finale-metro-head .chk{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;font-weight:600;color:var(--ink)}
 .finale-metro-head>span{font-size:13px;color:var(--muted)}

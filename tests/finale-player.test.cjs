@@ -45,6 +45,7 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await enter(page);
     await page.waitForFunction(()=>document.querySelector('#fnPlay')?.textContent==='播放');
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
+    assert.equal(await page.locator('#fnCountIn').isChecked(),true);await page.locator('#fnCountIn').uncheck();
     assert.equal(await page.locator('.finale-console #fnMetronome').count(),1);
     assert.equal(await page.locator('.finale-console #fnFocus-f1').count(),1);
     assert.equal(await page.locator('#fnSettingsTempoPanel #fnFocus-f1').count(),1);
@@ -155,6 +156,32 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnSettingsPlayback').click();await page.locator('#fnMetronome').uncheck();await page.locator('#fnStop').click();await page.evaluate(()=>window.clickCalls=[]);
     await page.locator('#fnPlay').click();await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>clickCalls.length),0);await page.waitForFunction(()=>masterRms()<.00001);await page.locator('#fnPlay').click();await page.locator('#fnMute-f1').click();
     await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').fill('120');await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpm').press('Tab');
+    // Count-in uses the audio clock, holding every score display until the fifth beat.
+    await page.locator('#fnBpm').fill('200');await page.locator('#fnBpm').press('Tab');await page.locator('#fnStop').click();await page.locator('#fnCountIn').check();
+    await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnTopPlay').click();
+    await page.waitForFunction(()=>!document.querySelector('#fnCountStatus').hidden);
+    const frozenTrack=await page.locator('#fnRollTrack').evaluate(el=>el.style.transform);
+    await page.waitForTimeout(450);
+    assert.equal(Number(await page.locator('#fnSeek').inputValue()),0);
+    assert.equal(await page.locator('#fnKeyboard .key.on,#fnKeyboard .key.hollow').count(),0);
+    assert.equal(await page.locator('#fnCurrentLine .singing').count(),0);assert.equal(await page.locator('#fnRollTrack .active').count(),0);
+    assert.equal(await page.locator('#fnRollTrack').evaluate(el=>el.style.transform),frozenTrack);
+    const leadIn=await page.evaluate(()=>clickCalls.slice());assert.deepEqual(leadIn.map(c=>c.frequency),[1500,1000,1000,1000]);
+    for(let i=1;i<4;i++)assert.ok(Math.abs(leadIn[i].time-leadIn[i-1].time-.3)<.005);
+    await page.waitForFunction(()=>document.querySelector('#fnCountStatus').hidden&&Number(document.querySelector('#fnSeek').value)>0);
+    const firstAfterCount=await page.evaluate(()=>pianoCalls[0]);assert.ok(Math.abs(firstAfterCount.time-leadIn[0].time-1.2)<.005);
+    assert.ok(await page.locator('#fnKeyboard .key.on').count()>0);assert.ok(await page.locator('#fnCurrentLine .singing').count()>0);
+    await page.locator('#fnPlay').click();
+    // A start at the later 126 BPM section, followed by a speed change during count-in.
+    await page.locator('#fnSeek').evaluate(el=>{el.value=48;el.dispatchEvent(new Event('input',{bubbles:true}));});
+    await page.evaluate(()=>{window.clickCalls=[];window.pianoCalls=[];});await page.locator('#fnPlay').click();await page.waitForFunction(()=>clickCalls.length===4);
+    const laterCount=await page.evaluate(()=>clickCalls.slice());assert.ok(Math.abs(laterCount[1].time-laterCount[0].time-60/(126*200/120))<.005);
+    await page.locator('#fnBpmReset').click();await page.waitForFunction(()=>clickCalls.length===8);
+    const changedCount=await page.evaluate(()=>clickCalls.slice(4));assert.ok(Math.abs(changedCount[1].time-changedCount[0].time-60/126)<.005);
+    assert.equal(Number(await page.locator('#fnSeek').inputValue()),48);await page.locator('#fnPlay').click();
+    assert.equal(await page.locator('#fnCountStatus').isVisible(),false);
+    assert.equal(await page.evaluate(()=>clickCalls.slice(-3).every(c=>c.stops.some(t=>t<c.time))),true);
+    await page.locator('#fnCountIn').uncheck();
     await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.locator('#fnCurrentLine [aria-current="true"]').textContent(),'in’');
     assert.ok(parseFloat(await page.locator('#fnCurrentLine [aria-current="true"]').evaluate(el=>el.style.getPropertyValue('--word-progress')))>0);
