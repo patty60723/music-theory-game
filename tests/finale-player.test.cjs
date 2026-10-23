@@ -45,6 +45,14 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await enter(page);
     await page.waitForFunction(()=>document.querySelector('#fnPlay')?.textContent==='播放');
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
+    assert.equal(await page.locator('#fnSettingsKeyboardPanel').isVisible(),false);
+    await page.locator('#fnSettingsTempo').press('ArrowRight');
+    assert.equal(await page.locator('#fnSettingsKeyboard').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('#fnSettingsTempoPanel').isVisible(),false);
+    await page.locator('#fnSettingsKeyboard').press('Home');
+    assert.equal(await page.locator('#fnSettingsTempo').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('.finale-voice:visible').count(),4);
+    assert.equal(await page.evaluate(()=>{const mix=document.querySelector('.finale-mix'),settings=document.querySelector('.finale-settings');return Boolean(mix.compareDocumentPosition(settings)&Node.DOCUMENT_POSITION_FOLLOWING)&&Boolean(document.querySelector('.finale-console').compareDocumentPosition(mix)&Node.DOCUMENT_POSITION_FOLLOWING);}),true);
     async function assertSplit(focus,left){for(const id of ['f1','f2','m1','m2']){assert.equal(await page.locator('#fnLeft-'+id).isChecked(),id===focus?left:!left);assert.equal(await page.locator('#fnRight-'+id).isChecked(),id===focus?!left:left);}}
     await assertSplit('f1',true);
     async function assertMutes(ids){for(const id of ['f1','f2','m1','m2'])assert.equal(await page.locator('#fnMute-'+id).getAttribute('aria-pressed'),String(ids.includes(id)));}
@@ -175,6 +183,23 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.ok(await page.locator('.finale-karaoke').evaluate(el=>el.getBoundingClientRect().height<330));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.locator('#fnTopPlay').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-landscape.png')});
+    // Narrow landscape keyboard follows playback without page scrolling or extra notes.
+    await page.locator('#fnBpm').fill('40');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
+    await page.locator('#fnKeyboard').evaluate(el=>el.scrollLeft=0);
+    const manualBeforeFollow=await page.evaluate(()=>pianoCalls.filter(n=>n.duration===60).length);
+    await page.locator('#fnTopPlay').click();
+    const followPageY=await page.evaluate(()=>scrollY);
+    await page.waitForFunction(()=>{const host=document.querySelector('#fnKeyboard').getBoundingClientRect(),key=document.querySelector('#fnKeyboard [data-midi="60"]').getBoundingClientRect();return key.left>=host.left&&key.right<=host.right;});
+    assert.equal(await page.evaluate(()=>scrollY),followPageY);
+    assert.equal(await page.evaluate(()=>pianoCalls.filter(n=>n.duration===60).length),manualBeforeFollow);
+    await page.keyboard.down('a');await page.locator('#fnKeyboard').evaluate(el=>el.scrollLeft=0);await page.waitForTimeout(100);
+    assert.equal(await page.locator('#fnKeyboard').evaluate(el=>el.scrollLeft),0);
+    await page.keyboard.up('a');await page.waitForFunction(()=>document.querySelector('#fnKeyboard').scrollLeft>0);
+    await page.locator('#fnSettingsKeyboard').click();assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'true');
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnTopPlay').click();
+    await page.locator('#fnBpm').fill('90');await page.locator('#fnBpm').press('Tab');
+    await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     await page.setViewportSize({width:390,height:844});
     await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-mobile.png'),fullPage:true});
     await page.emulateMedia({colorScheme:'dark'});await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-dark.png'),fullPage:true});

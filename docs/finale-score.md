@@ -121,4 +121,12 @@ These actions preserve part volumes, routing and playback position.
 
 Return to original tempo resets the initial BPM to 120 (rate 1), preserving
 the score's later tempo changes and the current position/playback state.
-It sits beside tap tempo in the same action row, including on phones.
+It stays in the compact BPM row, including on phones. The tempo slider,
+tap tempo, metronome and master volume live in the tempo/metronome settings
+tab after the four-part mixer. A second tab holds manual-keyboard settings.
+Tab changes keep playback and control values, and support arrows/Home/End.
+
+Playback automatically pans the piano viewport to active pitches and nearby
+upcoming notes. When all parts fit, they remain visible together; otherwise
+the selected singing part has priority. A held manual key suspends following.
+Automatic panning neither scrolls the document nor triggers piano notes.

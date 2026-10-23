@@ -24,16 +24,18 @@
       <section class="panel finale-console" aria-labelledby="fnConsoleHeading"><h2 id="fnConsoleHeading">練唱控制台</h2>
         <div class="finale-transport"><button class="play" id="fnPlay" disabled>讀取樂譜中…</button><button class="ghost" id="fnStop" disabled>回到開頭</button><span class="finale-time" id="fnTime">0:00 / —</span><label class="chk"><input type="checkbox" id="fnLoop"> 循環播放</label></div>
         <label class="finale-seek-label">播放位置<input class="finale-seek" id="fnSeek" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="播放位置（秒）"></label>
-        <label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label>
-        <div class="finale-metronome"><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div>
-        <div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnTap">敲拍定速</button><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
-        <input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"><p id="fnTempoHint">調慢也不會變調；譜面中的速度變化會一同比例調整。</p></div>
+        <div class="finale-tempo"><label for="fnBpm">起始速度 <span>BPM</span></label><div class="finale-bpm-buttons"><button class="ghost" id="fnBpmDown5" aria-label="速度減少 5 BPM">−5</button><button class="ghost" id="fnBpmDown" aria-label="速度減少 1 BPM">−</button><input id="fnBpm" type="number" min="40" max="200" step="1" value="120" inputmode="numeric" aria-label="起始速度 BPM"><button class="ghost" id="fnBpmUp" aria-label="速度增加 1 BPM">＋</button><button class="ghost" id="fnBpmUp5" aria-label="速度增加 5 BPM">＋5</button><div class="finale-tempo-actions"><button class="ghost" id="fnBpmReset" aria-label="回到樂譜原速">回原速</button></div></div>
+        <p id="fnTempoHint">調慢也不會變調；譜面中的速度變化會一同比例調整。</p></div>
         <div class="finale-focus"><span class="lbl" id="fnFocusLabel">練唱聲部（主畫面歌詞）</span><div class="seg" role="group" aria-labelledby="fnFocusLabel">${voices.map(v=>`<button id="fnFocus-${v.id}" class="${v.id==='f1'?'on':''}" aria-pressed="${v.id==='f1'}">${v.name}</button>`).join('')}</div></div>
         <div class="finale-stereo"><span id="fnStereoSummary">練唱在左，其他在右</span><button class="ghost" id="fnSwap">左右對調 ⇄</button></div>
-        <div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div>
         <p class="finale-status" id="fnStatus" role="status">正在讀取四聲部樂譜…</p>
       </section>
-      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-part-actions" role="group" aria-label="${v.name} 聲部聲音"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><button class="ghost" id="fnSolo-${v.id}" aria-pressed="false" aria-label="SOLO ${v.name}">SOLO<span>只聽此部</span></button><button class="ghost" id="fnExcept-${v.id}" aria-pressed="false" aria-label="只關${v.name}，開啟其他聲部">只關此部<span>其他有聲</span></button></div><div class="finale-routing"><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div></div>`;
+      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-part-actions" role="group" aria-label="${v.name} 聲部聲音"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><button class="ghost" id="fnSolo-${v.id}" aria-pressed="false" aria-label="SOLO ${v.name}">SOLO<span>只聽此部</span></button><button class="ghost" id="fnExcept-${v.id}" aria-pressed="false" aria-label="只關${v.name}，開啟其他聲部">只關此部<span>其他有聲</span></button></div><div class="finale-routing"><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div>
+      <section class="panel finale-settings" aria-labelledby="fnSettingsHeading"><h2 id="fnSettingsHeading">其他設定</h2>
+        <div class="seg finale-settings-tabs" role="tablist" aria-label="練唱設定分類"><button id="fnSettingsTempo" role="tab" aria-controls="fnSettingsTempoPanel" aria-selected="true">速度與節拍</button><button id="fnSettingsKeyboard" role="tab" aria-controls="fnSettingsKeyboardPanel" aria-selected="false" tabindex="-1">鍵盤設定</button></div>
+        <div id="fnSettingsTempoPanel" role="tabpanel" aria-labelledby="fnSettingsTempo" tabindex="0"><label class="finale-seek-label">速度微調<input id="fnBpmRange" type="range" min="40" max="200" step="1" value="120" aria-label="拖曳調整起始速度 BPM"></label><div class="finale-tap-row"><button class="ghost" id="fnTap">敲拍定速</button></div><div class="finale-metronome"><div class="finale-metro-head"><label class="chk"><input type="checkbox" id="fnMetronome"> 節拍器</label><div class="finale-beats" id="fnBeats" role="group" aria-label="四拍節拍指示">${[1,2,3,4].map(n=>`<span data-beat="${n}">${n}</span>`).join('')}</div><span>隨播放與 BPM 同步，第一拍重音</span></div><label class="finale-volume">節拍音量<input type="range" id="fnMetroVolume" min="0" max="100" value="45"><output id="fnMetroVolumeOut" for="fnMetroVolume">45%</output></label></div><label class="finale-volume finale-master">整體音量<input id="fnMaster" type="range" min="0" max="150" value="100" step="1"><output id="fnMasterOut" for="fnMaster">100%</output></label></div>
+        <div id="fnSettingsKeyboardPanel" role="tabpanel" aria-labelledby="fnSettingsKeyboard" tabindex="0" hidden><div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div><p>播放時鋼琴會自動跟隨音域；手動按住琴鍵時暫停跟隨。</p></div>
+      </section></div>`;
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
@@ -55,6 +57,18 @@
       const host=$('#fnKeyboard'),key=piano.keys[midi];if(!key||!host.clientWidth)return;
       const viewport=host.getBoundingClientRect(),rect=key.getBoundingClientRect();
       if(force||rect.left<viewport.left+8||rect.right>viewport.right-8)host.scrollLeft+=rect.left-viewport.left-(host.clientWidth-rect.width)/2;
+    }
+    function followPiano(time,lit){
+      const host=$('#fnKeyboard');if(!host.clientWidth)return;
+      const currentNotes=score.activeAt(data.voices[focus].notes,time).map(n=>soundingMidi(focus,n.midi));
+      const upcoming=data.voices[focus].performance.filter(n=>n.start>time&&n.start<time+.8).map(n=>soundingMidi(focus,n.midi));
+      const focusNotes=[...currentNotes,...upcoming];
+      let pitches=[...new Set([...lit.keys(),...focusNotes])];if(!pitches.length)return;
+      const viewport=host.getBoundingClientRect(),padding=Math.min(36,host.clientWidth*.12);
+      const bounds=notes=>{const rects=notes.map(midi=>piano.keys[midi]?.getBoundingClientRect()).filter(Boolean);return rects.length?{left:Math.min(...rects.map(r=>r.left)),right:Math.max(...rects.map(r=>r.right))}:null;};
+      let target=bounds(pitches);
+      if(target&&target.right-target.left>host.clientWidth-2*padding){pitches=currentNotes.length?currentNotes:focusNotes.length?focusNotes:[pitches[0]];target=bounds(pitches);}
+      if(target&&(target.left<viewport.left+padding||target.right>viewport.right-padding))host.scrollLeft+=(target.left+target.right)/2-(viewport.left+host.clientWidth/2);
     }
     function ensureGraph(){
       context=ac();
@@ -213,7 +227,7 @@
         }
         let tempo=data.tempos[0];for(const mark of data.tempos)if(data.secondsAt(mark.beat)<=t)tempo=mark;
         $('#fnTempoHint').textContent=`目前 ${Math.round(tempo.bpm*rate)} BPM · 調慢也不會變調；譜面中的速度變化會一同比例調整。`;
-        if(playing&&!held.size){const note=score.activeAt(data.voices[focus].notes,t)[0];if(note)revealKey(soundingMidi(focus,note.midi));}
+        if(playing&&!held.size)followPiano(t,lit);
       }
       for(const [midi] of held)light(midi,'彈奏','var(--gold-hi)',false);
       piano.setLit([...lit].map(([midi,items])=>({midi,label:[...new Set(items.map(x=>x.label))].join('／'),color:items.length>1?'var(--gold-hi)':items[0].color,hollow:items.every(x=>x.hollow)})));
@@ -235,6 +249,9 @@
       if(!section.hidden)requestAnimationFrame(()=>revealKey(baseMidi,true));
     }
     const togglePlayback=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnPlay').onclick=togglePlayback;$('#fnTopPlay').onclick=togglePlayback;$('#fnStop').onclick=()=>{pause();position=0;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
+    const settingTabs=[$('#fnSettingsTempo'),$('#fnSettingsKeyboard')];
+    function selectSettings(tab){for(const button of settingTabs){const selected=button===tab;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;$('#'+button.getAttribute('aria-controls')).hidden=!selected;}}
+    for(const tab of settingTabs){tab.onclick=()=>selectSettings(tab);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();event.stopPropagation();const index=event.key==='Home'?0:event.key==='End'?settingTabs.length-1:(settingTabs.indexOf(tab)+(event.key==='ArrowRight'?1:-1)+settingTabs.length)%settingTabs.length;selectSettings(settingTabs[index]);settingTabs[index].focus();};}
     $('#fnBpm').onchange=e=>setBpm(e.target.value);$('#fnBpmRange').oninput=e=>setBpm(e.target.value);
     $('#fnBpmReset').onclick=()=>setBpm(120);
     $('#fnMaster').oninput=e=>{const volume=Number(e.target.value);$('#fnMasterOut').textContent=volume+'%';if(graph)graph.master.gain.setTargetAtTime(volume/100,context.currentTime,.008);};

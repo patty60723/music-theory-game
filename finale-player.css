@@ -66,7 +66,7 @@
 .finale-shortcut{position:absolute;top:12px;font-size:10px;font-weight:700;color:var(--gold-ink);pointer-events:none}
 .finale .key.black .finale-shortcut{top:8px;color:var(--white-key)}
 .finale-piano-help{font-size:13px}
-.finale-console{display:grid;gap:20px}
+.finale-console{display:grid;gap:12px}
 .finale-transport{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .finale-transport .play{min-width:180px;min-height:60px;font-size:21px}
 .finale-transport .ghost{min-height:52px;padding:10px 22px;font-size:17px}
@@ -74,16 +74,23 @@
 .finale-transport .chk{min-height:44px;display:flex;align-items:center;gap:8px}
 .finale-seek-label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
 .finale-seek{width:100%;margin:0}
-.finale-tempo{display:grid;gap:10px}
+.finale-tempo{display:grid;gap:6px}
 .finale-tempo>label{font-size:15px;font-weight:600}
 .finale-tempo>label span{color:var(--muted);font-weight:400;margin-left:4px}
-.finale-bpm-buttons{display:grid;grid-template-columns:54px 54px 110px 54px 54px minmax(220px,260px);gap:8px;align-items:center}
-.finale-tempo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.finale-bpm-buttons button{min-height:52px;font-size:20px;padding:8px}
+.finale-bpm-buttons{display:grid;grid-template-columns:48px 48px 100px 48px 48px 100px;gap:8px;align-items:center}
+.finale-tempo-actions{display:grid;grid-template-columns:1fr}
+.finale-bpm-buttons button{min-height:44px;font-size:18px;padding:6px}
 .finale-tempo-actions button{font-size:16px}
 .finale-bpm-buttons input{font:700 28px var(--display);text-align:center;width:100%;min-width:0;min-height:56px;padding:4px 6px;box-sizing:border-box;background:var(--panel-solid);border:1px solid var(--line);color:var(--ink);border-radius:var(--r-sm);font-variant-numeric:tabular-nums}
 .finale-bpm-buttons input::-webkit-inner-spin-button{opacity:1}
-#fnTempoHint{font-size:13px}
+#fnTempoHint{font-size:12px;line-height:1.4}
+.finale-settings{display:grid;gap:12px}
+.finale-settings-tabs{display:flex;width:fit-content;max-width:100%}
+.finale-settings-tabs button{min-height:44px}
+.finale-settings-tabs button[aria-selected=true]{background:var(--gold);color:var(--gold-ink)}
+.finale-settings [role=tabpanel]{display:grid;gap:12px;min-width:0}
+.finale-settings .finale-keyboard-controls{margin-bottom:4px}
+.finale-settings .finale-tap-row button{min-height:44px}
 .finale-focus .lbl{margin-bottom:8px}
 .finale-focus .seg button{min-width:72px;min-height:44px}
 .finale-keyboard-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -114,7 +121,7 @@
 .finale :focus-visible{outline:3px solid var(--gold-hi);outline-offset:3px}
 .finale button:disabled{opacity:.5;cursor:not-allowed}
 .finale input[type=range]{accent-color:var(--gold);min-height:36px}
-@media(max-width:720px){.finale-mix{grid-template-columns:1fr}.bar{flex-wrap:wrap}.tabs{flex-wrap:wrap}.finale-karaoke{padding:18px}.finale-current-line{min-height:2.5em}.finale-transport{display:grid;grid-template-columns:1fr 1fr;gap:10px}.finale-transport .play{min-width:0}.finale-transport .ghost{padding:10px;font-size:16px}.finale-bpm-buttons{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr}.finale-tempo-actions{grid-column:1/-1}.finale-focus .seg{display:flex}.finale-focus .seg button{min-width:0;flex:1;padding:5px 12px}.finale-next-line{font-size:16px}}
+@media(max-width:720px){.finale-mix{grid-template-columns:1fr}.bar{flex-wrap:wrap}.tabs{flex-wrap:wrap}.finale-karaoke{padding:18px}.finale-current-line{min-height:2.5em}.finale-transport{display:grid;grid-template-columns:1fr 1fr;gap:10px}.finale-transport .play{min-width:0}.finale-transport .ghost{padding:10px;font-size:16px}.finale-bpm-buttons{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr 1.6fr;gap:5px}.finale-bpm-buttons button{font-size:15px;padding:4px 2px}.finale-tempo-actions button{font-size:13px}.finale-bpm-buttons input{font-size:24px;min-height:44px}.finale-focus .seg{display:flex}.finale-focus .seg button{min-width:0;flex:1;padding:5px 12px}.finale-next-line{font-size:16px}}
 @media(forced-colors:active){*{scrollbar-color:auto}.finale-word.singing{background:none;color:Highlight}.finale .key.on{outline:3px solid Highlight}}
 @media(prefers-reduced-motion:reduce){.finale *{animation:none!important;transition:none!important}.finale-word.singing{background:none;color:var(--ink)}}
 
@@ -123,4 +130,4 @@
 .finale-register{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:14px}
 .finale-register select{min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-solid);color:var(--ink);font:inherit}
 @media(orientation:landscape) and (max-height:600px){.finale-room{gap:10px}.finale-title{gap:8px}.finale h1{font-size:26px}.finale-title p{font-size:12px}.finale-karaoke{padding:10px 16px}.finale-current-line{font-size:26px;line-height:1.2;min-height:1.2em;padding:4px 0}.finale-next-line{font-size:14px;margin-bottom:4px!important}.finale-roll{height:100px;margin-bottom:4px}.finale-roll-caption{margin-bottom:2px}.finale-keys{padding-top:12px;padding-bottom:12px}}
-@media(orientation:landscape) and (max-height:600px) and (min-width:700px){.finale-room{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}.finale-title,.finale-console,.finale-mix{grid-column:1/-1}.finale-room>section[aria-labelledby=fnPianoHeading]{grid-column:2;grid-row:2;padding:10px 12px}.finale-room>section[aria-labelledby=fnPianoHeading] .finale-key-caption{gap:4px}.finale-room>section[aria-labelledby=fnPianoHeading] h2{font-size:17px}.finale-piano-help{font-size:11px}}
+@media(orientation:landscape) and (max-height:600px) and (min-width:700px){.finale-room{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}.finale-title,.finale-console,.finale-mix,.finale-settings{grid-column:1/-1}.finale-room>section[aria-labelledby=fnPianoHeading]{grid-column:2;grid-row:2;padding:10px 12px}.finale-room>section[aria-labelledby=fnPianoHeading] .finale-key-caption{gap:4px}.finale-room>section[aria-labelledby=fnPianoHeading] h2{font-size:17px}.finale-piano-help{font-size:11px}}
