@@ -49,6 +49,14 @@ Token ownership：既有 index.html 的 :root 與日間主題是 canonical runti
 
 ## Layout
 
+Finale practice uses current/next lyrics without a previous line. Compact
+landscape layouts reduce lyric spacing and the roll height to 100px. The
+landscape view at least 700px wide places lyrics and piano side by
+side, with the console below. A top
+play/pause action mirrors the console, including loading and retry states.
+Part cards own the playback register selector; male voices initially use
+the lower octave, and displayed pitches always match sounding pitches.
+
 頁面最大寬度 1280px，自然文件捲動。練唱頁的閱讀順序固定為動態歌詞、可彈奏鋼琴、播放／速度控制台、四聲部混音。四聲部採兩欄卡片，720px 以下單欄。琴鍵區有水平捲動，歌詞區保留目前句、前後句的空間；手機目前句至少預留三行。播放與 BPM 控制採較大觸控目標。
 
 ## Elevation & Depth

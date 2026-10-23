@@ -103,3 +103,12 @@ The mix gain is 1.0 ahead of the compressor, followed by 3× makeup gain.
 A master slider (0–150%, initially 100%) controls both score playback and
 the live piano. A final compressor with a −2 dB threshold and 20:1 ratio
 limits combined peaks after the master control; part levels remain separate.
+
+The lyric panel shows the current and next phrase, with compact line spacing.
+Landscape screens up to 600px high use a 100px piano roll; resizing rebuilds
+the pitch lanes. The top play/pause button shares state with the console.
+
+Male parts default to one octave below the written treble staff for practice.
+The PDFs do not explicitly mark an octave transposition. Each part has an
+original/lower-octave selector, applied consistently to audio, note names,
+the piano roll and lit keys. The manually playable piano keeps its own pitch.

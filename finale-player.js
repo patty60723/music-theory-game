@@ -7,10 +7,9 @@
     section.innerHTML=`
       <section class="panel finale-auth" id="fnAuth" aria-labelledby="fnAuthHeading"><h1 id="fnAuthHeading">四聲部練唱室</h1><p>輸入練唱密碼，即可使用樂譜、動態歌詞與鋼琴練唱。</p><form id="fnLogin"><label for="fnPassword">練唱密碼</label><div class="finale-auth-actions"><input id="fnPassword" type="password" autocomplete="current-password" required maxlength="256"><button class="play" id="fnUnlock" type="submit">進入練唱室</button></div></form><p id="fnAuthStatus" role="status">正在確認登入狀態…</p><button class="ghost" id="fnAuthRetry" hidden>重新連線</button></section>
       <div id="fnRoom" class="finale-room" hidden>
-      <div class="finale-title"><div><h1>四聲部鋼琴練唱</h1><p>I Love You, You’re Perfect, Now Change · Finale</p></div><button class="ghost" id="fnLogout">登出練唱室</button></div>
+      <div class="finale-title"><div><h1>四聲部鋼琴練唱</h1><p>I Love You, You’re Perfect, Now Change · Finale</p></div><div class="finale-title-actions"><button class="play" id="fnTopPlay" disabled>讀取樂譜中…</button><button class="ghost" id="fnLogout">登出練唱室</button></div></div>
       <section class="panel finale-karaoke" aria-labelledby="fnLyricsHeading">
         <div class="finale-key-caption"><h2 id="fnLyricsHeading">動態歌詞</h2><span id="fnLyricVoice">女 1 · 練唱歌詞</span></div>
-        <p class="finale-previous" id="fnPreviousLine" aria-label="上一句"></p>
         <div class="finale-current-line" id="fnCurrentLine" role="region" aria-label="本句歌詞">正在讀取樂譜…</div>
         <p class="finale-next-line" id="fnNextLine" aria-label="下一句"></p>
         <div class="finale-roll-caption"><span>音符軌道</span><strong id="fnRollCurrent" aria-label="當下音名"></strong></div>
@@ -34,7 +33,7 @@
         <div class="finale-keyboard-controls"><button class="ghost" id="fnOctDown">低八度</button><span id="fnOctave">電腦鍵盤 C4–E5</span><button class="ghost" id="fnOctUp">高八度</button><button class="ghost" id="fnRelease">放開琴鍵</button></div>
         <p class="finale-status" id="fnStatus" role="status">正在讀取四聲部樂譜…</p>
       </section>
-      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-routing"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div></div>`;
+      <div class="finale-mix">${voices.map(v=>`<article class="panel finale-voice" data-voice="${v.id}"><div class="finale-voice-head"><h2>${v.name}</h2><a id="fnPdf-${v.id}" target="_blank" rel="noopener">開啟分譜 ↗</a></div><div class="finale-routing"><button class="ghost finale-mute" id="fnMute-${v.id}" aria-pressed="false" aria-label="靜音${v.name}">靜音</button><label><input type="checkbox" id="fnLeft-${v.id}" checked>左 L</label><label><input type="checkbox" id="fnRight-${v.id}" checked>右 R</label></div><label class="finale-volume">音量<input type="range" id="fnVolume-${v.id}" min="0" max="100" value="80"><output id="fnVolumeOut-${v.id}">80%</output></label><label class="finale-register">播放音域<select id="fnRegister-${v.id}"><option value="0" ${v.id[0]==='f'?'selected':''}>原譜音高</option><option value="-12" ${v.id[0]==='m'?'selected':''}>低八度</option></select></label><p class="finale-part-line" id="fnLyric-${v.id}">—</p><p class="finale-pitch" id="fnPitch-${v.id}">—</p></article>`).join('')}</div></div>`;
     let data=null,context=null,graph=null,playing=false,starting=false,position=0,origin=0,originPosition=0,bpm=120,rate=1,frame=0,timer=null,token=0,focus='f1',baseMidi=60,lyricSignature='',wordNodes=[],loadError=false;
     const muted=new Set(),nodes=new Map(),cursors=new Map(),scheduled=[],held=new Map(),keyTokens=new Map();
     const clicks=[];let nextClickBeat=0;
@@ -49,6 +48,8 @@
     const format=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
     const current=()=>playing?Math.min(data.duration,originPosition+Math.max(0,context.currentTime-origin)*rate):position;
     const enabled=v=>!muted.has(v.id)&&($('#fnLeft-'+v.id).checked||$('#fnRight-'+v.id).checked)&&Number($('#fnVolume-'+v.id).value)>0;
+    const soundingMidi=(id,midi)=>midi+Number($('#fnRegister-'+id).value);
+    const focusedMidi=()=>{const note=data&&score.activeAt(data.voices[focus].notes,current())[0];return note?soundingMidi(focus,note.midi):baseMidi;};
     function status(text){$('#fnStatus').textContent=text;}
     function revealKey(midi,force=false){
       const host=$('#fnKeyboard'),key=piano.keys[midi];if(!key||!host.clientWidth)return;
@@ -108,7 +109,7 @@
         while(i<notes.length&&notes[i].start<=horizon){
           const n=notes[i++];if(n.end<=now+.003*rate)continue;
           const from=Math.max(n.start,originPosition,now),when=Math.max(context.currentTime+.002,origin+(from-originPosition)/rate),duration=(n.end-from)/rate;
-          if(duration>.01)scheduled.push({until:when+duration+1.3,handle:pianoNote(n.midi,when,duration,.5,nodes.get(v.id).input)});
+          if(duration>.01)scheduled.push({until:when+duration+1.3,handle:pianoNote(soundingMidi(v.id,n.midi),when,duration,.5,nodes.get(v.id).input)});
         }
         cursors.set(v.id,i);
       }
@@ -145,11 +146,13 @@
     function phraseAt(part,time){let i=part.phrases.findIndex(p=>p.start>time)-1;if(i===-2)i=part.phrases.length-1;return Math.max(0,i);}
     function renderRoll(time){
       const part=data.voices[focus],host=$('#fnRoll'),track=$('#fnRollTrack'),height=host.clientHeight||240;
-      if(rollVoice!==focus){
-        rollVoice=focus;rollNotes=[];track.replaceChildren();
-        const pitches=part.performance.map(n=>n.midi),low=Math.min(...pitches),high=Math.max(...pitches),span=Math.max(12,high-low),top=high+(span-high+low)/2,step=(height-36)/span;
+      const signature=focus+':'+height+':'+$('#fnRegister-'+focus).value;
+      if(rollVoice!==signature){
+        rollVoice=signature;rollNotes=[];track.replaceChildren();
+        const pitches=part.performance.map(n=>soundingMidi(focus,n.midi)),low=Math.min(...pitches),high=Math.max(...pitches),span=Math.max(12,high-low),top=high+(span-high+low)/2,step=(height-36)/span;
         track.style.setProperty('--lane-height',step+'px');track.style.width=(data.endBeat*beatWidth+1200)+'px';
-        for(const note of part.performance){
+        for(const source of part.performance){
+          const note={...source,midi:soundingMidi(focus,source.midi)};
           const bar=document.createElement('span');bar.className='finale-roll-note';bar.textContent=score.noteName(note.midi);bar.dataset.beat=note.beat;bar.dataset.endBeat=note.endBeat;bar.dataset.midi=note.midi;
           bar.style.left=(note.beat*beatWidth)+'px';bar.style.width=((note.endBeat-note.beat)*beatWidth-2)+'px';bar.style.top=(18+(top-note.midi)*step)+'px';track.appendChild(bar);rollNotes.push({note,bar});
         }
@@ -180,13 +183,13 @@
         lyricSignature=signature;$('#fnCurrentLine').replaceChildren();wordNodes=[];
         if(phrase)for(const word of phrase.words){$('#fnCurrentLine').appendChild(document.createTextNode(word.separator));const span=document.createElement('span');span.textContent=word.text;span.className='finale-word';$('#fnCurrentLine').appendChild(span);wordNodes.push({word,span});}
         else $('#fnCurrentLine').textContent='此聲部沒有歌詞';
-        $('#fnPreviousLine').textContent=part.phrases[index-1]?.text||'　';$('#fnNextLine').textContent=part.phrases[index+1]?'下一句　'+part.phrases[index+1].text:'　';$('#fnPhraseCount').textContent=phrase?`第 ${index+1} / ${part.phrases.length} 句`:'';
+        $('#fnNextLine').textContent=part.phrases[index+1]?'下一句　'+part.phrases[index+1].text:'　';$('#fnPhraseCount').textContent=phrase?`第 ${index+1} / ${part.phrases.length} 句`:'';
       }
       for(const {word,span} of wordNodes){const active=word.start<=time&&time<word.end;span.classList.toggle('sung',time>=word.end);span.classList.toggle('singing',active);span.style.setProperty('--word-progress',(Math.max(0,Math.min(1,(time-word.start)/(word.end-word.start)))*100)+'%');if(active)span.setAttribute('aria-current','true');else span.removeAttribute('aria-current');}
     }
     function render(){
       const t=current();$('#fnTime').textContent=format(t)+' / '+(data?format(data.duration):'—');$('#fnSeek').value=t;
-      $('#fnPlay').disabled=starting||(!data&&!loadError);$('#fnPlay').textContent=loadError?'重新讀取樂譜':!data?'讀取樂譜中…':starting?'準備播放…':playing?'暫停':'播放';
+      for(const id of ['fnPlay','fnTopPlay']){const button=$('#'+id);button.disabled=starting||(!data&&!loadError);button.textContent=loadError?'重新讀取樂譜':!data?'讀取樂譜中…':starting?'準備播放…':playing?'暫停':'播放';button.setAttribute('aria-pressed',String(playing));}
       const lit=new Map();
       function light(midi,label,color,hollow){if(!lit.has(midi))lit.set(midi,[]);lit.get(midi).push({label,color,hollow});}
       if(data){
@@ -196,12 +199,12 @@
         for(const light of $('#fnBeats').children){const active=playing&&$('#fnMetronome').checked&&Number(light.dataset.beat)===activeBeat;light.classList.toggle('active',active);if(active)light.setAttribute('aria-current','true');else light.removeAttribute('aria-current');}
         for(const v of voices){
           const part=data.voices[v.id],notes=score.activeAt(part.notes,t),phrase=part.phrases[phraseAt(part,t)];
-          $('#fnLyric-'+v.id).textContent=phrase?.text||'—';$('#fnPitch-'+v.id).textContent=(muted.has(v.id)?'已靜音 · ':'')+(notes.length?notes.map(n=>score.noteName(n.midi)).join(' · '):'休止');
-          if(playing&&(enabled(v)||v.id===focus))for(const n of notes)light(n.midi,v.name,`var(${v.color})`,!enabled(v));
+          $('#fnLyric-'+v.id).textContent=phrase?.text||'—';$('#fnPitch-'+v.id).textContent=(muted.has(v.id)?'已靜音 · ':'')+(notes.length?notes.map(n=>score.noteName(soundingMidi(v.id,n.midi))).join(' · '):'休止');
+          if(playing&&(enabled(v)||v.id===focus))for(const n of notes)light(soundingMidi(v.id,n.midi),v.name,`var(${v.color})`,!enabled(v));
         }
         let tempo=data.tempos[0];for(const mark of data.tempos)if(data.secondsAt(mark.beat)<=t)tempo=mark;
         $('#fnTempoHint').textContent=`目前 ${Math.round(tempo.bpm*rate)} BPM · 調慢也不會變調；譜面中的速度變化會一同比例調整。`;
-        if(playing&&!held.size){const note=score.activeAt(data.voices[focus].notes,t)[0];if(note)revealKey(note.midi);}
+        if(playing&&!held.size){const note=score.activeAt(data.voices[focus].notes,t)[0];if(note)revealKey(soundingMidi(focus,note.midi));}
       }
       for(const [midi] of held)light(midi,'彈奏','var(--gold-hi)',false);
       piano.setLit([...lit].map(([midi,items])=>({midi,label:[...new Set(items.map(x=>x.label))].join('／'),color:items.length>1?'var(--gold-hi)':items[0].color,hollow:items.every(x=>x.hollow)})));
@@ -222,7 +225,7 @@
       $('#fnOctave').textContent='電腦鍵盤 '+score.noteName(baseMidi)+'–'+score.noteName(baseMidi+16);$('#fnOctDown').disabled=baseMidi<=36;$('#fnOctUp').disabled=baseMidi>=72;
       if(!section.hidden)requestAnimationFrame(()=>revealKey(baseMidi,true));
     }
-    $('#fnPlay').onclick=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnStop').onclick=()=>{pause();position=0;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
+    const togglePlayback=()=>{if(loadError)load();else if(playing)pause();else start();};$('#fnPlay').onclick=togglePlayback;$('#fnTopPlay').onclick=togglePlayback;$('#fnStop').onclick=()=>{pause();position=0;render();status('已回到開頭。');};$('#fnSeek').oninput=e=>seek(e.target.value);
     $('#fnBpm').onchange=e=>setBpm(e.target.value);$('#fnBpmRange').oninput=e=>setBpm(e.target.value);
     $('#fnMaster').oninput=e=>{const volume=Number(e.target.value);$('#fnMasterOut').textContent=volume+'%';if(graph)graph.master.gain.setTargetAtTime(volume/100,context.currentTime,.008);};
     $('#fnMetronome').onchange=()=>{stopClicks();if(data)nextClickBeat=Math.ceil(data.beatAt(current())-.000001);if(playing)schedule();render();};
@@ -234,15 +237,16 @@
     let taps=[];$('#fnTap').onclick=()=>{const now=performance.now();if(taps.length&&now-taps[taps.length-1]>2000)taps=[];taps.push(now);taps=taps.slice(-6);if(taps.length<2){status('繼續敲拍以設定速度。');return;}const intervals=taps.slice(1).map((t,i)=>t-taps[i]);setBpm(Math.max(40,Math.min(200,60000/(intervals.reduce((a,b)=>a+b,0)/intervals.length))));status('已依敲拍設定為 '+bpm+' BPM。');};
     $('#fnOctDown').onclick=()=>{releaseAll();baseMidi=Math.max(36,baseMidi-12);keyboardLabels();};$('#fnOctUp').onclick=()=>{releaseAll();baseMidi=Math.min(72,baseMidi+12);keyboardLabels();};$('#fnRelease').onclick=releaseAll;
     for(const v of voices){
+      $('#fnRegister-'+v.id).onchange=()=>{const was=playing||starting;if(was)pause();render();if(v.id===focus)revealKey(focusedMidi(),true);if(was)start();};
       $('#fnMute-'+v.id).onclick=()=>{muted.has(v.id)?muted.delete(v.id):muted.add(v.id);const m=muted.has(v.id),button=$('#fnMute-'+v.id);button.setAttribute('aria-pressed',String(m));button.setAttribute('aria-label',(m?'開啟':'靜音')+v.name);button.textContent=m?'開啟聲部':'靜音';route(v);render();};
       ['Left','Right','Volume'].forEach(kind=>$('#fn'+kind+'-'+v.id).addEventListener('input',()=>{route(v);stereoSummary();render();}));
-      $('#fnFocus-'+v.id).onclick=()=>{focus=v.id;splitStereo();for(const other of voices){const button=$('#fnFocus-'+other.id);button.classList.toggle('on',other.id===focus);button.setAttribute('aria-pressed',String(other.id===focus));}render();if(data)revealKey(score.activeAt(data.voices[focus].notes,current())[0]?.midi??baseMidi,true);};
+      $('#fnFocus-'+v.id).onclick=()=>{focus=v.id;splitStereo();for(const other of voices){const button=$('#fnFocus-'+other.id);button.classList.toggle('on',other.id===focus);button.setAttribute('aria-pressed',String(other.id===focus));}render();if(data)revealKey(focusedMidi(),true);};
     }
     document.addEventListener('keydown',e=>{if(section.hidden||$('#fnRoom').hidden||e.repeat||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,textarea,select,[contenteditable]'))return;const i=codes.indexOf(e.code);if(i<0)return;e.preventDefault();press(baseMidi+i,'keyboard:'+e.code);});
     document.addEventListener('keyup',e=>{const key='keyboard:'+e.code;if(keyTokens.has(key)){e.preventDefault();release(keyTokens.get(key),key);}});
     window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();releaseAll();}});
-    new MutationObserver(()=>{if(section.hidden){pause();releaseAll();}else requestAnimationFrame(()=>revealKey(data?.voices[focus].notes[0]?.midi??baseMidi,true));}).observe(section,{attributes:true,attributeFilter:['hidden']});
-    new ResizeObserver(()=>{if(!section.hidden&&!held.size)revealKey(data?score.activeAt(data.voices[focus].notes,current())[0]?.midi??baseMidi:baseMidi,true);}).observe($('#fnKeyboard'));
+    new MutationObserver(()=>{if(section.hidden){pause();releaseAll();}else requestAnimationFrame(()=>revealKey(data?soundingMidi(focus,data.voices[focus].notes[0].midi):baseMidi,true));}).observe(section,{attributes:true,attributeFilter:['hidden']});
+    new ResizeObserver(()=>{if(!section.hidden&&!held.size)revealKey(focusedMidi(),true);}).observe($('#fnKeyboard'));
     new ResizeObserver(()=>{if(data&&!section.hidden)renderRoll(current());}).observe($('#fnRoll'));
     async function load(){
       const attempt=authEpoch;
@@ -250,7 +254,7 @@
       try{
         const response=await fetch('/api/finale/score',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(20000)});if(attempt!==authEpoch)return;if(response.status===401){lock('登入已到期，請重新輸入密碼。');return;}if(!response.ok)throw Error();const prepared=score.prepare(await response.json());if(attempt!==authEpoch)return;data=prepared;
         for(const v of voices)$('#fnPdf-'+v.id).href=data.voices[v.id].pdf;
-        $('#fnSeek').max=data.duration;$('#fnSeek').disabled=false;$('#fnStop').disabled=false;lyricSignature='';rollVoice='';lyricsListVoice='';status('樂譜已就緒，按播放即可練唱。鋼琴也可以單獨彈奏。');requestAnimationFrame(()=>{if(data)revealKey(data.voices[focus].notes[0].midi,true);});
+        $('#fnSeek').max=data.duration;$('#fnSeek').disabled=false;$('#fnStop').disabled=false;lyricSignature='';rollVoice='';lyricsListVoice='';status('樂譜已就緒，按播放即可練唱。鋼琴也可以單獨彈奏。');requestAnimationFrame(()=>{if(data)revealKey(soundingMidi(focus,data.voices[focus].notes[0].midi),true);});
       }catch{if(attempt!==authEpoch)return;data=null;loadError=true;$('#fnCurrentLine').textContent='樂譜讀取失敗';status('請確認網路後按「重新讀取樂譜」。鋼琴仍可彈奏。');}
       finally{section.removeAttribute('aria-busy');render();}
     }
@@ -258,7 +262,7 @@
       authEpoch++;pause();releaseAll();data=null;position=0;loadError=false;lyricSignature='';wordNodes=[];
       $('#fnRoom').hidden=true;$('#fnAuth').hidden=false;$('#fnCurrentLine').textContent='請先登入';
       for(const v of voices){$('#fnPdf-'+v.id).removeAttribute('href');$('#fnLyric-'+v.id).textContent='—';$('#fnPitch-'+v.id).textContent='—';}
-      $('#fnPreviousLine').textContent='';$('#fnNextLine').textContent='';$('#fnAuthStatus').textContent=message;render();
+      $('#fnNextLine').textContent='';$('#fnAuthStatus').textContent=message;render();
       $('#fnPhraseCount').textContent='';$('#fnRollTrack').replaceChildren();$('#fnRollCurrent').textContent='';rollVoice='';rollNotes=[];$('#fnLyricsList').replaceChildren();lyricsListVoice='';lyricRows=[];$('#fnSeek').disabled=true;$('#fnStop').disabled=true;
     }
     function checkSession(){

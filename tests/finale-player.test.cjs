@@ -100,7 +100,7 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.locator('#fnPlay').click();await page.waitForFunction(()=>document.querySelector('#fnPlay').textContent==='暫停');
     const first=await page.evaluate(()=>pianoCalls.slice(0,4));assert.equal(first.length,4);assert.equal(new Set(first.map(n=>n.time)).size,1);
     const slowPitch=await page.evaluate(()=>({samples:sampleRates.slice(0,4),osc:oscFrequencies.slice(0,16)}));
-    assert.deepEqual(first.map(n=>n.midi),[65,65,73,68]);assert.ok(first.every(n=>Math.abs(n.duration-.75)<.001));
+    assert.deepEqual(first.map(n=>n.midi),[65,65,61,56]);assert.ok(first.every(n=>Math.abs(n.duration-.75)<.001));
     await page.waitForFunction(()=>{const [l,r]=rms();return l>.0003&&r<.00001;});
     await page.locator('#fnMute-f1').click();await page.waitForFunction(()=>rms().every(n=>n<.00001));
     assert.equal(await page.locator('#fnCurrentLine').textContent(),'Keep comin’ back;');
@@ -135,6 +135,15 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(await page.locator('#fnCurrentLine [aria-current="true"]').textContent(),'in’');
     assert.ok(parseFloat(await page.locator('#fnCurrentLine [aria-current="true"]').evaluate(el=>el.style.getPropertyValue('--word-progress')))>0);
     await page.locator('#fnFocus-m1').click();assert.equal((await page.locator('#fnLyricVoice').textContent()).startsWith('男 1'),true);
+    assert.equal(await page.locator('#fnPreviousLine').count(),0);
+    assert.equal(await page.locator('#fnRegister-m1').inputValue(),'-12');
+    assert.equal(await page.locator('#fnRollCurrent').textContent(),'C4');
+    await page.locator('#fnRegister-m1').selectOption('0');assert.equal(await page.locator('#fnRollCurrent').textContent(),'C5');
+    await page.locator('#fnRegister-m1').selectOption('-12');
+    await page.locator('#fnTopPlay').click();await page.waitForFunction(()=>document.querySelector('#fnPlay').textContent==='暫停');
+    assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'true');
+    await page.locator('#fnPlay').click();assert.equal(await page.locator('#fnTopPlay').getAttribute('aria-pressed'),'false');
+    await page.locator('#fnSeek').evaluate(el=>{el.value=1.65;el.dispatchEvent(new Event('input',{bubbles:true}));});
     await page.locator('#fnBpmUp5').click();assert.equal(await page.locator('#fnBpm').inputValue(),'125');await page.locator('#fnBpmDown5').click();
     // Input focus must not play letter shortcuts.
     const before=await page.evaluate(()=>pianoCalls.length);await page.locator('#fnBpm').focus();await page.keyboard.press('a');assert.equal(await page.evaluate(()=>pianoCalls.length),before);
@@ -142,7 +151,13 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-desktop.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-    await page.waitForFunction(()=>{const host=document.querySelector('#fnKeyboard').getBoundingClientRect(),key=document.querySelector('#fnKeyboard [data-midi="72"]').getBoundingClientRect();return key.left>=host.left&&key.right<=host.right;});
+    await page.waitForFunction(()=>{const host=document.querySelector('#fnKeyboard').getBoundingClientRect(),key=document.querySelector('#fnKeyboard [data-midi="60"]').getBoundingClientRect();return key.left>=host.left&&key.right<=host.right;});
+    await page.setViewportSize({width:844,height:390});
+    await page.waitForFunction(()=>document.querySelector('#fnRoll').getBoundingClientRect().height<=102);
+    assert.ok(await page.locator('.finale-karaoke').evaluate(el=>el.getBoundingClientRect().height<330));
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await page.locator('#fnTopPlay').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-landscape.png')});
+    await page.setViewportSize({width:390,height:844});
     await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-mobile.png'),fullPage:true});
     await page.emulateMedia({colorScheme:'dark'});await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-dark.png'),fullPage:true});
     await page.locator('.tab[data-tab="metro"]').click();assert.equal(await page.locator('#tab-metro').isVisible(),true);
