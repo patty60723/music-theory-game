@@ -62,8 +62,16 @@ capture, multi-touch note-off, Enter/Space support and roving arrow-key
 focus. The computer mapping A W S E D F T G Y H U J K O L P ; spans 17
 chromatic notes from C4, with octave controls. Multiple inputs holding the
 same pitch share that live note until all release. Blur, backgrounding or
-leaving the tab clears manual holds; backgrounding/leaving also pauses the
-score. Other app pianos retain the original pointer behavior.
+leaving the tab clears manual holds. Score playback continues when the page
+is backgrounded or a different site tool tab is selected. The audio clock
+remains authoritative; background scheduling uses a two-second lookahead
+and 250ms heartbeat, while visual updates stop until the score is visible.
+End/loop detection runs in the audio scheduler, independently of RAF. On
+return, lyrics, keys and progress catch up without restarting or counting in.
+The existing iOS playback session stays active while choir audio is playing.
+Session checks continue in the background; logout/expiry still stop playback.
+Other app pianos retain the original pointer behavior. Browser/OS suspension
+or discarding can still interrupt a web page; this is not a lock-screen guarantee.
 
 ## Karaoke layout
 

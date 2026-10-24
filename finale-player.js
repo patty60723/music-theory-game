@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  window.createFinalePlayer=function({ac,makePiano,pianoNote}){
+  window.createFinalePlayer=function({ac,makePiano,pianoNote,onPlaybackChange=()=>{}}){
     const $=s=>document.querySelector(s),score=window.FinaleScore;
     const voices=[{id:'f1',name:'女 1',color:'--c-root'},{id:'f2',name:'女 2',color:'--c-third'},{id:'m1',name:'男 1',color:'--c-fifth'},{id:'m2',name:'男 2',color:'--c-seventh'}];
     const section=$('#tab-finale');
@@ -53,6 +53,7 @@
     Object.values(piano.keys).forEach(key=>{const shortcut=document.createElement('span');shortcut.className='finale-shortcut';key.appendChild(shortcut);});
     const format=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
     const current=()=>playing?Math.min(data.duration,originPosition+Math.max(0,context.currentTime-origin)*rate):position;
+    const background=()=>document.hidden||section.hidden;
     const enabled=v=>!muted.has(v.id)&&($('#fnLeft-'+v.id).checked||$('#fnRight-'+v.id).checked)&&Number($('#fnVolume-'+v.id).value)>0;
     const soundingMidi=(id,midi)=>midi+Number($('#fnRegister-'+id).value);
     const focusedMidi=()=>{const note=data&&score.activeAt(data.voices[focus].notes,current())[0];return note?soundingMidi(focus,note.midi):baseMidi;};
@@ -123,12 +124,16 @@
       oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};clicks.push(click);
     }
     function pause(){
-      const was=playing||starting,counting=isCounting();token++;position=current();if(was&&!counting)knownStart=false;playing=false;starting=false;clearInterval(timer);timer=null;cancelAnimationFrame(frame);stopScheduled();if(was)status('已暫停。鋼琴仍可單獨彈奏。');render();
+      const was=playing||starting,counting=isCounting();token++;position=current();if(was&&!counting)knownStart=false;playing=false;starting=false;onPlaybackChange(false);clearInterval(timer);timer=null;cancelAnimationFrame(frame);stopScheduled();if(was)status('已暫停。鋼琴仍可單獨彈奏。');render();
+    }
+    function finishIfEnded(){
+      if(!playing||current()<data.duration)return false;
+      const loop=$('#fnLoop').checked;pause();position=loop?0:data.duration;knownStart=loop;render();if(loop)start();else status('播放結束。');return true;
     }
     function schedule(){
-      if(!playing)return;
+      if(!playing||finishIfEnded())return;
       if(context.currentTime+.18<origin)return;
-      const now=current(),horizon=now+.18*rate;
+      const now=current(),horizon=now+(background()?2:.18)*rate;
       for(const v of voices){
         const notes=data.voices[v.id].performance;let i=cursors.get(v.id)||0;
         while(i<notes.length&&notes[i].start<=horizon){
@@ -149,7 +154,7 @@
     async function start({countIn=true}={}){
       if(starting||playing||!data)return;const attempt=++token;starting=true;render();
       try{
-        ensureGraph();await context.resume();if(attempt!==token||section.hidden)return;
+        ensureGraph();await context.resume();if(attempt!==token||$('#fnRoom').hidden)return;
         if(position>=data.duration){position=0;knownStart=true;}
         origin=context.currentTime+.035;originPosition=position;countInStart=null;
         if(countIn&&$('#fnCountIn').checked&&knownStart&&data.voices[focus].performance.some(n=>Math.abs(n.start-position)<.00001)){
@@ -158,16 +163,15 @@
           countInInterval=60/(tempo.bpm*rate);countInStart=origin;origin+=length*countInInterval;
           for(let beat=0;beat<length-.000001;beat++)scheduleClick(beat,countInStart+beat*countInInterval,'count-in');
         }
-        playing=true;
+        playing=true;onPlaybackChange(true);
         nextClickBeat=Math.ceil(data.beatAt(position)-.000001);
         for(const v of voices){const i=data.voices[v.id].performance.findIndex(n=>n.end>position);cursors.set(v.id,i<0?data.voices[v.id].performance.length:i);}
-        schedule();timer=setInterval(schedule,25);frame=requestAnimationFrame(tick);status('鋼琴播放中。可同時彈奏，或切換下方聲部控制。');
-      }catch{if(attempt===token){playing=false;stopScheduled();status('無法啟動音訊，請再按播放。');}}
+        schedule();timer=setInterval(schedule,background()?250:25);if(!background())frame=requestAnimationFrame(tick);status('鋼琴播放中。可切換分頁繼續聆聽。');
+      }catch{if(attempt===token){playing=false;onPlaybackChange(false);stopScheduled();status('無法啟動音訊，請再按播放。');}}
       finally{if(attempt===token){starting=false;render();}}
     }
     function tick(){
-      if(!playing)return;
-      if(current()>=data.duration){const loop=$('#fnLoop').checked;pause();position=loop?0:data.duration;knownStart=loop;render();if(loop)start();else status('播放結束。');return;}
+      if(!playing||finishIfEnded()||background())return;
       render();frame=requestAnimationFrame(tick);
     }
     function seek(value,{known=false}={}){if(!data)return;const was=playing||starting;pause();position=Math.max(0,Math.min(data.duration,Number(value)||0));knownStart=known;render();if(was)start({countIn:known});}
@@ -231,6 +235,7 @@
       $('#fnCountStatus').hidden=!counting;const countText=counting?'預備拍 '+countBeat:'';if($('#fnCountStatus').textContent!==countText)$('#fnCountStatus').textContent=countText;
       $('#fnTime').textContent=format(t)+' / '+(data?format(data.duration):'—');$('#fnSeek').value=t;
       for(const id of ['fnPlay','fnTopPlay']){const button=$('#'+id);button.disabled=starting||(!data&&!loadError);button.textContent=loadError?'重新讀取樂譜':!data?'讀取樂譜中…':starting?'準備播放…':playing?'暫停':'播放';button.setAttribute('aria-pressed',String(playing));}
+      if(background())return;
       const lit=new Map();
       function light(midi,label,color,hollow){if(!lit.has(midi))lit.set(midi,[]);lit.get(midi).push({label,color,hollow});}
       if(data){
@@ -318,8 +323,14 @@
     }
     document.addEventListener('keydown',e=>{if(section.hidden||$('#fnRoom').hidden||e.repeat||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,textarea,select,[contenteditable]'))return;const i=codes.indexOf(e.code);if(i<0)return;e.preventDefault();press(baseMidi+i,'keyboard:'+e.code);});
     document.addEventListener('keyup',e=>{const key='keyboard:'+e.code;if(keyTokens.has(key)){e.preventDefault();release(keyTokens.get(key),key);}});
-    window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();releaseAll();}});
-    new MutationObserver(()=>{if(section.hidden){pause();releaseAll();}else requestAnimationFrame(()=>revealKey(data?soundingMidi(focus,data.voices[focus].notes[0].midi):baseMidi,true));}).observe(section,{attributes:true,attributeFilter:['hidden']});
+    function syncVisibility(){
+      if(background())releaseAll();
+      clearInterval(timer);timer=null;cancelAnimationFrame(frame);
+      if(playing){schedule();if(playing){timer=setInterval(schedule,background()?250:25);if(!background())frame=requestAnimationFrame(tick);}}
+      if(!background()){render();if(data)requestAnimationFrame(()=>revealKey(focusedMidi(),true));}
+    }
+    window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',syncVisibility);
+    new MutationObserver(syncVisibility).observe(section,{attributes:true,attributeFilter:['hidden']});
     new ResizeObserver(()=>{if(!section.hidden&&!held.size)revealKey(focusedMidi(),true);}).observe($('#fnKeyboard'));
     new ResizeObserver(()=>{if(data&&!section.hidden)renderRoll(current());}).observe($('#fnRoll'));
     async function load(){
@@ -363,7 +374,7 @@
       finally{button.disabled=false;}
     };
     $('#fnAuthRetry').onclick=checkSession;
-    setInterval(()=>{if(!$('#fnRoom').hidden&&!document.hidden)checkSession();},60000);
+    setInterval(()=>{if(!$('#fnRoom').hidden)checkSession();},60000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#fnRoom').hidden)checkSession();});
     splitStereo();keyboardLabels();checkSession();return {pause};
   };

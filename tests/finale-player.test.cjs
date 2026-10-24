@@ -267,6 +267,32 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     await page.emulateMedia({colorScheme:'dark'});await page.screenshot({path:path.join(os.tmpdir(),'catshark-finale-dark.png'),fullPage:true});
     await page.locator('.tab[data-tab="metro"]').click();assert.equal(await page.locator('#tab-metro').isVisible(),true);
     await page.locator('.tab[data-tab="metro"]').press('ArrowRight');assert.equal(await page.locator('#tab-finale').isVisible(),true);
+    // Hidden-page simulation stops RAF rendering, but audio scheduling and time keep running.
+    await page.locator('#fnSettingsPlayback').click();await page.locator('#fnBpmReset').click();await page.locator('#fnStop').click();
+    await page.evaluate(()=>window.pianoCalls=[]);await page.locator('#fnPlay').click();await page.waitForFunction(()=>pianoCalls.length>=4);
+    await page.locator('#fnRoom h1').click();await page.keyboard.down('a');
+    await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
+    assert.equal(await page.locator('#fnPlay').getAttribute('aria-pressed'),'true');
+    assert.equal(await page.evaluate(()=>pianoCalls.filter(n=>n.duration===60).every(n=>n.stopped)),true);await page.keyboard.up('a');
+    const backgroundNotes=await page.evaluate(()=>pianoCalls.length);await page.waitForTimeout(2100);
+    assert.ok(await page.evaluate(()=>pianoCalls.length)>backgroundNotes);await page.waitForFunction(()=>masterRms()>.0001);
+    await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});
+    await page.waitForFunction(()=>Number(document.querySelector('#fnSeek').value)>1);
+    const returnedTime=Number(await page.locator('#fnSeek').inputValue());assert.ok(returnedTime<6);
+    const activeWord=timeline.voices.m1.phrases.flatMap(p=>p.words).find(w=>w.start<=returnedTime&&returnedTime<w.end);
+    if(activeWord)assert.equal(await page.locator('#fnCurrentLine .singing').textContent(),activeWord.text);
+    // The site's tool tabs keep the same playback running too.
+    await page.locator('.tab[data-tab="metro"]').click();await page.waitForTimeout(350);assert.equal(await page.locator('#fnPlay').getAttribute('aria-pressed'),'true');
+    await page.locator('.tab[data-tab="finale"]').click();assert.ok(Number(await page.locator('#fnSeek').inputValue())>returnedTime);await page.locator('#fnPlay').click();
+    // End/loop detection works without the score panel's animation frame.
+    await page.locator('#fnSeek').evaluate((el,t)=>{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));},timeline.duration-.1);
+    await page.locator('#fnPlay').click();await page.locator('.tab[data-tab="metro"]').click();
+    await page.waitForFunction(()=>document.querySelector('#fnPlay').getAttribute('aria-pressed')==='false');await page.locator('.tab[data-tab="finale"]').click();
+    assert.equal(await page.locator('#fnStatus').textContent(),'播放結束。');
+    await page.locator('#fnLoop').check();await page.locator('#fnSeek').evaluate((el,t)=>{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));},timeline.duration-.1);
+    await page.locator('#fnPlay').click();await page.locator('.tab[data-tab="metro"]').click();await page.waitForTimeout(500);
+    assert.equal(await page.locator('#fnPlay').getAttribute('aria-pressed'),'true');await page.locator('.tab[data-tab="finale"]').click();assert.ok(Number(await page.locator('#fnSeek').inputValue())<2);
+    await page.locator('#fnLoop').uncheck();await page.locator('#fnPlay').click();
     // Shared instrument changes must retain the original scale/chord audio.
     await page.locator('.tab[data-tab="scale"]').click();
     let sourceCount=await page.evaluate(()=>sampleRates.length+oscFrequencies.length);await page.locator('#playBtn').click();await page.waitForFunction(count=>sampleRates.length+oscFrequencies.length>count,sourceCount);await page.locator('#playBtn').click();

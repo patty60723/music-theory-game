@@ -112,7 +112,7 @@ dragging the seek slider always clears the known start and continues directly.
 | Select/Listbox | Native HTML select | DESIGN.md | Native OS popup | Browser selection and keyboard |
 | Scrollbar | finale-player.css global selectors | index.html theme variables | Standard / forced-colors | Browser narrow layout and computed styles |
 
-樂譜的拍點、音高與歌詞是聲音／視覺的共同資料來源；同步時鐘使用 AudioContext，切換分頁或進背景會暫停。載入失敗可重試，鋼琴仍可單獨彈奏。沿用 makePiano 的 interactive 變體，以原生 button 支援按住／放開、滑鼠、多指與鍵盤，其他舊琴鍵介面維持原行為。
+樂譜的拍點、音高與歌詞是聲音／視覺的共同資料來源；同步時鐘使用 AudioContext，切換瀏覽器或網站工具分頁仍繼續播放。背景只停止畫面更新與手動按鍵，採較長音訊緩衝；回到練唱頁時歌詞、琴鍵與進度立即對齊。歌曲結束與循環由音訊排程判斷，登入到期或登出仍會停止播放。載入失敗可重試，鋼琴仍可單獨彈奏。沿用 makePiano 的 interactive 變體，以原生 button 支援按住／放開、滑鼠、多指與鍵盤，其他舊琴鍵介面維持原行為。
 
 每個聲部的靜音切換獨立於左右聲道與音量；靜音期間兩聲道增益皆為零，開啟後套用原設定。按鈕以文字與 aria-pressed 表達狀態。主唱歌詞不因靜音而消失，主唱琴鍵以 hollow 虛線提示，支援關掉自己的聲音練唱。手動彈奏獨立於歌曲聲部混音。
 

@@ -433,9 +433,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .install .x{border:0;background:transparent;color:var(--muted);font-size:18px;width:32px;height:32px;border-radius:50%;flex:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-<link rel="stylesheet" href="finale-player.css?v=27">
-<script src="finale-score.js?v=27"></script>
-<script src="finale-player.js?v=27"></script>
+<link rel="stylesheet" href="finale-player.css?v=28">
+<script src="finale-score.js?v=28"></script>
+<script src="finale-player.js?v=28"></script>
 </head>
 <body>
 <header class="bar">
@@ -615,7 +615,7 @@ let ctx=null, master=null;
 // iPhone 靜音鍵：Web Audio 預設跟著靜音鍵走。改成「播放」類別（像音樂 App）就不受影響。
 // iOS 17+ 用 audioSession API；舊版用一段循環播放的無聲 <audio> 把音訊類別切過去。
 const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-let silentEl=null, unmuted=false;
+let silentEl=null, unmuted=false, finaleAudioActive=false;
 function iosUnmute(){
   if(unmuted) return; unmuted=true;
   if(navigator.audioSession){ try{ navigator.audioSession.type='playback'; }catch(e){} return; }
@@ -627,8 +627,8 @@ function iosUnmute(){
   }
   silentEl.play().catch(()=>{ unmuted=false; });
 }
-document.addEventListener('visibilitychange',()=>{   // 切到背景就停掉，避免鎖定畫面出現播放控制
-  if(document.hidden&&silentEl){ silentEl.pause(); unmuted=false; }
+document.addEventListener('visibilitychange',()=>{   // Preserve the iOS playback session while choir audio is active.
+  if(document.hidden&&silentEl&&!finaleAudioActive){ silentEl.pause(); unmuted=false; }
 });
 function ac(){
   iosUnmute();
@@ -1475,7 +1475,7 @@ window.addEventListener('hashchange',()=>{   // 手動改網址或貼上別人�
 });
 
 /* init */
-window.createFinalePlayer({ac,makePiano,pianoNote});
+window.createFinalePlayer({ac,makePiano,pianoNote,onPlaybackChange(active){finaleAudioActive=active;if(!active&&document.hidden&&silentEl){silentEl.pause();unmuted=false;}}});
 loadHash();
 sRebuild(); renderLearnPickers(); renderLearn(); renderCats(); updScore(); setBtns(); saveHash();
 requestAnimationFrame(frame);
