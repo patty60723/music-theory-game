@@ -9,10 +9,10 @@ export const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'
 export const password='local-test-password-only';
 export function environment({realScores=false}={}){
   const attempts=new Map();
-  const reads=[],fixtures={'score.json':Buffer.from('{"kind":"score-piano"}')};
+  const reads=[],fixtures={'score.json':Buffer.from('{"kind":"score-piano"}'),'tie-review.json':Buffer.from('{"kind":"tie-review"}')};
   for(const id of ['f1','f2','m1','m2'])fixtures[id+'.pdf']=Buffer.from('%PDF-test-'+id);
   let source;
-  const objects=async()=>realScores?(source??=localPrivateAssets(root)):fixtures;
+  const objects=async()=>realScores?(source??=(async()=>{const files=await localPrivateAssets(root);try{files['tie-review.json']=await readFile(path.join(root,'assets/finale-tie-review.json'));}catch{}return files;})()):fixtures;
   return {
     scoreReads:reads,
     SCORES:{async get(key){reads.push({method:'get',key});const bytes=(await objects())[key.replace(/^finale\//,'')];return bytes?{body:bytes,size:bytes.length}:null;},async head(key){reads.push({method:'head',key});const bytes=(await objects())[key.replace(/^finale\//,'')];return bytes?{size:bytes.length}:null;}},

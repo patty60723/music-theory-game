@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>延音核對室｜四聲部練唱</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="finale-review-theme.css?v=1"><link rel="stylesheet" href="finale-review.css?v=1">
+<script src="finale-score.js?v=28" defer></script><script src="finale-review-audio.js?v=1" defer></script><script src="finale-review.js?v=1" defer></script>
+</head>
+<body class="tie-review">
+<main class="review-shell">
+  <header class="review-heading"><div><a href="/#tab=finale">← 回到正式練唱</a><h1>延音核對室</h1><p>逐段比較目前版本與修正版，對照原譜確認。</p></div><button class="ghost" id="rvLogout" hidden>登出</button></header>
+  <section class="panel review-auth" id="rvAuth"><h2>登入核對室</h2><p>沿用練唱密碼與登入狀態。</p><form id="rvLogin" novalidate><label for="rvPassword">練唱密碼</label><div class="review-login-row"><input id="rvPassword" type="password" autocomplete="current-password" required maxlength="256"><button class="play" id="rvUnlock">登入</button></div></form><p id="rvAuthStatus" role="status">正在確認登入…</p><button class="ghost" id="rvRetry" hidden>重新讀取</button></section>
+  <div id="rvRoom" hidden>
+    <section class="panel review-toolbar" aria-label="核對控制">
+      <p class="review-notice">這是獨立的核對版本，正式練唱的譜尚未更動。男聲沿用低八度播放。</p>
+      <div class="review-options"><label>聲部<select id="rvVoice"><option value="all">全部聲部</option><option value="f1">女 1</option><option value="f2">女 2</option><option value="m1">男 1</option><option value="m2">男 2</option></select></label><label>速度 BPM<input id="rvBpm" type="number" min="40" max="200" value="120" inputmode="numeric"></label><button class="ghost" id="rvTempoReset">回原速</button><label class="chk"><input type="checkbox" id="rvWhole"> 比較整首</label><button class="ghost" id="rvStop">停止</button></div>
+      <div class="review-ab"><button class="ghost" id="rvOriginal">▶ 目前版本</button><button class="play" id="rvProposed">▶ 修正版</button></div>
+      <div class="review-play-status"><strong id="rvPlaying" role="status">請選一段開始比較</strong><span id="rvClock">—</span></div><progress id="rvProgress" value="0" max="1" aria-label="本次比較播放進度"></progress>
+    </section>
+    <div class="review-grid">
+      <section class="panel review-case-panel" aria-labelledby="rvCasesHeading"><div class="review-section-head"><h2 id="rvCasesHeading">待核對段落</h2><span id="rvCount"></span></div><p id="rvSummary"></p><div class="review-cases" id="rvCases" role="group" aria-label="選擇核對段落"></div></section>
+      <section class="panel review-detail" aria-labelledby="rvCaseHeading"><div class="review-section-head"><h2 id="rvCaseHeading"></h2><a id="rvPdf" target="_blank" rel="noopener">開啟完整分譜 ↗</a></div><p id="rvReason"></p><p id="rvPitch"></p><figure class="review-score"><img id="rvImage" alt="本段原始分譜截圖"><figcaption>原始分譜；跨行或跨頁的兩端會上下排列。</figcaption></figure><button class="ghost" id="rvZoom">放大譜面</button>
+        <div class="review-note-comparison" id="rvNotes" aria-label="音符比較"></div>
+        <fieldset class="review-verdict"><legend>這段修正版聽起來如何？</legend><label><input type="radio" name="rvVerdict" value="pending" checked> 未核對</label><label><input type="radio" name="rvVerdict" value="ok"> 沒問題</label><label><input type="radio" name="rvVerdict" value="adjust"> 需要調整</label></fieldset>
+        <label class="review-note-label" for="rvComment">補充說明</label><textarea id="rvComment" class="resize-none" rows="2" maxlength="1000" placeholder="例如：第二個音仍像重新敲過，或歌詞進得太晚"></textarea>
+        <div class="review-next"><button class="ghost" id="rvPrevious">← 上一段</button><button class="ghost" id="rvNext">下一段 →</button></div>
+      </section>
+    </div>
+    <section class="panel review-export"><div><h2>把核對結果交給我</h2><p id="rvReviewed"></p><p id="rvStorage" role="status"></p></div><button class="play" id="rvCopy">一鍵複製核對結果</button><p id="rvCopyStatus" role="status"></p></section>
+  </div>
+</main>
+<dialog id="rvDialog"><div class="review-dialog-head"><h2>原譜放大檢視</h2><button class="ghost" id="rvCloseZoom">關閉</button></div><div class="review-zoom-scroll"><img id="rvZoomImage" alt="放大的原始分譜截圖"></div></dialog>
+</body></html>

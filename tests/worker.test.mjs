@@ -7,7 +7,7 @@ const post=(path,body,headers={})=>new Request(url(path),{method:'POST',headers:
 async function login(env){const response=await worker.fetch(post('/api/finale/login',{password}),env);assert.equal(response.status,200);const cookie=response.headers.get('Set-Cookie');assert.match(cookie,/HttpOnly; Secure; SameSite=Strict/);return cookie.split(';')[0];}
 test('fail closed, same-origin login, protected resources, tampering, rotation and logout',async()=>{
   const env=environment();
-  for(const path of ['/api/finale/score','/api/finale/pdf/f1','/api/finale/session'])assert.equal((await worker.fetch(new Request(url(path)),env)).status,401);
+  for(const path of ['/api/finale/score','/api/finale/tie-review','/api/finale/pdf/f1','/api/finale/session'])assert.equal((await worker.fetch(new Request(url(path)),env)).status,401);
   assert.equal(env.scoreReads.length,0);
   for(const path of ['/private/finale/score.json','/assets/finale-score.json','/.dev.vars','/worker/index.mjs','/preview.html'])assert.equal((await worker.fetch(new Request(url(path)),env)).status,404);
   assert.equal((await worker.fetch(post('/api/finale/login',{password},{Origin:'https://evil.example'}),env)).status,403);
@@ -15,6 +15,7 @@ test('fail closed, same-origin login, protected resources, tampering, rotation a
   assert.equal((await worker.fetch(post('/api/finale/login',{password}),{...env,PRACTICE_PASSWORD:''})).status,503);
   const cookie=await login(env),get=path=>new Request(url(path),{headers:{Cookie:cookie}});
   const score=await worker.fetch(get('/api/finale/score'),env);assert.equal(score.status,200);assert.match(score.headers.get('Cache-Control'),/no-store/);assert.equal((await score.json()).kind,'score-piano');
+  const review=await worker.fetch(get('/api/finale/tie-review'),env);assert.equal(review.status,200);assert.match(review.headers.get('Cache-Control'),/no-store/);assert.equal((await review.json()).kind,'tie-review');
   for(const id of ['f1','f2','m1','m2']){const pdf=await worker.fetch(get('/api/finale/pdf/'+id),env);assert.equal(pdf.status,200);assert.equal(pdf.headers.get('Content-Type'),'application/pdf');assert.equal(new TextDecoder().decode((await pdf.arrayBuffer()).slice(0,4)),'%PDF');}
   const head=await worker.fetch(new Request(url('/api/finale/score'),{method:'HEAD',headers:{Cookie:cookie}}),env);assert.equal(head.status,200);assert.equal(await head.text(),'');
   assert.equal(env.scoreReads.at(-1).method,'head');
@@ -45,6 +46,12 @@ test('edge cache saves R2 reads, keeps auth mandatory, and changes revision with
   const cacheUrl=[...objects.keys()][0];assert.equal((await cachedWorker.fetch(new Request(cacheUrl),env)).status,404);
   assert.equal((await cachedWorker.fetch(new Request(url('/api/finale/score'),{method:'HEAD',headers:{Cookie:cookie}}),env)).status,200);assert.equal(env.scoreReads.length,1);
   assert.equal((await cachedWorker.fetch(get(),{...env,SCORE_CACHE_VERSION:'updated'})).status,200);assert.equal(env.scoreReads.length,2);
+  const reviewGet=()=>new Request(url('/api/finale/tie-review'),{headers:{Cookie:cookie}});
+  for(let i=0;i<2;i++)assert.equal((await cachedWorker.fetch(reviewGet(),env)).status,200);
+  assert.equal(env.scoreReads.length,3);
+  assert.equal((await cachedWorker.fetch(reviewGet(),{...env,TIE_REVIEW_CACHE_VERSION:'review-updated'})).status,200);assert.equal(env.scoreReads.length,4);
+  assert.equal((await cachedWorker.fetch(get(),{...env,TIE_REVIEW_CACHE_VERSION:'review-updated'})).status,200);assert.equal(env.scoreReads.length,4);
+  const reviewMatches=matches;assert.equal((await cachedWorker.fetch(new Request(url('/api/finale/tie-review')),env)).status,401);assert.equal(matches,reviewMatches);
   const broken=createWorker({getCache:()=>({match:async()=>{throw Error('cache unavailable');}})});
-  assert.equal((await broken.fetch(get(),env)).status,200);assert.equal(env.scoreReads.length,3);
+  assert.equal((await broken.fetch(get(),env)).status,200);assert.equal(env.scoreReads.length,5);
 });

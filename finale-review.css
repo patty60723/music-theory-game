@@ -1,0 +1,56 @@
+.tie-review [hidden]{display:none!important}
+.review-shell{max-width:1280px;margin:auto;padding:24px 20px 48px}
+.review-shell h1{font:700 clamp(28px,4vw,44px)/1.2 var(--serif);margin:10px 0}
+.review-shell h2{font:700 21px/1.35 var(--serif);margin:0}
+.review-shell p{color:var(--muted);line-height:1.65;margin:6px 0}
+.review-shell a{color:var(--gold);text-underline-offset:4px;font-size:14px}
+.review-heading,.review-section-head{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.review-heading{margin-bottom:24px}
+.review-auth{max-width:600px;margin:32px auto;display:grid;gap:12px}
+.review-login-row{display:flex;gap:12px;flex-wrap:wrap}
+.tie-review input:not([type=checkbox]):not([type=radio]),.tie-review select,.tie-review textarea{background:var(--panel-solid);color:var(--ink);border:1px solid var(--line);border-radius:var(--r-sm);font:16px var(--sans);padding:10px 12px;min-height:44px;box-sizing:border-box}
+.review-login-row input{flex:1;min-width:120px}
+.review-toolbar{margin-bottom:18px;display:grid;gap:12px}
+.review-notice{border-left:3px solid var(--gold);padding-left:12px;font-size:14px}
+.review-options{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.review-options>label:not(.chk){display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.review-options input[type=number]{width:96px;font-variant-numeric:tabular-nums}
+.review-options .chk{min-height:44px;gap:8px}
+.review-ab{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:600px}
+.review-ab button{min-height:56px;font-size:20px}
+.tie-review button{min-height:44px}
+.review-ab button[aria-pressed=true]{outline:3px solid var(--gold-hi);outline-offset:2px}
+.review-play-status{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}
+#rvClock{font-variant-numeric:tabular-nums;color:var(--muted)}
+#rvProgress{width:100%;height:8px;accent-color:var(--gold)}
+.review-grid{display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:18px;align-items:start}
+.review-grid>*{min-width:0}
+.review-case-panel>p{font-size:13px}
+.review-cases{max-height:620px;overflow:auto;margin-top:12px;scrollbar-gutter:stable;display:grid;gap:6px;padding:3px}
+.review-cases button{display:grid;gap:4px;width:100%;padding:10px 12px;text-align:left;border:1px solid var(--line);border-left:3px solid transparent;border-radius:var(--r-sm);background:var(--bg2);color:var(--ink);font:14px/1.5 var(--sans)}
+.review-cases button span{color:var(--muted);font-size:12px}
+.review-cases button[aria-current=true]{border-left-color:var(--gold);background:var(--soft)}
+.review-detail{display:grid;gap:12px}
+.review-score{margin:0;padding:14px;background:white;border-radius:var(--r-sm);overflow:auto}
+.review-score img{display:block;max-width:100%;height:auto;margin:auto}
+.review-score figcaption{font:12px/1.5 var(--sans);color:#63574c;margin-top:10px}
+.review-note-comparison{display:grid;gap:8px;font-size:14px}
+.review-note-comparison>div{padding:10px 12px;background:var(--soft);border-radius:var(--r-sm);overflow-wrap:anywhere;line-height:1.7}
+.review-verdict{display:flex;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 12px}
+.review-verdict legend{font-size:14px;padding:0 4px}
+.review-verdict label{display:flex;gap:7px;align-items:center;min-height:44px;font-size:15px}
+.review-note-label{font-size:14px;color:var(--muted)}
+.review-detail textarea{width:100%;min-height:110px;resize:none;overflow:auto}
+.review-next{display:flex;justify-content:space-between;gap:12px}
+.review-export{margin-top:18px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.review-export p{font-size:14px}
+.tie-review :focus-visible{outline:3px solid var(--gold-hi);outline-offset:3px}
+.tie-review button:disabled{opacity:.5;cursor:not-allowed}
+.tie-review dialog{width:min(1100px,90vw);max-height:90vh;padding:18px;background:var(--panel-solid);color:var(--ink);border:1px solid var(--line);border-radius:var(--r-md)}
+.tie-review dialog::backdrop{background:rgba(0,0,0,.65)}
+.review-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.review-zoom-scroll{overflow:auto;max-height:70vh;background:white;padding:12px}
+.review-zoom-scroll img{display:block;max-width:none}
+@media(max-width:720px){.review-shell{padding:18px 12px 32px}.review-grid{grid-template-columns:minmax(0,1fr)}.review-cases{max-height:210px}.review-heading{margin-bottom:16px}.review-ab button{font-size:18px}.review-export{align-items:stretch}.review-export .play{width:100%}.review-options{gap:10px}}
+/* The playback clock marks the note sounding in each comparison row. */
+#rvNotes span[aria-current="true"] { background:var(--accent); color:var(--accent-ink); border-radius:4px; }

@@ -6,9 +6,10 @@
   "ownership": {"Select/Listbox": "native"},
   "designContext": "DESIGN.md",
   "commands": {
-    "syntax": "node --check finale-player.js && node --check finale-score.js && node --check sw.js",
-    "browser": "node tests/finale-player.test.cjs"
+    "syntax": "node --check finale-player.js && node --check finale-score.js && node --check finale-review.js && node --check sw.js",
+    "browser": "node tests/finale-player.test.cjs",
+    "review": "node tests/finale-review.test.cjs"
   },
-  "requiredCommands": ["syntax", "browser"],
+  "requiredCommands": ["syntax", "browser", "review"],
   "evidence": {"failurePaths": "tests/finale-player.test.cjs"}
 }

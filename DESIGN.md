@@ -137,3 +137,19 @@ Motion：琴鍵與歌詞掃色反映演奏時間，無裝飾性動態。reduced-
 ## Practice room access
 
 練唱室使用伺服器驗證。未登入只顯示密碼表單，錯誤與連線重試在原處呈現；密碼送出即清空欄位，送出時停用按鈕。驗證成功才取得樂譜並顯示歌詞、琴鍵、控制台。登出停止聲音並移除記憶體中的譜與連結。登入到期／斷線時鎖定練唱室；其他公開工具保持可用。私有樂譜與分譜不參與離線快取。
+## Tie review room
+
+`finale-review.html` is a separate authenticated comparison surface. It reuses the
+main page theme and exact piano sample engine, extracted by `build-worker.mjs`;
+the generated CSS/audio files must not become independently maintained forks.
+`finale-review.css` owns only the review layout. Desktop uses a case list beside
+the source crop and verdict; mobile stacks them without horizontal page overflow.
+Native select, radio buttons, number input and modal dialog retain keyboard and
+touch behavior. Playback buttons are prominent, with distinct A/B text and pressed
+states; sounding note text follows the audio clock. Changing case or tempo stops
+playback. Loading, wrong password, unavailable data, expiry, logout and copy failure
+have explicit states. Locking removes all private score/image content from the DOM.
+Feedback is stored locally by review hash and exported through one copy action.
+No review action changes the production score. Browser verification belongs to
+`tests/finale-review.test.cjs`, including actual audio, clipboard, narrow layouts
+and authentication cleanup.

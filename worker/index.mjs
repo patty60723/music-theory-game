@@ -1,6 +1,6 @@
 const COOKIE='__Host-finale_session',TTL=8*60*60;
 const encoder=new TextEncoder();
-const publicFiles=new Set(['/', '/index.html', '/sw.js', '/manifest.webmanifest', '/finale-player.css', '/finale-player.js', '/finale-score.js']);
+const publicFiles=new Set(['/', '/index.html', '/sw.js', '/manifest.webmanifest', '/finale-player.css', '/finale-player.js', '/finale-score.js','/finale-review.html','/finale-review.js','/finale-review.css','/finale-review-theme.css','/finale-review-audio.js']);
 const pdfIds=new Set(['f1','f2','m1','m2']);
 const privateHeaders={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const json=(value,status=200,headers={})=>Response.json(value,{status,headers:{...privateHeaders,...headers}});
@@ -52,11 +52,13 @@ async function api(request,env,url,ctx,getCache){
   if(!authenticated)return json({error:'請先輸入練唱密碼。'},401);
   let file,type;
   if(path==='/api/finale/score'){file='finale/score.json';type='application/json; charset=utf-8';}
+  else if(path==='/api/finale/tie-review'){file='finale/tie-review.json';type='application/json; charset=utf-8';}
   else {const id=path.match(/^\/api\/finale\/pdf\/(f1|f2|m1|m2)$/)?.[1];if(!pdfIds.has(id))return json({error:'Not found'},404);file='finale/'+id+'.pdf';type='application/pdf';}
   if(!env.SCORES)return json({error:'樂譜儲存空間尚未設定。'},503);
   // Auth is checked above on every request, including cache hits. This internal
   // URL is never exposed by the Worker's public route allowlist.
-  const cacheKey=new Request(new URL('/__score-cache/'+encodeURIComponent(env.SCORE_CACHE_VERSION||'1')+'/'+file,url.origin));
+  const revision=path==='/api/finale/tie-review'?(env.TIE_REVIEW_CACHE_VERSION||'1'):(env.SCORE_CACHE_VERSION||'1');
+  const cacheKey=new Request(new URL('/__score-cache/'+encodeURIComponent(revision)+'/'+file,url.origin));
   let cache,source;try{cache=getCache();source=await cache?.match(cacheKey);}catch{cache=null;}
   const headers={...privateHeaders,'Content-Type':type,...(type==='application/pdf'?{'Content-Disposition':'inline; filename="'+file.split('/').pop()+'"'}:{})};
   if(source)return new Response(request.method==='HEAD'?null:source.body,{headers});
