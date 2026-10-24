@@ -3,7 +3,10 @@ const {chromium}=require(process.env.CATSHARK_PLAYWRIGHT||'playwright'),score=re
 const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(root,'assets/finale-score.json'));
 const bundle=JSON.parse(fs.readFileSync(path.join(root,'assets/finale-tie-review.json'),'utf8'));
 const original=score.prepare(bundle.original),proposed=score.prepare(bundle.proposed);
-assert.equal(bundle.sourceHash,crypto.createHash('sha256').update(source).digest('hex'));
+const sourceHash=crypto.createHash('sha256').update(source).digest('hex');
+const normalize=data=>{const copy=structuredClone(data);for(const id of ['f1','f2','m1','m2'])copy.voices[id].pdf='/api/finale/pdf/'+id;return copy;};
+// The review stays reproducible after the approved candidate becomes production.
+assert.ok(sourceHash===bundle.sourceHash||require('node:util').isDeepStrictEqual(normalize(JSON.parse(source)),bundle.proposed));
 assert.deepEqual(bundle.summary,{verifiedTies:205,missing:34,incorrect:3,pitch:4,lyricChains:30});assert.equal(bundle.cases.length,37);
 assert.equal(Object.values(bundle.proposed.voices).reduce((sum,v)=>sum+v.notes.filter(n=>n.tieFromPrevious).length,0),205);
 assert.equal(bundle.proposed.voices.f1.notes.find(n=>n.beat===243.5).tieFromPrevious,false);
@@ -49,7 +52,7 @@ for(const id of Object.keys(original.voices)){assert.equal(original.voices[id].n
     await page.locator('#rvPassword').fill(adapter.password);await page.locator('#rvUnlock').click();await page.waitForFunction(()=>!document.querySelector('#rvRetry').hidden);assert.equal(await page.locator('#rvRoom').isVisible(),false);
     await page.unroute('**/api/finale/tie-review');await page.locator('#rvRetry').click();await page.waitForFunction(()=>!document.querySelector('#rvRoom').hidden);
     await page.route('**/api/finale/session',route=>route.fulfill({status:401,contentType:'application/json',body:'{"authenticated":false}'}));await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.waitForFunction(()=>!document.querySelector('#rvAuth').hidden);assert.equal(await page.locator('#rvCases button').count(),0);
-    assert.deepEqual(errors,[]);assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'assets/finale-score.json'))).digest('hex'),bundle.sourceHash);
+    assert.deepEqual(errors,[]);assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'assets/finale-score.json'))).digest('hex'),sourceHash);
     console.log('PASS: private review authentication, PDF crops, actual A/B audio and pitch/duration changes, full-song/voice modes, BPM, verdict persistence, clipboard export, mobile layout and expiry cleanup; production score unchanged.');
   }finally{await browser.close();await server.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

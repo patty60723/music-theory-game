@@ -88,6 +88,26 @@ const malformed=structuredClone(raw);malformed.voices.f1.notes[0].endBeat=-1;ass
     assert.equal(bar.end-bar.beat,1.5);assert.equal(bar.width,118);
     assert.equal((await page.locator('#fnRoll').textContent()).includes('休止'),false);
     assert.equal(await page.locator('#fnRollTrack .finale-roll-note').count(),timeline.voices.f1.performance.length);
+    // Every bar must use the same merged events as the audio, including approved ties.
+    for(const id of ['f1','f2','m1','m2']){
+      await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-'+id).click();
+      const bars=await page.locator('#fnRollTrack .finale-roll-note').evaluateAll(items=>items.map(el=>({beat:Number(el.dataset.beat),endBeat:Number(el.dataset.endBeat),midi:Number(el.dataset.midi),left:parseFloat(el.style.left),width:parseFloat(el.style.width)})));
+      const expected=timeline.voices[id].performance.map(n=>({beat:n.beat,endBeat:n.endBeat,midi:n.midi+(id.startsWith('m')?-12:0),left:n.beat*80,width:(n.endBeat-n.beat)*80-2}));
+      assert.deepEqual(bars.map(({left,width,...note})=>note),expected.map(({left,width,...note})=>note));
+      // CSS serializes large pixel offsets with fewer decimal places.
+      bars.forEach((bar,index)=>{assert.ok(Math.abs(bar.left-expected[index].left)<.1);assert.ok(Math.abs(bar.width-expected[index].width)<.1);});
+    }
+    await page.locator('#fnSettingsTempo').click();await page.locator('#fnFocus-f1').click();
+    const heldD=page.locator('#fnRollTrack [data-beat="173.5"]'),nextD=page.locator('#fnRollTrack [data-beat="175.5"]');
+    assert.equal(await heldD.getAttribute('data-end-beat'),'175');assert.equal(await heldD.getAttribute('data-midi'),'62');
+    assert.equal(await heldD.evaluate(el=>parseFloat(el.style.width)),118);
+    assert.equal(await nextD.evaluate(el=>parseFloat(el.style.left))-await heldD.evaluate(el=>parseFloat(el.style.left)+parseFloat(el.style.width)),42);
+    for(const [beat,note] of [[174.5,'D4'],[175.25,''],[175.75,'D4']]){
+      await page.locator('#fnSeek').evaluate((el,time)=>{el.value=time;el.dispatchEvent(new Event('input',{bubbles:true}));},timeline.secondsAt(beat));
+      assert.equal(await page.locator('#fnRollCurrent').textContent(),note);
+      assert.equal(await page.locator('#fnRollTrack .active').count(),note?1:0);
+      if(!note)assert.equal(await page.locator('#fnKeyboard .key.on').count(),0);
+    }
     await page.locator('#fnToggleLyrics').click();assert.equal(await page.locator('#fnToggleLyrics').getAttribute('aria-expanded'),'true');
     assert.equal(await page.locator('#fnLyricsList button').count(),timeline.voices.f1.phrases.length);
     await page.locator('#fnLyricsList button').nth(2).click();assert.equal(Number(await page.locator('#fnSeek').inputValue()),timeline.voices.f1.phrases[2].start);

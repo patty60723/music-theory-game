@@ -6,7 +6,7 @@
   "main": "worker/index.mjs",
   "compatibility_date": "2026-10-01",
   "vars": {
-    "SCORE_CACHE_VERSION": "8463cee1e3cf177b",
+    "SCORE_CACHE_VERSION": "be06191811100d0b",
     "TIE_REVIEW_CACHE_VERSION": "1f13698c4b8859b7"
   },
   "build": {

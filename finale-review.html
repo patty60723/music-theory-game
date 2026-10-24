@@ -13,7 +13,7 @@
   <section class="panel review-auth" id="rvAuth"><h2>登入核對室</h2><p>沿用練唱密碼與登入狀態。</p><form id="rvLogin" novalidate><label for="rvPassword">練唱密碼</label><div class="review-login-row"><input id="rvPassword" type="password" autocomplete="current-password" required maxlength="256"><button class="play" id="rvUnlock">登入</button></div></form><p id="rvAuthStatus" role="status">正在確認登入…</p><button class="ghost" id="rvRetry" hidden>重新讀取</button></section>
   <div id="rvRoom" hidden>
     <section class="panel review-toolbar" aria-label="核對控制">
-      <p class="review-notice">這是獨立的核對版本，正式練唱的譜尚未更動。男聲沿用低八度播放。</p>
+      <p class="review-notice">正式練唱已套用核對通過的修正版。本頁保留更新前／修正版供比較，男聲沿用低八度播放。</p>
       <div class="review-options"><label>聲部<select id="rvVoice"><option value="all">全部聲部</option><option value="f1">女 1</option><option value="f2">女 2</option><option value="m1">男 1</option><option value="m2">男 2</option></select></label><label>速度 BPM<input id="rvBpm" type="number" min="40" max="200" value="120" inputmode="numeric"></label><button class="ghost" id="rvTempoReset">回原速</button><label class="chk"><input type="checkbox" id="rvWhole"> 比較整首</label><button class="ghost" id="rvStop">停止</button></div>
       <div class="review-ab"><button class="ghost" id="rvOriginal">▶ 目前版本</button><button class="play" id="rvProposed">▶ 修正版</button></div>
       <div class="review-play-status"><strong id="rvPlaying" role="status">請選一段開始比較</strong><span id="rvClock">—</span></div><progress id="rvProgress" value="0" max="1" aria-label="本次比較播放進度"></progress>
