@@ -1,6 +1,6 @@
 const COOKIE='__Host-finale_session',TTL=8*60*60;
 const encoder=new TextEncoder();
-const publicFiles=new Set(['/', '/index.html', '/sw.js', '/manifest.webmanifest', '/finale-player.css', '/finale-player.js', '/finale-score.js','/finale-review.html','/finale-review.js','/finale-review.css','/finale-review-theme.css','/finale-review-audio.js']);
+const publicFiles=new Set(['/', '/index.html', '/sw.js', '/manifest.webmanifest', '/finale-player.css', '/finale-player.js', '/finale-score.js','/finale-review','/finale-review.html','/finale-review.js','/finale-review.css','/finale-review-theme.css','/finale-review-audio.js']);
 const pdfIds=new Set(['f1','f2','m1','m2']);
 const privateHeaders={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const json=(value,status=200,headers={})=>Response.json(value,{status,headers:{...privateHeaders,...headers}});

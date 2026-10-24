@@ -19,7 +19,10 @@ export function environment({realScores=false}={}){
     PRACTICE_PASSWORD:password,SESSION_SECRET:'test-only-session-key-00000000000000000000',
     LOGIN_LIMITER:{async limit({key}){const minute=Math.floor(Date.now()/60000),id=key+minute,count=(attempts.get(id)||0)+1;attempts.set(id,count);return {success:count<=5};}},
     ASSETS:{async fetch(request){
-      const relative=decodeURIComponent(new URL(request.url).pathname).slice(1)||'index.html',file=path.resolve(root,'dist/public',relative);
+      const url=new URL(request.url);
+      // Cloudflare Assets canonicalizes named HTML documents to extensionless URLs.
+      if(url.pathname==='/finale-review.html')return new Response(null,{status:307,headers:{Location:'/finale-review'+url.search}});
+      const relative=url.pathname==='/finale-review'?'finale-review.html':decodeURIComponent(url.pathname).slice(1)||'index.html',file=path.resolve(root,'dist/public',relative);
       if(!file.startsWith(path.join(root,'dist/public')+path.sep))return new Response(null,{status:404});
       try{const bytes=await readFile(file),types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.pdf':'application/pdf'};
         return new Response(request.method==='HEAD'?null:bytes,{headers:{'Content-Type':types[path.extname(file)]||'application/octet-stream'}});

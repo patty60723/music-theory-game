@@ -28,6 +28,8 @@ test('fail closed, same-origin login, protected resources, tampering, rotation a
   const realNow=Date.now;try{Date.now=()=>realNow()+8*3600*1000+1000;assert.equal((await worker.fetch(get('/api/finale/score'),env)).status,401);}finally{Date.now=realNow;}
   const logout=await worker.fetch(post('/api/finale/logout',{}),env);assert.match(logout.headers.get('Set-Cookie'),/Max-Age=0/);
   assert.equal((await worker.fetch(new Request(url('/')),env)).status,200);
+  const reviewPage=await worker.fetch(new Request(url('/finale-review.html')),env);assert.equal(reviewPage.status,307);assert.equal(reviewPage.headers.get('Location'),'/finale-review');
+  assert.equal((await worker.fetch(new Request(url('/finale-review')),env)).status,200);
 });
 test('login throttling and bounded input',async()=>{
   const env=environment();
