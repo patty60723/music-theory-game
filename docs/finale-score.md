@@ -126,8 +126,9 @@ These actions preserve part volumes, routing and playback position.
 Return to original tempo resets the initial BPM to 120 (rate 1), preserving
 the score's later tempo changes and the current position/playback state.
 It stays in the compact BPM row, including on phones. Three small tabs in
-the console switch playback (BPM/metronome), other settings (singing part,
-stereo swap, tempo slider, tap tempo/master volume) and manual keyboard.
+the console switch playback (all tempo controls/metronome), other settings
+(singing part, stereo swap/master volume) and manual keyboard. BPM entry,
+increments, reset, slider and tap tempo share the same tempo block.
 Transport and seek stay visible across tabs; all four mixer cards follow.
 Tab changes keep playback and control values, and support arrows/Home/End.
 

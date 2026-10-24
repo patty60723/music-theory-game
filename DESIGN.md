@@ -64,8 +64,9 @@ visible. Reset restores the score tempo map without seeking or changing
 playback state. The four part cards immediately follow the common console.
 The console heading owns three small accessible tabs: playback, other
 settings and keyboard. Transport and seek remain visible across tabs.
-Playback contains BPM and metronome. Other settings contain the singing
-part, stereo swap, tempo slider, tap tempo and master volume.
+Playback groups BPM entry, increments, reset, slider and tap tempo together
+in one tempo block, followed by the metronome. Other settings contain the
+singing part, stereo swap and master volume.
 Hidden settings retain values and keep functioning while
 playing; changing these local tabs does not pause playback or change song.
 During playback the piano viewport follows the active pitch range, including

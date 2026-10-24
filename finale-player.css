@@ -83,6 +83,8 @@
 .finale-tempo-actions{display:grid;grid-template-columns:1fr}
 .finale-bpm-buttons button{min-height:44px;font-size:18px;padding:6px}
 .finale-tempo-actions button{font-size:16px}
+.finale-tempo-fine{display:flex;align-items:center;gap:12px;max-width:532px;min-width:0}
+.finale-tempo-fine #fnTap{flex-shrink:0;min-height:44px;padding:6px 12px;font-size:14px}
 .finale-bpm-buttons input{font:700 28px var(--display);text-align:center;width:100%;min-width:0;min-height:56px;padding:4px 6px;box-sizing:border-box;background:var(--panel-solid);border:1px solid var(--line);color:var(--ink);border-radius:var(--r-sm);font-variant-numeric:tabular-nums}
 .finale-bpm-buttons input::-webkit-inner-spin-button{opacity:1}
 #fnTempoHint{font-size:12px;line-height:1.4}
@@ -95,7 +97,6 @@
 .finale-settings-tabs button[aria-selected=true]{background:var(--gold);color:var(--gold-ink)}
 .finale-console [role=tabpanel]{display:grid;gap:12px;min-width:0}
 .finale-console .finale-keyboard-controls{margin-bottom:4px}
-.finale-console .finale-tap-row button{min-height:44px}
 .finale-focus .lbl{margin-bottom:8px}
 .finale-focus .seg button{min-width:72px;min-height:44px}
 .finale-keyboard-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
